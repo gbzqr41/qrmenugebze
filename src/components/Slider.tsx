@@ -23,8 +23,8 @@ export default function Slider() {
         return () => clearInterval(interval);
     }, [nextSlide, sliderItems.length]);
 
-    // Theme values
-    const height = theme.sliderHeight || 200;
+    // Theme values - Fixed 200px height
+    const height = 200;
     const radius = theme.sliderRadius || 0;
     const paddingTop = theme.sliderPaddingTop || 0;
     const paddingBottom = theme.sliderPaddingBottom || 0;

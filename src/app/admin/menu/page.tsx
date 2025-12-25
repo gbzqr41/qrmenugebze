@@ -378,6 +378,7 @@ export default function MenuManagementPage() {
     // Modal states
     const [modalName, setModalName] = useState("");
     const [modalIcon, setModalIcon] = useState("utensils");
+    const [modalIsFeatured, setModalIsFeatured] = useState(false);
     const [modalPrice, setModalPrice] = useState("");
     const [modalDescription, setModalDescription] = useState("");
     const [isSaving, setIsSaving] = useState(false);
@@ -401,6 +402,7 @@ export default function MenuManagementPage() {
         if (categoryModal.open) {
             setModalName(categoryModal.category?.name || "");
             setModalIcon(categoryModal.category?.icon || "utensils");
+            setModalIsFeatured(categoryModal.category?.isFeatured || false);
         } else {
             // Reset saving state when modal closes
             setIsSaving(false);
@@ -463,9 +465,9 @@ export default function MenuManagementPage() {
         setIsSaving(true);
 
         if (categoryModal.category) {
-            updateCategory(categoryModal.category.id, { name: modalName.trim(), icon: modalIcon });
+            updateCategory(categoryModal.category.id, { name: modalName.trim(), icon: modalIcon, isFeatured: modalIsFeatured });
         } else {
-            addCategory({ name: modalName.trim(), icon: modalIcon });
+            addCategory({ name: modalName.trim(), icon: modalIcon, isFeatured: modalIsFeatured });
         }
         setCategoryModal({ open: false }); // Close modal after operation
     };
@@ -686,6 +688,19 @@ export default function MenuManagementPage() {
                                         className="w-full px-4 py-3.5 bg-neutral-800 rounded-xl text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-white/20 text-lg"
                                         autoFocus
                                     />
+                                </div>
+
+                                {/* Featured Toggle */}
+                                <div className="flex items-center gap-3 py-2">
+                                    <label className="flex items-center gap-3 cursor-pointer">
+                                        <input
+                                            type="checkbox"
+                                            checked={modalIsFeatured}
+                                            onChange={(e) => setModalIsFeatured(e.target.checked)}
+                                            className="w-5 h-5 rounded bg-neutral-800 border-white/20 text-white focus:ring-white/20"
+                                        />
+                                        <span className="text-white">Öne Çıkar (Üst bölümde göster)</span>
+                                    </label>
                                 </div>
 
                                 <div className="flex gap-3 pt-4">

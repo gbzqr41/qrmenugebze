@@ -47,6 +47,7 @@ export interface Category {
     name: string;
     icon: string;
     productCount: number;
+    isFeatured?: boolean;
 }
 
 export interface ProductVariation {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState, useEffect, useCallback, useMemo } from "react";
-import { Info, Star } from "lucide-react";
+import { Languages, Star } from "lucide-react";
 import { useParams, notFound } from "next/navigation";
 import Slider from "@/components/Slider";
 import CategoryBar from "@/components/CategoryBar";
@@ -12,6 +12,7 @@ import SearchModal from "@/components/SearchModal";
 import FilterModal, { type FilterState } from "@/components/FilterModal";
 import BusinessInfoModal from "@/components/BusinessInfoModal";
 import FavoritesModal from "@/components/FavoritesModal";
+import LanguageModal from "@/components/LanguageModal";
 import { type Product } from "@/data/mockData";
 import { useDataStore } from "@/context/DataStoreContext";
 import { useTheme } from "@/context/ThemeContext";
@@ -31,6 +32,7 @@ export default function BusinessMenuPage() {
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [isBusinessInfoOpen, setIsBusinessInfoOpen] = useState(false);
     const [isFavoritesOpen, setIsFavoritesOpen] = useState(false);
+    const [isLanguageOpen, setIsLanguageOpen] = useState(false);
     const [filters, setFilters] = useState<FilterState>({
         categories: [],
         priceRange: { min: 0, max: 1000 },
@@ -159,13 +161,25 @@ export default function BusinessMenuPage() {
                 style={{ backgroundColor: theme.bottomNavBgColor || "rgba(0,0,0,0.95)" }}
             >
                 <span className="text-white font-bold text-lg">RESITAL LOUNGE</span>
-                <button
-                    onClick={() => openFeedbackModal()}
-                    className="h-[42px] px-4 rounded-full bg-white/10 flex items-center gap-2 hover:bg-white/20 transition-colors"
-                >
-                    <Star className="w-5 h-5 text-white" />
-                    <span className="text-white text-sm font-medium">Değerlendir</span>
-                </button>
+
+                {/* Right side buttons */}
+                <div className="flex items-center gap-[10px]">
+                    {/* Language Button */}
+                    <button
+                        onClick={() => setIsLanguageOpen(true)}
+                        className="w-[42px] h-[42px] rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors"
+                    >
+                        <Languages className="w-5 h-5 text-white" />
+                    </button>
+
+                    {/* Star Icon Button */}
+                    <button
+                        onClick={() => openFeedbackModal()}
+                        className="w-[42px] h-[42px] rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors"
+                    >
+                        <Star className="w-5 h-5 text-white" />
+                    </button>
+                </div>
             </div>
 
             {/* Slider Section */}
@@ -212,7 +226,7 @@ export default function BusinessMenuPage() {
 
             {/* Bottom Navigation - hide when modals are open */}
             {
-                !isFilterOpen && !isSearchOpen && !isBusinessInfoOpen && !isFeedbackModalOpen && !isFavoritesOpen && (
+                !isFilterOpen && !isSearchOpen && !isBusinessInfoOpen && !isFeedbackModalOpen && !isFavoritesOpen && !isLanguageOpen && (
                     <BottomNav
                         onSearchClick={() => {
                             setIsSearchOpen(true);
@@ -279,6 +293,12 @@ export default function BusinessMenuPage() {
                     setSelectedProduct(product);
                     setIsModalOpen(true);
                 }}
+            />
+
+            {/* Language Modal */}
+            <LanguageModal
+                isOpen={isLanguageOpen}
+                onClose={() => setIsLanguageOpen(false)}
             />
         </main >
     );

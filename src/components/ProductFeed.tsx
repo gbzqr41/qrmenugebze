@@ -2,7 +2,7 @@
 
 import { forwardRef } from "react";
 import { motion } from "framer-motion";
-import { Percent } from "lucide-react";
+import { Percent, Sparkles } from "lucide-react";
 import { type Product } from "@/data/mockData";
 import { useDataStore } from "@/context/DataStoreContext";
 import { useTheme } from "@/context/ThemeContext";
@@ -25,6 +25,11 @@ const ProductFeed = forwardRef<HTMLDivElement, ProductFeedProps>(
             (p) => p.originalPrice && p.originalPrice > p.price
         );
 
+        // Get featured categories and their products
+        const featuredCategories = categories.filter((cat) => cat.isFeatured);
+        const getFeaturedProducts = (categoryId: string) =>
+            products.filter((p) => p.categoryId === categoryId);
+
         // If filtered products provided, group them by category
         const getProducts = (categoryId: string): Product[] => {
             if (filteredProducts) {
@@ -33,12 +38,12 @@ const ProductFeed = forwardRef<HTMLDivElement, ProductFeedProps>(
             return products.filter((p) => p.categoryId === categoryId);
         };
 
-        // Determine which categories to show
+        // Determine which categories to show (exclude featured ones from main list)
         const categoriesToShow = filteredProducts
             ? categories.filter((cat) =>
                 filteredProducts.some((p) => p.categoryId === cat.id)
             )
-            : categories;
+            : categories.filter((cat) => !cat.isFeatured);
 
         return (
             <div ref={ref} className="pb-20" style={{ backgroundColor: theme.primaryColor }}>
@@ -130,6 +135,80 @@ const ProductFeed = forwardRef<HTMLDivElement, ProductFeedProps>(
                         </div>
                     </div>
                 )}
+
+                {/* Featured Categories Sections - Horizontal Scroll */}
+                {!filteredProducts && featuredCategories.map((category) => {
+                    const categoryProducts = getFeaturedProducts(category.id);
+                    if (categoryProducts.length === 0) return null;
+
+                    return (
+                        <div key={category.id} className="pt-6 px-5">
+                            {/* Main Container Card */}
+                            <div
+                                className="rounded-2xl overflow-hidden"
+                                style={{ backgroundColor: theme.cardColor }}
+                            >
+                                {/* Section Title */}
+                                <div className="p-4 pb-0">
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-8 h-8 rounded-full bg-amber-500 flex items-center justify-center">
+                                            <Sparkles className="w-4 h-4 text-white" />
+                                        </div>
+                                        <div>
+                                            <h2 className="text-lg font-bold text-white">{category.name}</h2>
+                                            <p className="text-xs text-white/40">{categoryProducts.length} ürün</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Horizontal Scroll Container */}
+                                <div
+                                    className="flex gap-3 overflow-x-auto p-4 scrollbar-hide"
+                                    style={{
+                                        scrollSnapType: "x mandatory",
+                                        WebkitOverflowScrolling: "touch",
+                                    }}
+                                >
+                                    {categoryProducts.map((product) => (
+                                        <div
+                                            key={product.id}
+                                            onClick={() => onProductClick(product)}
+                                            className="shrink-0 cursor-pointer overflow-hidden"
+                                            style={{
+                                                width: "150px",
+                                                scrollSnapAlign: "start",
+                                                backgroundColor: "rgba(255,255,255,0.05)",
+                                                borderRadius: "12px",
+                                            }}
+                                        >
+                                            {/* Image */}
+                                            <div
+                                                className="relative w-full h-24 bg-cover bg-center"
+                                                style={{ backgroundImage: `url(${product.image})` }}
+                                            />
+
+                                            {/* Content */}
+                                            <div className="p-2">
+                                                <h3
+                                                    className="font-semibold text-xs mb-1 truncate"
+                                                    style={{ color: theme.textColor }}
+                                                >
+                                                    {product.name}
+                                                </h3>
+                                                <span
+                                                    className="font-bold text-xs"
+                                                    style={{ color: theme.accentColor }}
+                                                >
+                                                    {product.price} TL
+                                                </span>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    );
+                })}
 
                 {/* Regular Categories */}
                 <div className="px-5">
