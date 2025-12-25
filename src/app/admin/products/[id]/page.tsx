@@ -137,10 +137,11 @@ export default function EditProductPage() {
     };
 
     const handleDelete = () => {
-        // Direct deletion without confirm - user requested this
-        console.log("Deleting product:", productId);
-        deleteProduct(productId);
-        router.push("/admin/menu");
+        if (window.confirm("Bu ürünü silmek istediğinize emin misiniz?")) {
+            console.log("Deleting product:", productId);
+            deleteProduct(productId);
+            router.push("/admin/menu");
+        }
     };
 
     const goBack = () => {

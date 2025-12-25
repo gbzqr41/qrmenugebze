@@ -466,9 +466,10 @@ export default function MenuManagementPage() {
     };
 
     const handleDeleteCategory = (categoryId: string) => {
-        // Direct deletion without confirm - user requested this
-        console.log("Deleting category:", categoryId);
-        deleteCategory(categoryId);
+        if (window.confirm("Bu kategoriyi silmek istediğinize emin misiniz?")) {
+            console.log("Deleting category:", categoryId);
+            deleteCategory(categoryId);
+        }
     };
 
     const handleSaveProduct = () => {
@@ -490,9 +491,10 @@ export default function MenuManagementPage() {
     };
 
     const handleDeleteProduct = (productId: string) => {
-        // Direct deletion without confirm - user requested this
-        console.log("Deleting product:", productId);
-        deleteProduct(productId);
+        if (window.confirm("Bu ürünü silmek istediğinize emin misiniz?")) {
+            console.log("Deleting product:", productId);
+            deleteProduct(productId);
+        }
     };
 
     const handleEditProduct = (productId: string) => {
