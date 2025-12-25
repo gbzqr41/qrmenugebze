@@ -61,9 +61,8 @@ export default function BusinessInfoModal({ isOpen, onClose }: BusinessInfoModal
             {/* Modal Content */}
             <div
                 className={`
-                    relative w-full max-w-lg bg-neutral-900 
-                    rounded-t-3xl sm:rounded-3xl overflow-hidden shadow-2xl
-                    max-h-[90vh] flex flex-col
+                    fixed inset-0 z-50 bg-neutral-900 
+                    overflow-hidden flex flex-col
                     ${isBlurred ? "backdrop-blur-xl" : ""}
                 `}
                 style={{ backgroundColor: cardBg }}

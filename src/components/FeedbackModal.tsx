@@ -74,7 +74,7 @@ export default function FeedbackModal({
                         animate={{ y: 0 }}
                         exit={{ y: "100%" }}
                         transition={{ type: "spring", damping: 30, stiffness: 300 }}
-                        className="fixed bottom-0 left-0 right-0 z-50 bg-neutral-900 rounded-t-3xl max-h-[90vh] overflow-hidden"
+                        className="fixed inset-0 z-50 bg-neutral-900 flex flex-col"
                     >
                         {/* Header */}
                         <div className="flex items-center justify-between p-4 border-b border-white/10">

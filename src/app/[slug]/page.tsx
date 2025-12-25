@@ -190,28 +190,30 @@ export default function BusinessMenuPage() {
                 filteredProducts={hasActiveFilters ? filteredProducts : undefined}
             />
 
-            {/* Bottom Navigation */}
-            <BottomNav
-                onSearchClick={() => {
-                    setIsSearchOpen(true);
-                    setIsBusinessInfoOpen(false);
-                    setIsFilterOpen(false);
-                }}
-                onFilterClick={() => {
-                    setIsFilterOpen(true);
-                    setIsBusinessInfoOpen(false);
-                    setIsSearchOpen(false);
-                }}
-                onFeedbackClick={() => {
-                    openFeedbackModal();
-                    setIsBusinessInfoOpen(false);
-                }}
-                onBusinessClick={() => {
-                    setIsBusinessInfoOpen(true);
-                    setIsSearchOpen(false);
-                    setIsFilterOpen(false);
-                }}
-            />
+            {/* Bottom Navigation - hide when modals are open */}
+            {!isFilterOpen && !isSearchOpen && !isBusinessInfoOpen && (
+                <BottomNav
+                    onSearchClick={() => {
+                        setIsSearchOpen(true);
+                        setIsBusinessInfoOpen(false);
+                        setIsFilterOpen(false);
+                    }}
+                    onFilterClick={() => {
+                        setIsFilterOpen(true);
+                        setIsBusinessInfoOpen(false);
+                        setIsSearchOpen(false);
+                    }}
+                    onFeedbackClick={() => {
+                        openFeedbackModal();
+                        setIsBusinessInfoOpen(false);
+                    }}
+                    onBusinessClick={() => {
+                        setIsBusinessInfoOpen(true);
+                        setIsSearchOpen(false);
+                        setIsFilterOpen(false);
+                    }}
+                />
+            )}
 
             {/* Product Detail Modal */}
             <ProductDetailModal

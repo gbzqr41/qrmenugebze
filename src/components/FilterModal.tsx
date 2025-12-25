@@ -99,11 +99,11 @@ export default function FilterModal({
 
                     {/* Modal */}
                     <motion.div
-                        initial={{ y: "100%" }}
-                        animate={{ y: 0 }}
-                        exit={{ y: "100%" }}
-                        transition={{ type: "spring", damping: 30, stiffness: 300 }}
-                        className="fixed bottom-0 left-0 right-0 z-50 bg-black rounded-t-3xl max-h-[85vh] overflow-hidden"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="fixed inset-0 z-50 bg-black flex flex-col"
                     >
                         {/* Header */}
                         <div className="flex items-center justify-between p-4 border-b border-white/10">
@@ -127,7 +127,7 @@ export default function FilterModal({
                         </div>
 
                         {/* Content */}
-                        <div className="overflow-y-auto max-h-[65vh] p-4 pb-20 space-y-6">
+                        <div className="flex-1 overflow-y-auto p-4 space-y-6">
                             {/* Categories */}
                             <div>
                                 <h3 className="text-sm font-medium text-white/60 uppercase tracking-wider mb-3">
@@ -186,14 +186,16 @@ export default function FilterModal({
                                     <div className="flex-1">
                                         <label className="text-xs text-white/40 mb-1 block">Min</label>
                                         <input
-                                            type="number"
+                                            type="text"
+                                            inputMode="numeric"
+                                            pattern="[0-9]*"
                                             value={filters.priceRange.min}
                                             onChange={(e) =>
                                                 setFilters((prev) => ({
                                                     ...prev,
                                                     priceRange: {
                                                         ...prev.priceRange,
-                                                        min: Number(e.target.value),
+                                                        min: Number(e.target.value) || 0,
                                                     },
                                                 }))
                                             }
@@ -205,14 +207,16 @@ export default function FilterModal({
                                     <div className="flex-1">
                                         <label className="text-xs text-white/40 mb-1 block">Max</label>
                                         <input
-                                            type="number"
+                                            type="text"
+                                            inputMode="numeric"
+                                            pattern="[0-9]*"
                                             value={filters.priceRange.max}
                                             onChange={(e) =>
                                                 setFilters((prev) => ({
                                                     ...prev,
                                                     priceRange: {
                                                         ...prev.priceRange,
-                                                        max: Number(e.target.value),
+                                                        max: Number(e.target.value) || 1000,
                                                     },
                                                 }))
                                             }
@@ -225,7 +229,7 @@ export default function FilterModal({
                         </div>
 
                         {/* Apply Button */}
-                        <div className="p-4 border-t border-white/10">
+                        <div className="p-4 pb-[10px] border-t border-white/10">
                             <motion.button
                                 whileTap={{ scale: 0.98 }}
                                 onClick={handleApply}
