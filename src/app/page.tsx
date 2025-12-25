@@ -1,230 +1,154 @@
 "use client";
 
-import { useRef, useState, useEffect, useCallback, useMemo } from "react";
-import Slider from "@/components/Slider";
-import CategoryBar from "@/components/CategoryBar";
-import ProductFeed from "@/components/ProductFeed";
-import ProductDetailModal from "@/components/ProductDetailModal";
-import BottomNav from "@/components/BottomNav";
-import SearchModal from "@/components/SearchModal";
-import FilterModal, { type FilterState } from "@/components/FilterModal";
-import BusinessInfoModal from "@/components/BusinessInfoModal";
-import { type Product } from "@/data/mockData";
-import { useDataStore } from "@/context/DataStoreContext";
-import { useTheme } from "@/context/ThemeContext";
-import { useFeedback } from "@/context/FeedbackContext";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
+import { LogIn, Mail, Lock, Eye, EyeOff, ChefHat } from "lucide-react";
 
-export default function Home() {
-  const { products, categories } = useDataStore();
-  const { theme } = useTheme();
-  const { openFeedbackModal } = useFeedback();
-  const [activeCategory, setActiveCategory] = useState(categories[0]?.id || "1");
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [isBusinessInfoOpen, setIsBusinessInfoOpen] = useState(false);
-  const [filters, setFilters] = useState<FilterState>({
-    categories: [],
-    priceRange: { min: 0, max: 1000 },
-    tags: [],
-  });
+export default function LoginPage() {
+  const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const categoryRefs = useRef<Record<string, HTMLDivElement | null>>({});
-  const feedRef = useRef<HTMLDivElement>(null);
-  const isScrollingRef = useRef(false);
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setIsLoading(true);
 
-  // Filtered products
-  const filteredProducts = useMemo(() => {
-    let result = products;
+    // Simulated login - in production, this would verify against database
+    try {
+      // For now, allow any login to proceed
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
-    // Filter by categories
-    if (filters.categories.length > 0) {
-      result = result.filter((p) => filters.categories.includes(p.categoryId));
+      // Store login state in localStorage
+      localStorage.setItem("isLoggedIn", "true");
+      localStorage.setItem("userEmail", email);
+
+      // Redirect to admin panel
+      router.push("/admin");
+    } catch (err) {
+      setError("Giriş başarısız. Lütfen bilgilerinizi kontrol edin.");
+    } finally {
+      setIsLoading(false);
     }
-
-    // Filter by price range
-    result = result.filter(
-      (p) => p.price >= filters.priceRange.min && p.price <= filters.priceRange.max
-    );
-
-    // Filter by tags
-    if (filters.tags.length > 0) {
-      result = result.filter((p) => {
-        // Check for special tags
-        if (filters.tags.includes("Yeni") && p.isNew) return true;
-        if (filters.tags.includes("İndirimli") && p.originalPrice) return true;
-        // Check product tags
-        return p.tags.some((tag) => filters.tags.includes(tag));
-      });
-    }
-
-    return result;
-  }, [filters]);
-
-  // Check if filters are active
-  const hasActiveFilters =
-    filters.categories.length > 0 ||
-    filters.tags.length > 0 ||
-    filters.priceRange.min > 0 ||
-    filters.priceRange.max < 1000;
-
-  // Ürün tıklama - modal açma
-  const handleProductClick = useCallback((product: Product) => {
-    setSelectedProduct(product);
-    setIsModalOpen(true);
-  }, []);
-
-  // Modal kapatma
-  const handleModalClose = useCallback(() => {
-    setIsModalOpen(false);
-    setTimeout(() => {
-      setSelectedProduct(null);
-    }, 300);
-  }, []);
-
-  // Search'den ürün seçme
-  const handleSearchProductSelect = useCallback((product: Product) => {
-    setSelectedProduct(product);
-    setIsModalOpen(true);
-  }, []);
-
-  // Filter apply
-  const handleFilterApply = useCallback((newFilters: FilterState) => {
-    setFilters(newFilters);
-  }, []);
-
-  // Kategori tıklama - ilgili bölüme scroll
-  const handleCategoryClick = useCallback((categoryId: string) => {
-    setActiveCategory(categoryId);
-    const element = categoryRefs.current[categoryId];
-    if (element) {
-      isScrollingRef.current = true;
-      const yOffset = -70;
-      const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
-      window.scrollTo({ top: y, behavior: "smooth" });
-
-      setTimeout(() => {
-        isScrollingRef.current = false;
-      }, 1000);
-    }
-  }, []);
-
-  // Scroll pozisyonuna göre aktif kategoriyi güncelle
-  useEffect(() => {
-    const handleScroll = () => {
-      if (isScrollingRef.current) return;
-
-      const scrollPosition = window.scrollY + 100;
-
-      for (const category of categories) {
-        const element = categoryRefs.current[category.id];
-        if (element) {
-          const { offsetTop, offsetHeight } = element;
-          if (scrollPosition >= offsetTop && scrollPosition < offsetTop + offsetHeight) {
-            setActiveCategory(category.id);
-            break;
-          }
-        }
-      }
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  };
 
   return (
-    <main className="min-h-screen pb-24" style={{ backgroundColor: theme.primaryColor }}>
-      {/* Slider Section */}
-      <Slider />
+    <main className="min-h-screen bg-neutral-950 flex items-center justify-center px-4">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="w-full max-w-md"
+      >
+        {/* Logo */}
+        <div className="text-center mb-8">
+          <motion.div
+            initial={{ scale: 0.8 }}
+            animate={{ scale: 1 }}
+            transition={{ delay: 0.2 }}
+            className="w-20 h-20 bg-gradient-to-br from-orange-500 to-red-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-orange-500/20"
+          >
+            <ChefHat className="w-10 h-10 text-white" />
+          </motion.div>
+          <h1 className="text-3xl font-bold text-white mb-2">GBZQR</h1>
+          <p className="text-white/50">İşletme Giriş Paneli</p>
+        </div>
 
-      {/* Category Navigation */}
-      <CategoryBar
-        activeCategory={activeCategory}
-        onCategoryClick={handleCategoryClick}
-      />
+        {/* Login Form */}
+        <form onSubmit={handleLogin} className="space-y-4">
+          {/* Email Input */}
+          <div>
+            <label className="text-sm text-white/60 mb-2 block">E-posta</label>
+            <div className="relative">
+              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="ornek@email.com"
+                required
+                className="w-full pl-12 pr-4 py-4 bg-neutral-900 rounded-xl text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-orange-500/50 border border-white/10"
+              />
+            </div>
+          </div>
 
-      {/* Active Filters Indicator */}
-      {hasActiveFilters && (
-        <div className="px-5 py-2 bg-neutral-900">
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-white/60">
-              {filteredProducts.length} ürün bulundu
-            </span>
+          {/* Password Input */}
+          <div>
+            <label className="text-sm text-white/60 mb-2 block">Şifre</label>
+            <div className="relative">
+              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
+              <input
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                required
+                className="w-full pl-12 pr-12 py-4 bg-neutral-900 rounded-xl text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-orange-500/50 border border-white/10"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 hover:text-white"
+              >
+                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              </button>
+            </div>
+          </div>
+
+          {/* Error Message */}
+          {error && (
+            <div className="p-3 bg-red-500/20 border border-red-500/30 rounded-xl text-red-400 text-sm">
+              {error}
+            </div>
+          )}
+
+          {/* Forgot Password Link */}
+          <div className="text-right">
             <button
-              onClick={() =>
-                setFilters({
-                  categories: [],
-                  priceRange: { min: 0, max: 1000 },
-                  tags: [],
-                })
-              }
-              className="text-sm text-white/60 hover:text-white transition-colors"
+              type="button"
+              className="text-sm text-orange-400 hover:text-orange-300 transition-colors"
             >
-              Filtreleri Temizle
+              Şifremi Unuttum
             </button>
           </div>
+
+          {/* Login Button */}
+          <motion.button
+            whileTap={{ scale: 0.98 }}
+            type="submit"
+            disabled={isLoading}
+            className="w-full flex items-center justify-center gap-3 py-4 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-xl font-semibold hover:from-orange-600 hover:to-red-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-orange-500/20"
+          >
+            {isLoading ? (
+              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            ) : (
+              <>
+                <LogIn className="w-5 h-5" />
+                Giriş Yap
+              </>
+            )}
+          </motion.button>
+        </form>
+
+        {/* Register Link */}
+        <div className="mt-6 text-center">
+          <p className="text-white/40 text-sm">
+            Hesabınız yok mu?{" "}
+            <button className="text-orange-400 hover:text-orange-300 font-medium transition-colors">
+              Kayıt Ol
+            </button>
+          </p>
         </div>
-      )}
 
-      {/* Product Feed */}
-      <ProductFeed
-        ref={feedRef}
-        categoryRefs={categoryRefs}
-        onProductClick={handleProductClick}
-        filteredProducts={hasActiveFilters ? filteredProducts : undefined}
-      />
-
-      {/* Bottom Navigation */}
-      <BottomNav
-        onSearchClick={() => {
-          setIsSearchOpen(true);
-          setIsBusinessInfoOpen(false);
-          setIsFilterOpen(false);
-        }}
-        onFilterClick={() => {
-          setIsFilterOpen(true);
-          setIsBusinessInfoOpen(false);
-          setIsSearchOpen(false);
-        }}
-        onFeedbackClick={() => {
-          openFeedbackModal();
-          setIsBusinessInfoOpen(false);
-        }}
-        onBusinessClick={() => {
-          setIsBusinessInfoOpen(true);
-          setIsSearchOpen(false);
-          setIsFilterOpen(false);
-        }}
-      />
-
-      {/* Product Detail Modal */}
-      <ProductDetailModal
-        product={selectedProduct}
-        isOpen={isModalOpen}
-        onClose={handleModalClose}
-      />
-
-      {/* Search Modal */}
-      <SearchModal
-        isOpen={isSearchOpen}
-        onClose={() => setIsSearchOpen(false)}
-        onProductSelect={handleSearchProductSelect}
-      />
-
-      {/* Filter Modal */}
-      <FilterModal
-        isOpen={isFilterOpen}
-        onClose={() => setIsFilterOpen(false)}
-        onApply={handleFilterApply}
-        initialFilters={filters}
-      />
-
-      {/* Business Info Modal */}
-      <BusinessInfoModal
-        isOpen={isBusinessInfoOpen}
-        onClose={() => setIsBusinessInfoOpen(false)}
-      />
+        {/* Footer */}
+        <div className="mt-12 text-center text-white/30 text-xs">
+          © 2024 GBZQR. Tüm hakları saklıdır.
+        </div>
+      </motion.div>
     </main>
   );
 }

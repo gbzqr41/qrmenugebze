@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import { Save, Building2, FileText, Image, Plus, Trash2, X, Tag } from "lucide-react";
+import { Save, Building2, FileText, Image, Plus, Trash2, X, Tag, Link as LinkIcon } from "lucide-react";
 import { useDataStore } from "@/context/DataStoreContext";
 
 export default function BusinessSettingsPage() {
@@ -11,6 +11,7 @@ export default function BusinessSettingsPage() {
 
     const [formData, setFormData] = useState({
         name: "",
+        slug: "",
         description: "",
         slogan: "Premium Dining Experience",
         cuisine: "Türk Mutfağı, Dünya Mutfağı",
@@ -21,6 +22,7 @@ export default function BusinessSettingsPage() {
     const [gallery, setGallery] = useState<string[]>([]);
     const [tagInput, setTagInput] = useState("");
     const [isSaved, setIsSaved] = useState(false);
+    const [slugError, setSlugError] = useState("");
 
     // Tag handlers
     const handleAddTag = () => {
@@ -39,6 +41,7 @@ export default function BusinessSettingsPage() {
     useEffect(() => {
         setFormData({
             name: business.name || "",
+            slug: business.slug || "",
             description: business.description || "",
             slogan: "Premium Dining Experience",
             cuisine: "Türk Mutfağı, Dünya Mutfağı",
@@ -70,16 +73,41 @@ export default function BusinessSettingsPage() {
         setGallery((prev) => prev.filter((_, i) => i !== index));
     };
 
+    // Validate slug format
+    const validateSlug = (value: string): string => {
+        // Remove spaces and special chars, convert to lowercase
+        return value
+            .toLowerCase()
+            .replace(/\s+/g, "-")
+            .replace(/[^a-z0-9-]/g, "")
+            .replace(/-+/g, "-")
+            .replace(/^-|-$/g, "");
+    };
+
+    const handleSlugChange = (value: string) => {
+        const validated = validateSlug(value);
+        setFormData({ ...formData, slug: validated });
+        setSlugError("");
+    };
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Validate slug
+        if (!formData.slug.trim()) {
+            setSlugError("URL adresi zorunludur");
+            return;
+        }
+
         updateBusiness({
             name: formData.name,
+            slug: formData.slug,
             description: formData.description,
             gallery: gallery,
         });
         setIsSaved(true);
         setTimeout(() => setIsSaved(false), 2000);
-        alert("✓ İşletme bilgileri kaydedildi!");
+        alert("✓ İşletme bilgileri kaydedildi!\n\nMenünüz şu adreste görüntülenebilir:\ngbzqr.com/" + formData.slug);
     };
 
     return (
@@ -101,6 +129,27 @@ export default function BusinessSettingsPage() {
                         className="w-full px-4 py-3 bg-neutral-800 rounded-xl text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-white/20"
                         required
                     />
+                </div>
+
+                {/* URL Slug */}
+                <div>
+                    <label className="text-sm text-white/60 mb-2 block flex items-center gap-2">
+                        <LinkIcon className="w-4 h-4" />
+                        Menü URL Adresi *
+                    </label>
+                    <div className="flex items-center gap-2">
+                        <span className="text-white/40 text-sm">gbzqr.com/</span>
+                        <input
+                            type="text"
+                            value={formData.slug}
+                            onChange={(e) => handleSlugChange(e.target.value)}
+                            placeholder="mikail-cafe"
+                            className={`flex-1 px-4 py-3 bg-neutral-800 rounded-xl text-white placeholder:text-white/30 focus:outline-none focus:ring-2 ${slugError ? "ring-2 ring-red-500" : "focus:ring-white/20"}`}
+                            required
+                        />
+                    </div>
+                    {slugError && <p className="text-red-400 text-xs mt-1">{slugError}</p>}
+                    <p className="text-white/30 text-xs mt-1">Sadece küçük harf, rakam ve tire kullanılabilir</p>
                 </div>
 
                 {/* Slogan */}

@@ -18,6 +18,7 @@ export interface SliderItem {
 export interface Business {
     id: string;
     name: string;
+    slug?: string; // URL slug for public menu (e.g., "mikail-cafe" -> gbzqr.com/mikail-cafe)
     logo: string;
     coverImage: string;
     cuisineTypes: string[];
