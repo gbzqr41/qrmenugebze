@@ -401,6 +401,9 @@ export default function MenuManagementPage() {
         if (categoryModal.open) {
             setModalName(categoryModal.category?.name || "");
             setModalIcon(categoryModal.category?.icon || "utensils");
+        } else {
+            // Reset saving state when modal closes
+            setIsSaving(false);
         }
     }, [categoryModal]);
 
@@ -409,6 +412,9 @@ export default function MenuManagementPage() {
             setModalName("");
             setModalPrice("");
             setModalDescription("");
+        } else {
+            // Reset saving state when modal closes
+            setIsSaving(false);
         }
     }, [productModal]);
 
@@ -455,14 +461,13 @@ export default function MenuManagementPage() {
     const handleSaveCategory = () => {
         if (!modalName.trim() || isSaving) return;
         setIsSaving(true);
-        setCategoryModal({ open: false }); // Close modal immediately
 
         if (categoryModal.category) {
             updateCategory(categoryModal.category.id, { name: modalName.trim(), icon: modalIcon });
         } else {
             addCategory({ name: modalName.trim(), icon: modalIcon });
         }
-        setIsSaving(false);
+        setCategoryModal({ open: false }); // Close modal after operation
     };
 
     const handleDeleteCategory = (categoryId: string) => {
@@ -475,7 +480,6 @@ export default function MenuManagementPage() {
     const handleSaveProduct = () => {
         if (!modalName.trim() || !modalPrice || isSaving) return;
         setIsSaving(true);
-        setProductModal({ open: false, categoryId: "", categoryName: "" }); // Close modal immediately
 
         addProduct({
             categoryId: productModal.categoryId,
@@ -487,7 +491,7 @@ export default function MenuManagementPage() {
             isFeatured: false,
             isNew: true,
         });
-        setIsSaving(false);
+        setProductModal({ open: false, categoryId: "", categoryName: "" }); // Close modal after operation
     };
 
     const handleDeleteProduct = (productId: string) => {
