@@ -180,14 +180,16 @@ export default function MediaUpload({
         e.preventDefault();
         e.stopPropagation();
         setIsDragging(false);
-        if (e.dataTransfer.files?.length > 0) {
-            processFiles(e.dataTransfer.files);
+        const files = e.dataTransfer.files;
+        if (files && files.length > 0) {
+            processFiles(files);
         }
     }, [processFiles]);
 
     const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files?.length > 0) {
-            processFiles(e.target.files);
+        const files = e.target.files;
+        if (files && files.length > 0) {
+            processFiles(files);
             e.target.value = "";
         }
     }, [processFiles]);
