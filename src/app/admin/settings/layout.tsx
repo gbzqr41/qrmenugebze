@@ -10,9 +10,7 @@ import {
     Phone,
     Share2,
     Image,
-    Bell,
     Shield,
-    Palette,
     SlidersHorizontal,
 } from "lucide-react";
 
@@ -23,8 +21,6 @@ const settingsTabs = [
     { icon: Share2, label: "Sosyal Medya", href: "/admin/settings/social" },
     { icon: Image, label: "Görsel ve Logo", href: "/admin/settings/branding" },
     { icon: SlidersHorizontal, label: "Slider", href: "/admin/settings/slider" },
-    { icon: Palette, label: "Tema", href: "/admin/settings/theme" },
-    { icon: Bell, label: "Bildirimler", href: "/admin/settings/notifications" },
     { icon: Shield, label: "Güvenlik", href: "/admin/settings/security" },
 ];
 

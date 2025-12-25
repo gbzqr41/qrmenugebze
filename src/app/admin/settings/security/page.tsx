@@ -110,62 +110,7 @@ export default function SecuritySettingsPage() {
                 </div>
             </form>
 
-            {/* Security Settings */}
-            <form onSubmit={handleSecuritySubmit} className="bg-neutral-900 rounded-2xl p-6 border border-white/5">
-                <div className="flex items-center gap-2 mb-6">
-                    <Shield className="w-5 h-5 text-white" />
-                    <h2 className="text-lg font-bold text-white">Güvenlik Ayarları</h2>
-                </div>
 
-                <div className="space-y-4">
-                    {/* Two Factor */}
-                    <div className="flex items-center justify-between p-4 bg-neutral-800 rounded-xl">
-                        <div className="flex items-center gap-3">
-                            <Smartphone className="w-5 h-5 text-white/60" />
-                            <div>
-                                <p className="text-white font-medium">İki Faktörlü Doğrulama</p>
-                                <p className="text-sm text-white/40">SMS veya uygulama ile ek güvenlik</p>
-                            </div>
-                        </div>
-                        <button
-                            type="button"
-                            onClick={() => setTwoFactor(!twoFactor)}
-                            className={`relative w-12 h-6 rounded-full transition-colors ${twoFactor ? "bg-green-500" : "bg-neutral-700"
-                                }`}
-                        >
-                            <div
-                                className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform ${twoFactor ? "translate-x-7" : "translate-x-1"
-                                    }`}
-                            />
-                        </button>
-                    </div>
-
-                    {/* Session Timeout */}
-                    <div className="p-4 bg-neutral-800 rounded-xl">
-                        <label className="text-white font-medium mb-3 block">Oturum Zaman Aşımı</label>
-                        <select
-                            value={sessionTimeout}
-                            onChange={(e) => setSessionTimeout(e.target.value)}
-                            className="w-full px-4 py-3 bg-neutral-700 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-white/20"
-                        >
-                            <option value="15">15 dakika</option>
-                            <option value="30">30 dakika</option>
-                            <option value="60">1 saat</option>
-                            <option value="120">2 saat</option>
-                            <option value="480">8 saat</option>
-                        </select>
-                    </div>
-
-                    <motion.button
-                        whileTap={{ scale: 0.98 }}
-                        type="submit"
-                        className="w-full flex items-center justify-center gap-2 py-4 bg-white text-black rounded-xl font-semibold hover:bg-neutral-100 transition-colors"
-                    >
-                        <Save className="w-5 h-5" />
-                        Kaydet
-                    </motion.button>
-                </div>
-            </form>
 
             {/* Recent Logins */}
             <div className="bg-neutral-900 rounded-2xl p-6 border border-white/5">
