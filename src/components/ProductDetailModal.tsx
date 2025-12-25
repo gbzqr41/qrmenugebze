@@ -1,0 +1,175 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { X, Clock, Flame, AlertTriangle } from "lucide-react";
+import type { Product } from "@/data/mockData";
+import { useTheme } from "@/context/ThemeContext";
+
+interface ProductDetailModalProps {
+    product: Product | null;
+    isOpen: boolean;
+    onClose: () => void;
+}
+
+export default function ProductDetailModal({
+    product,
+    isOpen,
+    onClose,
+}: ProductDetailModalProps) {
+    const { theme } = useTheme();
+    const [activeImageIndex, setActiveImageIndex] = useState(0);
+
+    // Reset state when product changes
+    useEffect(() => {
+        if (product) {
+            setActiveImageIndex(0);
+        }
+    }, [product]);
+
+    // Prevent body scroll when modal is open
+    useEffect(() => {
+        if (isOpen) {
+            document.body.style.overflow = "hidden";
+        } else {
+            document.body.style.overflow = "unset";
+        }
+        return () => {
+            document.body.style.overflow = "unset";
+        };
+    }, [isOpen]);
+
+    if (!product || !isOpen) return null;
+
+    const currentMedia = product.gallery?.[activeImageIndex] || product.image;
+    const isVideo = currentMedia.startsWith("data:video/") ||
+        currentMedia.toLowerCase().includes(".mp4") ||
+        currentMedia.toLowerCase().includes(".webm");
+
+    return (
+        <>
+            {/* Backdrop */}
+            <div
+                onClick={onClose}
+                className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50"
+            />
+
+            {/* Modal - Full width edge to edge, no side margins */}
+            <div className="fixed inset-0 z-50 overflow-y-auto">
+                {/* Product Image/Video - Full width, edge to edge */}
+                <div className="relative w-full h-72 overflow-hidden bg-neutral-900">
+                    {isVideo ? (
+                        <video
+                            key={activeImageIndex}
+                            src={currentMedia}
+                            className="absolute inset-0 w-full h-full object-cover"
+                            muted
+                            playsInline
+                            loop
+                            autoPlay
+                        />
+                    ) : (
+                        <div
+                            key={activeImageIndex}
+                            className="absolute inset-0 bg-cover bg-center"
+                            style={{ backgroundImage: `url(${currentMedia})` }}
+                        />
+                    )}
+                    {/* Close Button */}
+                    <button
+                        onClick={onClose}
+                        className="absolute top-4 left-4 z-60 w-10 h-10 rounded-full flex items-center justify-center backdrop-blur-md transition-colors"
+                        style={{ backgroundColor: theme.productCloseButtonBgColor || 'rgba(0,0,0,0.5)' }}
+                    >
+                        <X className="w-6 h-6" style={{ color: theme.productCloseIconColor || '#ffffff' }} />
+                    </button>
+
+                    {/* Gallery Thumbnails */}
+                    {product.gallery && product.gallery.length > 1 && (
+                        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 z-10">
+                            {product.gallery.map((img, index) => (
+                                <button
+                                    key={index}
+                                    onClick={() => setActiveImageIndex(index)}
+                                    className={`w-12 h-12 rounded-full overflow-hidden border-2 ${activeImageIndex === index
+                                        ? "border-white scale-110"
+                                        : "border-white/30"
+                                        }`}
+                                >
+                                    <div
+                                        className="w-full h-full bg-cover bg-center"
+                                        style={{ backgroundImage: `url(${img})` }}
+                                    />
+                                </button>
+                            ))}
+                        </div>
+                    )}
+                </div>
+
+                {/* Content - Black div with top radius, full height */}
+                <div
+                    className="rounded-t-3xl -mt-6 relative z-10 min-h-[calc(100vh-18rem)] px-5 py-6 space-y-5 transition-colors duration-300"
+                    style={{
+                        backgroundColor: theme.productCardBgColor || theme.cardColor,
+                        color: theme.productTextColor || theme.textColor
+                    }}
+                >
+                    {/* Title & Price Row */}
+                    <div className="flex items-start justify-between gap-4">
+                        <h1 className="text-2xl font-bold flex-1" style={{ color: theme.productTextColor || theme.textColor }}>
+                            {product.name}
+                        </h1>
+                        <span className="text-2xl font-bold whitespace-nowrap" style={{ color: theme.accentColor }}>
+                            {product.price} TL
+                        </span>
+                    </div>
+
+                    {/* Description */}
+                    <p className="opacity-80 leading-relaxed">
+                        {product.description}
+                    </p>
+
+                    {/* Tags */}
+                    {product.tags.length > 0 && (
+                        <div className="flex flex-wrap gap-2">
+                            {product.tags.map((tag, index) => (
+                                <span
+                                    key={index}
+                                    className="px-3 py-1 text-xs font-medium rounded-full opacity-80"
+                                    style={{
+                                        backgroundColor: theme.primaryColor,
+                                        color: theme.textColor,
+                                        border: `1px solid ${theme.cardBorderColor || 'rgba(255,255,255,0.1)'}`
+                                    }}
+                                >
+                                    {tag}
+                                </span>
+                            ))}
+                        </div>
+                    )}
+
+                    {/* Info Row - Full width lines */}
+                    <div className="flex items-center gap-4 py-4 border-y -mx-5 px-5" style={{ borderColor: theme.cardBorderColor || 'rgba(255,255,255,0.1)' }}>
+                        {product.preparationTime && (
+                            <div className="flex items-center gap-2 opacity-60">
+                                <Clock className="w-4 h-4" />
+                                <span className="text-sm">{product.preparationTime}</span>
+                            </div>
+                        )}
+                        {product.calories && (
+                            <div className="flex items-center gap-2 text-white/60">
+                                <Flame className="w-4 h-4" />
+                                <span className="text-sm">{product.calories} kcal</span>
+                            </div>
+                        )}
+                        {product.allergens && product.allergens.length > 0 && (
+                            <div className="flex items-center gap-2 text-amber-500/80">
+                                <AlertTriangle className="w-4 h-4" />
+                                <span className="text-sm">{product.allergens.join(", ")}</span>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
+        </>
+    );
+}

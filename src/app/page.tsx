@@ -1,65 +1,230 @@
-import Image from "next/image";
+"use client";
+
+import { useRef, useState, useEffect, useCallback, useMemo } from "react";
+import Slider from "@/components/Slider";
+import CategoryBar from "@/components/CategoryBar";
+import ProductFeed from "@/components/ProductFeed";
+import ProductDetailModal from "@/components/ProductDetailModal";
+import BottomNav from "@/components/BottomNav";
+import SearchModal from "@/components/SearchModal";
+import FilterModal, { type FilterState } from "@/components/FilterModal";
+import BusinessInfoModal from "@/components/BusinessInfoModal";
+import { type Product } from "@/data/mockData";
+import { useDataStore } from "@/context/DataStoreContext";
+import { useTheme } from "@/context/ThemeContext";
+import { useFeedback } from "@/context/FeedbackContext";
 
 export default function Home() {
+  const { products, categories } = useDataStore();
+  const { theme } = useTheme();
+  const { openFeedbackModal } = useFeedback();
+  const [activeCategory, setActiveCategory] = useState(categories[0]?.id || "1");
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [isBusinessInfoOpen, setIsBusinessInfoOpen] = useState(false);
+  const [filters, setFilters] = useState<FilterState>({
+    categories: [],
+    priceRange: { min: 0, max: 1000 },
+    tags: [],
+  });
+
+  const categoryRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const feedRef = useRef<HTMLDivElement>(null);
+  const isScrollingRef = useRef(false);
+
+  // Filtered products
+  const filteredProducts = useMemo(() => {
+    let result = products;
+
+    // Filter by categories
+    if (filters.categories.length > 0) {
+      result = result.filter((p) => filters.categories.includes(p.categoryId));
+    }
+
+    // Filter by price range
+    result = result.filter(
+      (p) => p.price >= filters.priceRange.min && p.price <= filters.priceRange.max
+    );
+
+    // Filter by tags
+    if (filters.tags.length > 0) {
+      result = result.filter((p) => {
+        // Check for special tags
+        if (filters.tags.includes("Yeni") && p.isNew) return true;
+        if (filters.tags.includes("İndirimli") && p.originalPrice) return true;
+        // Check product tags
+        return p.tags.some((tag) => filters.tags.includes(tag));
+      });
+    }
+
+    return result;
+  }, [filters]);
+
+  // Check if filters are active
+  const hasActiveFilters =
+    filters.categories.length > 0 ||
+    filters.tags.length > 0 ||
+    filters.priceRange.min > 0 ||
+    filters.priceRange.max < 1000;
+
+  // Ürün tıklama - modal açma
+  const handleProductClick = useCallback((product: Product) => {
+    setSelectedProduct(product);
+    setIsModalOpen(true);
+  }, []);
+
+  // Modal kapatma
+  const handleModalClose = useCallback(() => {
+    setIsModalOpen(false);
+    setTimeout(() => {
+      setSelectedProduct(null);
+    }, 300);
+  }, []);
+
+  // Search'den ürün seçme
+  const handleSearchProductSelect = useCallback((product: Product) => {
+    setSelectedProduct(product);
+    setIsModalOpen(true);
+  }, []);
+
+  // Filter apply
+  const handleFilterApply = useCallback((newFilters: FilterState) => {
+    setFilters(newFilters);
+  }, []);
+
+  // Kategori tıklama - ilgili bölüme scroll
+  const handleCategoryClick = useCallback((categoryId: string) => {
+    setActiveCategory(categoryId);
+    const element = categoryRefs.current[categoryId];
+    if (element) {
+      isScrollingRef.current = true;
+      const yOffset = -70;
+      const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
+      window.scrollTo({ top: y, behavior: "smooth" });
+
+      setTimeout(() => {
+        isScrollingRef.current = false;
+      }, 1000);
+    }
+  }, []);
+
+  // Scroll pozisyonuna göre aktif kategoriyi güncelle
+  useEffect(() => {
+    const handleScroll = () => {
+      if (isScrollingRef.current) return;
+
+      const scrollPosition = window.scrollY + 100;
+
+      for (const category of categories) {
+        const element = categoryRefs.current[category.id];
+        if (element) {
+          const { offsetTop, offsetHeight } = element;
+          if (scrollPosition >= offsetTop && scrollPosition < offsetTop + offsetHeight) {
+            setActiveCategory(category.id);
+            break;
+          }
+        }
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+    <main className="min-h-screen pb-24" style={{ backgroundColor: theme.primaryColor }}>
+      {/* Slider Section */}
+      <Slider />
+
+      {/* Category Navigation */}
+      <CategoryBar
+        activeCategory={activeCategory}
+        onCategoryClick={handleCategoryClick}
+      />
+
+      {/* Active Filters Indicator */}
+      {hasActiveFilters && (
+        <div className="px-5 py-2 bg-neutral-900">
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-white/60">
+              {filteredProducts.length} ürün bulundu
+            </span>
+            <button
+              onClick={() =>
+                setFilters({
+                  categories: [],
+                  priceRange: { min: 0, max: 1000 },
+                  tags: [],
+                })
+              }
+              className="text-sm text-white/60 hover:text-white transition-colors"
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+              Filtreleri Temizle
+            </button>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+      )}
+
+      {/* Product Feed */}
+      <ProductFeed
+        ref={feedRef}
+        categoryRefs={categoryRefs}
+        onProductClick={handleProductClick}
+        filteredProducts={hasActiveFilters ? filteredProducts : undefined}
+      />
+
+      {/* Bottom Navigation */}
+      <BottomNav
+        onSearchClick={() => {
+          setIsSearchOpen(true);
+          setIsBusinessInfoOpen(false);
+          setIsFilterOpen(false);
+        }}
+        onFilterClick={() => {
+          setIsFilterOpen(true);
+          setIsBusinessInfoOpen(false);
+          setIsSearchOpen(false);
+        }}
+        onFeedbackClick={() => {
+          openFeedbackModal();
+          setIsBusinessInfoOpen(false);
+        }}
+        onBusinessClick={() => {
+          setIsBusinessInfoOpen(true);
+          setIsSearchOpen(false);
+          setIsFilterOpen(false);
+        }}
+      />
+
+      {/* Product Detail Modal */}
+      <ProductDetailModal
+        product={selectedProduct}
+        isOpen={isModalOpen}
+        onClose={handleModalClose}
+      />
+
+      {/* Search Modal */}
+      <SearchModal
+        isOpen={isSearchOpen}
+        onClose={() => setIsSearchOpen(false)}
+        onProductSelect={handleSearchProductSelect}
+      />
+
+      {/* Filter Modal */}
+      <FilterModal
+        isOpen={isFilterOpen}
+        onClose={() => setIsFilterOpen(false)}
+        onApply={handleFilterApply}
+        initialFilters={filters}
+      />
+
+      {/* Business Info Modal */}
+      <BusinessInfoModal
+        isOpen={isBusinessInfoOpen}
+        onClose={() => setIsBusinessInfoOpen(false)}
+      />
+    </main>
   );
 }
