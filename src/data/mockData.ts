@@ -116,6 +116,14 @@ export const business: Business = {
         { day: "Cumartesi", open: "10:00", close: "00:00", isClosed: false },
         { day: "Pazar", open: "10:00", close: "22:00", isClosed: false },
     ],
+    sliderItems: [
+        {
+            id: "1",
+            title: "Şefin Özel Menüsü",
+            subtitle: "Taze malzemeler ve özenle hazırlanan lezzetler ile unutulmaz bir gastronomi deneyimi yaşayın.",
+            image: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&h=600&fit=crop",
+        },
+    ],
 };
 
 // Kategori Verileri - Sadece 2 kategori

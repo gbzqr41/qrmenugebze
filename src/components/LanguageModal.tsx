@@ -92,7 +92,8 @@ export default function LanguageModal({ isOpen, onClose }: LanguageModalProps) {
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                     placeholder="Dil ara..."
-                                    className="w-full pl-12 pr-4 py-3 bg-white/5 rounded-xl text-white placeholder:text-white/40 focus:outline-none"
+                                    className="w-full pl-12 pr-4 py-3 bg-white/5 rounded-xl text-white placeholder:text-white/40"
+                                    style={{ border: "none", outline: "none", boxShadow: "none" }}
                                 />
                             </div>
                         </div>

@@ -73,7 +73,7 @@ export default function ProductCard({ product, onClick }: ProductCardProps) {
 
                     {/* Description - Fixed 2 line height */}
                     <p
-                        className="opacity-50 overflow-hidden"
+                        className="opacity-50"
                         style={{
                             color: theme.textColor,
                             fontSize: "12px",
@@ -83,6 +83,9 @@ export default function ProductCard({ product, onClick }: ProductCardProps) {
                             display: "-webkit-box",
                             WebkitLineClamp: 2,
                             WebkitBoxOrient: "vertical" as const,
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            wordBreak: "break-word",
                         }}
                     >
                         {product.description}

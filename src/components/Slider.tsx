@@ -23,8 +23,8 @@ export default function Slider() {
         return () => clearInterval(interval);
     }, [nextSlide, sliderItems.length]);
 
-    // Theme values - Fixed 200px height
-    const height = 200;
+    // Theme values - Fixed 250px height
+    const height = 250;
     const radius = theme.sliderRadius || 0;
     const paddingTop = theme.sliderPaddingTop || 0;
     const paddingBottom = theme.sliderPaddingBottom || 0;
@@ -71,12 +71,27 @@ export default function Slider() {
             <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-black/20 to-transparent" />
 
             {/* Content */}
-            <div className="relative h-full flex flex-col justify-end px-6 pb-8">
-                <h2 className="text-2xl font-bold text-white mb-2">
+            <div className="relative h-full flex flex-col justify-end px-4 overflow-hidden" style={{ paddingBottom: "20px" }}>
+                <h2
+                    className="font-bold text-white mb-1"
+                    style={{ fontSize: "16px" }}
+                >
                     {currentSlide.title}
                 </h2>
                 {currentSlide.subtitle && (
-                    <p className="text-sm text-white/70">
+                    <p
+                        className="text-white/70"
+                        style={{
+                            fontSize: "15px",
+                            lineHeight: "1.4",
+                            display: "-webkit-box",
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: "vertical",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            wordBreak: "break-word",
+                        }}
+                    >
                         {currentSlide.subtitle}
                     </p>
                 )}
