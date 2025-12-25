@@ -131,6 +131,7 @@ export const products: Product[] = [
         name: "Signature Burger",
         description: "200gr dana köfte, aged cheddar, truffle mayo. Patates kızartması ile servis edilir.",
         price: 275,
+        originalPrice: 350,
         image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=800&h=600&fit=crop",
         isFeatured: true,
         isNew: true,
@@ -165,6 +166,51 @@ export const products: Product[] = [
         preparationTime: "3-5 dk",
         calories: 85,
     },
+    {
+        id: "p3",
+        categoryId: "1",
+        name: "Steak Klasik",
+        description: "300gr dana bonfile, patates püresi ve mevsim sebzeleri ile",
+        price: 320,
+        originalPrice: 420,
+        image: "https://images.unsplash.com/photo-1600891964092-4316c288032e?w=800&h=600&fit=crop",
+        isFeatured: true,
+        isNew: false,
+        tags: ["Premium"],
+        allergens: [],
+        preparationTime: "25-30 dk",
+        calories: 650,
+    },
+    {
+        id: "p4",
+        categoryId: "2",
+        name: "Mango Smoothie",
+        description: "Taze mango, muz ve portakal suyu ile hazırlanır",
+        price: 65,
+        originalPrice: 85,
+        image: "https://images.unsplash.com/photo-1623065422902-30a2d299bbe4?w=800&h=600&fit=crop",
+        isFeatured: false,
+        isNew: true,
+        tags: ["Vegan"],
+        allergens: [],
+        preparationTime: "5 dk",
+        calories: 180,
+    },
+    {
+        id: "p5",
+        categoryId: "1",
+        name: "Caesar Salad",
+        description: "Izgara tavuk, romaine marul, parmesan ve caesar sos",
+        price: 145,
+        originalPrice: 185,
+        image: "https://images.unsplash.com/photo-1546793665-c74683f339c1?w=800&h=600&fit=crop",
+        isFeatured: false,
+        isNew: false,
+        tags: ["Healthy"],
+        allergens: ["Süt", "Gluten"],
+        preparationTime: "10-15 dk",
+        calories: 380,
+    },
 ];
 
 // Slider Verileri
@@ -185,6 +231,10 @@ export function getProductsByCategory(categoryId: string): Product[] {
 
 export function getFeaturedProducts(): Product[] {
     return products.filter((product) => product.isFeatured);
+}
+
+export function getDiscountedProducts(): Product[] {
+    return products.filter((product) => product.originalPrice && product.originalPrice > product.price);
 }
 
 export function getProductById(id: string): Product | undefined {

@@ -9,13 +9,14 @@ interface NavItem {
     icon: typeof Home;
     label: string;
     href?: string;
-    action?: "search" | "filter" | "feedback" | "business";
+    action?: "search" | "filter" | "feedback" | "favorites" | "business";
 }
 
 interface BottomNavProps {
     onSearchClick?: () => void;
     onFilterClick?: () => void;
     onFeedbackClick?: () => void;
+    onFavoritesClick?: () => void;
     onBusinessClick?: () => void;
 }
 
@@ -23,11 +24,11 @@ const navItems: NavItem[] = [
     { icon: Home, label: "Anasayfa", href: "/" },
     { icon: Search, label: "Ara", action: "search" },
     { icon: Filter, label: "Filtre", action: "filter" },
-    { icon: Heart, label: "Favori" },
+    { icon: Heart, label: "Favori", action: "favorites" },
     { icon: Info, label: "Profil", action: "business" },
 ];
 
-export default function BottomNav({ onSearchClick, onFilterClick, onFeedbackClick, onBusinessClick }: BottomNavProps) {
+export default function BottomNav({ onSearchClick, onFilterClick, onFeedbackClick, onFavoritesClick, onBusinessClick }: BottomNavProps) {
     const pathname = usePathname();
     const { theme } = useTheme();
 
@@ -47,6 +48,8 @@ export default function BottomNav({ onSearchClick, onFilterClick, onFeedbackClic
             onFilterClick();
         } else if (item.action === "feedback" && onFeedbackClick) {
             onFeedbackClick();
+        } else if (item.action === "favorites" && onFavoritesClick) {
+            onFavoritesClick();
         } else if (item.action === "business" && onBusinessClick) {
             onBusinessClick();
         }

@@ -24,7 +24,7 @@ export default function Slider() {
     }, [nextSlide, sliderItems.length]);
 
     // Theme values
-    const height = theme.sliderHeight || 300;
+    const height = theme.sliderHeight || 200;
     const radius = theme.sliderRadius || 0;
     const paddingTop = theme.sliderPaddingTop || 0;
     const paddingBottom = theme.sliderPaddingBottom || 0;

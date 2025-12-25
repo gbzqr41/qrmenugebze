@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X, Clock, Flame, AlertTriangle } from "lucide-react";
+import { X, Clock, Flame, AlertTriangle, Heart } from "lucide-react";
 import type { Product } from "@/data/mockData";
 import { useTheme } from "@/context/ThemeContext";
+import { addToFavorites, removeFromFavorites, isFavorite } from "./FavoritesModal";
 
 interface ProductDetailModalProps {
     product: Product | null;
@@ -18,13 +19,26 @@ export default function ProductDetailModal({
 }: ProductDetailModalProps) {
     const { theme } = useTheme();
     const [activeImageIndex, setActiveImageIndex] = useState(0);
+    const [isFav, setIsFav] = useState(false);
 
     // Reset state when product changes
     useEffect(() => {
         if (product) {
             setActiveImageIndex(0);
+            setIsFav(isFavorite(product.id));
         }
     }, [product]);
+
+    const toggleFavorite = () => {
+        if (!product) return;
+        if (isFav) {
+            removeFromFavorites(product.id);
+            setIsFav(false);
+        } else {
+            addToFavorites(product);
+            setIsFav(true);
+        }
+    };
 
     // Prevent body scroll when modal is open
     useEffect(() => {
@@ -81,6 +95,19 @@ export default function ProductDetailModal({
                         style={{ backgroundColor: theme.productCloseButtonBgColor || 'rgba(0,0,0,0.5)' }}
                     >
                         <X className="w-6 h-6" style={{ color: theme.productCloseIconColor || '#ffffff' }} />
+                    </button>
+
+                    {/* Favorite Button */}
+                    <button
+                        onClick={toggleFavorite}
+                        className="absolute top-4 right-4 z-60 w-10 h-10 rounded-full flex items-center justify-center backdrop-blur-md transition-colors"
+                        style={{ backgroundColor: theme.productCloseButtonBgColor || 'rgba(0,0,0,0.5)' }}
+                    >
+                        <Heart
+                            className="w-6 h-6"
+                            style={{ color: isFav ? '#ef4444' : (theme.productCloseIconColor || '#ffffff') }}
+                            fill={isFav ? '#ef4444' : 'none'}
+                        />
                     </button>
 
                     {/* Gallery Thumbnails */}

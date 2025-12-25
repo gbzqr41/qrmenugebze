@@ -117,7 +117,7 @@ const defaultTheme: ThemeSettings = {
     priceSize: "18px",
     darkMode: true,
     // Slider defaults
-    sliderHeight: 300,
+    sliderHeight: 200,
     sliderRadius: 0,
     sliderPaddingTop: 0,
     sliderPaddingBottom: 0,

@@ -71,14 +71,18 @@ export default function ProductCard({ product, onClick }: ProductCardProps) {
                         {product.name}
                     </h3>
 
-                    {/* Description */}
+                    {/* Description - Fixed 2 line height */}
                     <p
-                        className="line-clamp-2 opacity-50"
+                        className="opacity-50 overflow-hidden"
                         style={{
                             color: theme.textColor,
                             fontSize: "12px",
                             marginBottom: "8px",
                             lineHeight: "1.4",
+                            height: "33.6px",
+                            display: "-webkit-box",
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: "vertical" as const,
                         }}
                     >
                         {product.description}
@@ -129,8 +133,9 @@ export default function ProductCard({ product, onClick }: ProductCardProps) {
                 className="relative shrink-0 overflow-hidden"
                 style={{
                     width: "90px",
-                    height: "90px",
+                    height: "calc(100% - 10px)",
                     margin: "5px",
+                    marginLeft: "0",
                     borderRadius: "8px",
                 }}
             >

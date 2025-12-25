@@ -11,6 +11,7 @@ import BottomNav from "@/components/BottomNav";
 import SearchModal from "@/components/SearchModal";
 import FilterModal, { type FilterState } from "@/components/FilterModal";
 import BusinessInfoModal from "@/components/BusinessInfoModal";
+import FavoritesModal from "@/components/FavoritesModal";
 import { type Product } from "@/data/mockData";
 import { useDataStore } from "@/context/DataStoreContext";
 import { useTheme } from "@/context/ThemeContext";
@@ -29,6 +30,7 @@ export default function BusinessMenuPage() {
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [isBusinessInfoOpen, setIsBusinessInfoOpen] = useState(false);
+    const [isFavoritesOpen, setIsFavoritesOpen] = useState(false);
     const [filters, setFilters] = useState<FilterState>({
         categories: [],
         priceRange: { min: 0, max: 1000 },
@@ -210,7 +212,7 @@ export default function BusinessMenuPage() {
 
             {/* Bottom Navigation - hide when modals are open */}
             {
-                !isFilterOpen && !isSearchOpen && !isBusinessInfoOpen && !isFeedbackModalOpen && (
+                !isFilterOpen && !isSearchOpen && !isBusinessInfoOpen && !isFeedbackModalOpen && !isFavoritesOpen && (
                     <BottomNav
                         onSearchClick={() => {
                             setIsSearchOpen(true);
@@ -224,6 +226,12 @@ export default function BusinessMenuPage() {
                         }}
                         onFeedbackClick={() => {
                             openFeedbackModal();
+                            setIsBusinessInfoOpen(false);
+                        }}
+                        onFavoritesClick={() => {
+                            setIsFavoritesOpen(true);
+                            setIsSearchOpen(false);
+                            setIsFilterOpen(false);
                             setIsBusinessInfoOpen(false);
                         }}
                         onBusinessClick={() => {
@@ -261,6 +269,16 @@ export default function BusinessMenuPage() {
             <BusinessInfoModal
                 isOpen={isBusinessInfoOpen}
                 onClose={() => setIsBusinessInfoOpen(false)}
+            />
+
+            {/* Favorites Modal */}
+            <FavoritesModal
+                isOpen={isFavoritesOpen}
+                onClose={() => setIsFavoritesOpen(false)}
+                onProductClick={(product) => {
+                    setSelectedProduct(product);
+                    setIsModalOpen(true);
+                }}
             />
         </main >
     );
