@@ -118,7 +118,7 @@ export function DataStoreProvider({ children }: { children: ReactNode }) {
         const storedTags = loadFromStorage<string[]>(STORAGE_KEYS.TAGS, []);
         if (storedTags.length === 0) {
             // Default tags
-            const defaults = ["Yeni", "İndirimli", "Vegan", "Acılı", "Şefin Spesiyali"];
+            const defaults = ["Yeni", "İndirimli", "Vegan", "Acılı", "Şefin Spesiyali", "Glutensiz", "Popüler", "Çocuk Menüsü", "Organik", "Ev Yapımı", "Hafif"];
             setTags(defaults);
         } else {
             setTags(storedTags);
