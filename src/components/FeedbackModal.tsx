@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Send, MessageSquare } from "lucide-react";
+import { X, Send, Smile, Utensils, Clock, Sparkles, ThumbsUp } from "lucide-react";
 import StarRating from "./StarRating";
 
 interface FeedbackModalProps {
@@ -12,48 +12,73 @@ interface FeedbackModalProps {
     productId?: string;
 }
 
+interface RatingCategory {
+    id: string;
+    label: string;
+    icon: React.ReactNode;
+    rating: number;
+}
+
 export default function FeedbackModal({
     isOpen,
     onClose,
     productName,
     productId,
 }: FeedbackModalProps) {
-    const [rating, setRating] = useState(0);
+    const [overallRating, setOverallRating] = useState(0);
     const [comment, setComment] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSubmitted, setIsSubmitted] = useState(false);
 
+    const [ratings, setRatings] = useState<RatingCategory[]>([
+        { id: "taste", label: "Lezzet", icon: <Utensils className="w-5 h-5" />, rating: 0 },
+        { id: "service", label: "Hizmet", icon: <Smile className="w-5 h-5" />, rating: 0 },
+        { id: "speed", label: "Hız", icon: <Clock className="w-5 h-5" />, rating: 0 },
+        { id: "presentation", label: "Sunum", icon: <Sparkles className="w-5 h-5" />, rating: 0 },
+        { id: "value", label: "Fiyat/Performans", icon: <ThumbsUp className="w-5 h-5" />, rating: 0 },
+    ]);
+
+    const updateRating = (id: string, newRating: number) => {
+        setRatings(prev => prev.map(r =>
+            r.id === id ? { ...r, rating: newRating } : r
+        ));
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (rating === 0) return;
+        if (overallRating === 0) return;
 
         setIsSubmitting(true);
 
         // Simulate API call
         await new Promise((resolve) => setTimeout(resolve, 1000));
 
-        console.log("Feedback submitted:", { productId, rating, comment });
+        console.log("Feedback submitted:", { productId, overallRating, ratings, comment });
 
         setIsSubmitting(false);
         setIsSubmitted(true);
 
         // Reset and close after showing success
         setTimeout(() => {
-            setRating(0);
+            setOverallRating(0);
             setComment("");
+            setRatings(prev => prev.map(r => ({ ...r, rating: 0 })));
             setIsSubmitted(false);
             onClose();
         }, 2000);
     };
 
     // Prevent body scroll when modal is open
-    if (typeof window !== "undefined") {
+    useEffect(() => {
         if (isOpen) {
             document.body.style.overflow = "hidden";
         } else {
             document.body.style.overflow = "unset";
         }
-    }
+        return () => {
+            document.body.style.overflow = "unset";
+        };
+    }, [isOpen]);
 
     return (
         <AnimatePresence>
@@ -70,25 +95,15 @@ export default function FeedbackModal({
 
                     {/* Modal */}
                     <motion.div
-                        initial={{ y: "100%" }}
-                        animate={{ y: 0 }}
-                        exit={{ y: "100%" }}
-                        transition={{ type: "spring", damping: 30, stiffness: 300 }}
-                        className="fixed inset-0 z-50 bg-neutral-900 flex flex-col"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="fixed inset-0 z-50 bg-black flex flex-col"
                     >
                         {/* Header */}
                         <div className="flex items-center justify-between p-4 border-b border-white/10">
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
-                                    <MessageSquare className="w-5 h-5 text-white" />
-                                </div>
-                                <div>
-                                    <h2 className="text-lg font-bold text-white">Değerlendirin</h2>
-                                    {productName && (
-                                        <p className="text-sm text-white/40">{productName}</p>
-                                    )}
-                                </div>
-                            </div>
+                            <h2 className="text-lg font-bold text-white">Değerlendirin</h2>
                             <button
                                 onClick={onClose}
                                 className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors"
@@ -102,78 +117,109 @@ export default function FeedbackModal({
                             <motion.div
                                 initial={{ opacity: 0, scale: 0.9 }}
                                 animate={{ opacity: 1, scale: 1 }}
-                                className="p-8 text-center"
+                                className="flex-1 flex items-center justify-center p-8 text-center"
                             >
-                                <div className="w-20 h-20 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-4">
-                                    <motion.div
-                                        initial={{ scale: 0 }}
-                                        animate={{ scale: 1 }}
-                                        transition={{ delay: 0.2, type: "spring" }}
-                                        className="text-4xl"
-                                    >
-                                        ✓
-                                    </motion.div>
+                                <div>
+                                    <div className="w-20 h-20 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-4">
+                                        <motion.div
+                                            initial={{ scale: 0 }}
+                                            animate={{ scale: 1 }}
+                                            transition={{ delay: 0.2, type: "spring" }}
+                                            className="text-4xl"
+                                        >
+                                            ✓
+                                        </motion.div>
+                                    </div>
+                                    <h3 className="text-xl font-bold text-white mb-2">Teşekkürler!</h3>
+                                    <p className="text-white/60">Değerlendirmeniz gönderildi</p>
                                 </div>
-                                <h3 className="text-xl font-bold text-white mb-2">Teşekkürler!</h3>
-                                <p className="text-white/60">Değerlendirmeniz gönderildi</p>
                             </motion.div>
                         ) : (
-                            <form onSubmit={handleSubmit} className="p-6 space-y-6">
-                                {/* Star Rating */}
-                                <div className="text-center">
-                                    <p className="text-white/60 mb-4">Deneyiminizi puanlayın</p>
-                                    <div className="flex justify-center">
-                                        <StarRating
-                                            rating={rating}
-                                            onRatingChange={setRating}
-                                            size="lg"
+                            <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto">
+                                <div className="p-4 space-y-6">
+
+                                    {/* Overall Rating - Genel Deneyim */}
+                                    <div className="text-center py-4">
+                                        <h3 className="text-white font-semibold mb-3">Genel Deneyim</h3>
+                                        <div className="flex justify-center">
+                                            <StarRating
+                                                rating={overallRating}
+                                                onRatingChange={setOverallRating}
+                                                size="lg"
+                                            />
+                                        </div>
+                                        {overallRating > 0 && (
+                                            <motion.p
+                                                initial={{ opacity: 0, y: 10 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                className="mt-2 text-sm text-white/40"
+                                            >
+                                                {overallRating === 1 && "Çok kötü"}
+                                                {overallRating === 2 && "Kötü"}
+                                                {overallRating === 3 && "Orta"}
+                                                {overallRating === 4 && "İyi"}
+                                                {overallRating === 5 && "Mükemmel!"}
+                                            </motion.p>
+                                        )}
+                                    </div>
+
+                                    {/* Detailed Ratings */}
+                                    <div className="space-y-4">
+                                        <h3 className="text-sm font-medium text-white/60 uppercase tracking-wider">
+                                            Detaylı Değerlendirme
+                                        </h3>
+                                        {ratings.map((category) => (
+                                            <div key={category.id} className="bg-neutral-900 rounded-xl p-4">
+                                                <div className="text-center mb-3">
+                                                    <div className="flex items-center justify-center gap-2 mb-2">
+                                                        <span className="text-white/60">{category.icon}</span>
+                                                        <span className="text-white font-medium">{category.label}</span>
+                                                    </div>
+                                                    <div className="flex justify-center">
+                                                        <StarRating
+                                                            rating={category.rating}
+                                                            onRatingChange={(rating) => updateRating(category.id, rating)}
+                                                            size="md"
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    {/* Comment */}
+                                    <div>
+                                        <label className="text-sm text-white/60 mb-2 block">
+                                            Yorumunuz (opsiyonel)
+                                        </label>
+                                        <textarea
+                                            value={comment}
+                                            onChange={(e) => setComment(e.target.value)}
+                                            placeholder="Deneyiminizi anlatın..."
+                                            rows={4}
+                                            className="w-full px-4 py-3 bg-neutral-900 rounded-xl text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-white/20 resize-none"
                                         />
                                     </div>
-                                    {rating > 0 && (
-                                        <motion.p
-                                            initial={{ opacity: 0, y: 10 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            className="mt-2 text-sm text-white/40"
-                                        >
-                                            {rating === 1 && "Çok kötü"}
-                                            {rating === 2 && "Kötü"}
-                                            {rating === 3 && "Orta"}
-                                            {rating === 4 && "İyi"}
-                                            {rating === 5 && "Mükemmel!"}
-                                        </motion.p>
-                                    )}
                                 </div>
 
-                                {/* Comment */}
-                                <div>
-                                    <label className="text-sm text-white/60 mb-2 block">
-                                        Yorumunuz (opsiyonel)
-                                    </label>
-                                    <textarea
-                                        value={comment}
-                                        onChange={(e) => setComment(e.target.value)}
-                                        placeholder="Deneyiminizi anlatın..."
-                                        rows={4}
-                                        className="w-full px-4 py-3 bg-neutral-800 rounded-xl text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-white/20 resize-none"
-                                    />
+                                {/* Submit Button - Fixed at bottom */}
+                                <div className="p-4 pb-[10px] border-t border-white/10">
+                                    <motion.button
+                                        whileTap={{ scale: 0.98 }}
+                                        type="submit"
+                                        disabled={overallRating === 0 || isSubmitting}
+                                        className="w-full flex items-center justify-center gap-2 py-4 bg-white text-black rounded-2xl font-semibold hover:bg-neutral-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        {isSubmitting ? (
+                                            <div className="w-5 h-5 border-2 border-black/20 border-t-black rounded-full animate-spin" />
+                                        ) : (
+                                            <>
+                                                <Send className="w-5 h-5" />
+                                                Gönder
+                                            </>
+                                        )}
+                                    </motion.button>
                                 </div>
-
-                                {/* Submit Button */}
-                                <motion.button
-                                    whileTap={{ scale: 0.98 }}
-                                    type="submit"
-                                    disabled={rating === 0 || isSubmitting}
-                                    className="w-full flex items-center justify-center gap-2 py-4 bg-white text-black rounded-xl font-semibold hover:bg-neutral-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    {isSubmitting ? (
-                                        <div className="w-5 h-5 border-2 border-black/20 border-t-black rounded-full animate-spin" />
-                                    ) : (
-                                        <>
-                                            <Send className="w-5 h-5" />
-                                            Gönder
-                                        </>
-                                    )}
-                                </motion.button>
                             </form>
                         )}
                     </motion.div>

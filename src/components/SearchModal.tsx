@@ -77,32 +77,44 @@ export default function SearchModal({
 
             {/* Modal - Full height */}
             <div
-                className="fixed inset-0 z-50 flex flex-col transition-colors duration-300"
-                style={{ backgroundColor: theme.searchBgColor || theme.primaryColor, color: theme.searchTextColor || theme.textColor }}
+                className="fixed inset-0 z-50 flex flex-col bg-black"
             >
+                {/* Header */}
+                <div className="flex items-center justify-between p-4 border-b border-white/10">
+                    <h2 className="text-lg font-bold text-white">Ara</h2>
+                    <button
+                        onClick={onClose}
+                        className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors"
+                    >
+                        <X className="w-5 h-5 text-white" />
+                    </button>
+                </div>
+
                 {/* Search Input */}
-                <div className="p-4 border-b" style={{ borderColor: theme.cardBorderColor || 'rgba(255,255,255,0.1)' }}>
+                <div className="p-4">
                     <div className="relative">
-                        <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 opacity-40" />
+                        <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
                         <input
                             ref={inputRef}
                             type="text"
                             value={query}
                             onChange={(e) => setQuery(e.target.value)}
                             placeholder="Ürün ara..."
-                            className="w-full pl-12 pr-12 py-4 rounded-xl placeholder:opacity-40 focus:outline-none transition-colors duration-300"
+                            className="w-full pl-12 pr-12 py-4 bg-neutral-900 rounded-xl text-white placeholder:text-white/40 transition-colors duration-300"
                             style={{
-                                backgroundColor: theme.searchInputBgColor || theme.cardColor,
-                                color: theme.searchTextColor || theme.textColor,
+                                border: 'none',
+                                outline: 'none',
+                                boxShadow: 'none',
                             }}
                         />
-                        <button
-                            onClick={onClose}
-                            className="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full flex items-center justify-center transition-colors"
-                            style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}
-                        >
-                            <X className="w-4 h-4" />
-                        </button>
+                        {query && (
+                            <button
+                                onClick={() => setQuery("")}
+                                className="absolute right-4 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors"
+                            >
+                                <X className="w-3 h-3 text-white" />
+                            </button>
+                        )}
                     </div>
                 </div>
 

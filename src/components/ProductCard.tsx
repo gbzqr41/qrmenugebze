@@ -17,6 +17,23 @@ function isVideoUrl(url: string): boolean {
     return lowerUrl.includes(".mp4") || lowerUrl.includes(".webm") || lowerUrl.includes(".mov");
 }
 
+/*
+ * KART DEĞERLERİ:
+ * - Kart genişliği: %100 (w-full)
+ * - Kart minimum yüksekliği: 100px
+ * - Sol içerik padding: 12px (p-3)
+ * - Resim boyutu: 90x90px
+ * - Resim margin: üst 5px, sağ 5px, alt 5px (m-[5px])
+ * - Resim border-radius: 8px
+ * - İsim font-size: 15px
+ * - İsim margin-bottom: 4px
+ * - Açıklama font-size: 12px
+ * - Açıklama margin-bottom: 8px
+ * - Fiyat font-size: 16px
+ * - İndirim badge font-size: 10px
+ * - Kartlar arası boşluk: ProductFeed'de cardGap (16px)
+ */
+
 export default function ProductCard({ product, onClick }: ProductCardProps) {
     const { theme } = useTheme();
     const hasDiscount = product.originalPrice && product.originalPrice > product.price;
@@ -29,21 +46,92 @@ export default function ProductCard({ product, onClick }: ProductCardProps) {
     return (
         <div
             onClick={onClick}
-            className="relative overflow-hidden cursor-pointer"
+            className="w-full flex cursor-pointer overflow-hidden"
             style={{
                 backgroundColor: theme.cardColor,
                 fontFamily: theme.fontFamily,
-                borderRadius: theme.cardRadius,
+                borderRadius: "12px",
                 boxShadow: theme.cardShadow,
                 border: theme.cardBorder,
+                minHeight: "100px",
             }}
         >
-            {/* Image/Video Container */}
+            {/* Left Content - Name, Description, Price */}
+            <div className="flex-1 flex flex-col justify-between" style={{ padding: "12px" }}>
+                {/* Name */}
+                <div>
+                    <h3
+                        className="font-semibold"
+                        style={{
+                            color: theme.textColor,
+                            fontSize: "15px",
+                            marginBottom: "4px",
+                        }}
+                    >
+                        {product.name}
+                    </h3>
+
+                    {/* Description */}
+                    <p
+                        className="line-clamp-2 opacity-50"
+                        style={{
+                            color: theme.textColor,
+                            fontSize: "12px",
+                            marginBottom: "8px",
+                            lineHeight: "1.4",
+                        }}
+                    >
+                        {product.description}
+                    </p>
+                </div>
+
+                {/* Price and Discount */}
+                <div className="flex items-center" style={{ gap: "8px" }}>
+                    <span
+                        className="font-bold"
+                        style={{
+                            color: theme.accentColor,
+                            fontSize: "16px",
+                        }}
+                    >
+                        {product.price} TL
+                    </span>
+                    {hasDiscount && (
+                        <span
+                            className="line-through opacity-40"
+                            style={{
+                                color: theme.textColor,
+                                fontSize: "12px",
+                            }}
+                        >
+                            {product.originalPrice} TL
+                        </span>
+                    )}
+                    {hasDiscount && (
+                        <span
+                            style={{
+                                padding: "2px 6px",
+                                backgroundColor: "#ef4444",
+                                color: "#ffffff",
+                                fontSize: "10px",
+                                fontWeight: "bold",
+                                borderRadius: "4px",
+                            }}
+                        >
+                            %{discountPercentage}
+                        </span>
+                    )}
+                </div>
+            </div>
+
+            {/* Right - Image with 5px margin from top, right, bottom */}
             <div
-                className="relative overflow-hidden"
+                className="relative shrink-0 overflow-hidden"
                 style={{
-                    backgroundColor: theme.cardColor,
-                    height: `${theme.cardImageHeight || 160}px`,
+                    width: "90px",
+                    height: "90px",
+                    margin: "5px",
+                    borderRadius: "8px",
                 }}
             >
                 {isVideo ? (
@@ -61,86 +149,26 @@ export default function ProductCard({ product, onClick }: ProductCardProps) {
                         style={{ backgroundImage: `url(${product.image})` }}
                     />
                 )}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
 
                 {/* Badges */}
-                <div className="absolute top-3 left-3 flex flex-wrap gap-2">
-                    {product.isNew && (
+                {product.isNew && (
+                    <div className="absolute top-1 left-1">
                         <span
-                            className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1"
+                            className="flex items-center gap-0.5"
                             style={{
+                                padding: "2px 4px",
                                 backgroundColor: theme.buttonColor,
                                 color: theme.buttonTextColor,
-                                borderRadius: theme.buttonRadius,
+                                fontSize: "8px",
+                                fontWeight: "bold",
+                                borderRadius: "4px",
                             }}
                         >
-                            <Sparkles className="w-3 h-3" />
+                            <Sparkles style={{ width: "8px", height: "8px" }} />
                             Yeni
                         </span>
-                    )}
-                    {hasDiscount && (
-                        <span
-                            className="px-2.5 py-1 bg-red-500 text-white text-[10px] font-bold uppercase tracking-wider"
-                            style={{ borderRadius: theme.buttonRadius }}
-                        >
-                            %{discountPercentage}
-                        </span>
-                    )}
-                    {product.tags.includes("Chef's Special") && (
-                        <span
-                            className="px-2.5 py-1 bg-amber-500 text-black text-[10px] font-bold uppercase tracking-wider"
-                            style={{ borderRadius: theme.buttonRadius }}
-                        >
-                            Chef&apos;s Special
-                        </span>
-                    )}
-                </div>
-            </div>
-
-            {/* Content */}
-            <div className="p-4">
-                <h3
-                    className="font-semibold mb-1 truncate"
-                    style={{
-                        color: theme.textColor,
-                        fontSize: theme.titleSize,
-                    }}
-                >
-                    {product.name}
-                </h3>
-                <p
-                    className="mb-3 line-clamp-2 min-h-[40px] opacity-50"
-                    style={{
-                        color: theme.textColor,
-                        fontSize: theme.descriptionSize,
-                    }}
-                >
-                    {product.description}
-                </p>
-
-                {/* Price - TL on right */}
-                <div className="flex items-center gap-2">
-                    <span
-                        className="font-bold"
-                        style={{
-                            color: theme.accentColor,
-                            fontSize: theme.priceSize,
-                        }}
-                    >
-                        {product.price} TL
-                    </span>
-                    {hasDiscount && (
-                        <span
-                            className="line-through opacity-40"
-                            style={{
-                                color: theme.textColor,
-                                fontSize: theme.descriptionSize,
-                            }}
-                        >
-                            {product.originalPrice} TL
-                        </span>
-                    )}
-                </div>
+                    </div>
+                )}
             </div>
         </div>
     );

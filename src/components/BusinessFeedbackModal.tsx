@@ -1,11 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, ArrowRight, Star, ThumbsUp } from "lucide-react";
+import { X, Send, Utensils, Users, Sparkles, Wallet, Zap } from "lucide-react";
 import StarRating from "./StarRating";
 import { useFeedback } from "@/context/FeedbackContext";
-import { useTheme } from "@/context/ThemeContext";
 
 interface BusinessFeedbackModalProps {
     isOpen: boolean;
@@ -14,11 +13,11 @@ interface BusinessFeedbackModalProps {
 }
 
 const feedbackCategories = [
-    { id: "food", label: "Yemek Kalitesi", emoji: "🍽️" },
-    { id: "service", label: "Hizmet", emoji: "👨‍🍳" },
-    { id: "ambiance", label: "Ambiyans", emoji: "✨" },
-    { id: "price", label: "Fiyat/Kalite", emoji: "💰" },
-    { id: "speed", label: "Hız", emoji: "⚡" },
+    { id: "food", label: "Lezzet", icon: Utensils },
+    { id: "service", label: "Hizmet", icon: Users },
+    { id: "ambiance", label: "Sunum", icon: Sparkles },
+    { id: "price", label: "Fiyat/Performans", icon: Wallet },
+    { id: "speed", label: "Hız", icon: Zap },
 ];
 
 export default function BusinessFeedbackModal({
@@ -27,13 +26,11 @@ export default function BusinessFeedbackModal({
     businessName,
 }: BusinessFeedbackModalProps) {
     const { addFeedback } = useFeedback();
-    const { theme } = useTheme();
-    const [overallRating, setOverallRating] = useState(0);
     const [categoryRatings, setCategoryRatings] = useState<Record<string, number>>({});
     const [comment, setComment] = useState("");
     const [authorName, setAuthorName] = useState("");
+    const [lastName, setLastName] = useState("");
     const [phone, setPhone] = useState("");
-    const [wouldRecommend, setWouldRecommend] = useState<boolean | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSubmitted, setIsSubmitted] = useState(false);
 
@@ -41,21 +38,27 @@ export default function BusinessFeedbackModal({
         setCategoryRatings((prev) => ({ ...prev, [categoryId]: rating }));
     };
 
+    // Calculate overall rating from category ratings
+    const getOverallRating = () => {
+        const ratings = Object.values(categoryRatings).filter(r => r > 0);
+        if (ratings.length === 0) return 0;
+        return Math.round(ratings.reduce((a, b) => a + b, 0) / ratings.length);
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        // Rating is the only mandatory field
+        const overallRating = getOverallRating();
         if (overallRating === 0) {
-            alert("Lütfen bir puan verin");
             return;
         }
 
         setIsSubmitting(true);
 
         try {
-            // Save to FeedbackContext
+            const fullName = `${authorName.trim()} ${lastName.trim()}`.trim();
             addFeedback({
-                author: authorName.trim() || "İsimsiz",
+                author: fullName || "Anonim",
                 phone: phone.trim(),
                 rating: overallRating,
                 categories: {
@@ -64,41 +67,41 @@ export default function BusinessFeedbackModal({
                     ambiance: categoryRatings.ambiance || 0,
                 },
                 comment: comment.trim(),
-                wouldRecommend: wouldRecommend ?? true,
+                wouldRecommend: true,
             });
 
-            console.log("Feedback submitted successfully");
             setIsSubmitted(true);
 
-            // Close after a delay to show success
             setTimeout(() => {
                 setIsSubmitting(false);
                 onClose();
-                // Reset form
-                setOverallRating(0);
-                setAuthorName("");
-                setPhone("");
                 setComment("");
+                setAuthorName("");
+                setLastName("");
+                setPhone("");
                 setCategoryRatings({});
-                setWouldRecommend(null);
                 setIsSubmitted(false);
             }, 1500);
 
         } catch (error) {
             console.error("Error submitting feedback:", error);
             setIsSubmitting(false);
-            alert("Yorum gönderilirken bir hata oluştu.");
         }
     };
 
     // Prevent body scroll when modal is open
-    if (typeof window !== "undefined") {
+    useEffect(() => {
         if (isOpen) {
             document.body.style.overflow = "hidden";
         } else {
             document.body.style.overflow = "unset";
         }
-    }
+        return () => {
+            document.body.style.overflow = "unset";
+        };
+    }, [isOpen]);
+
+    const hasAnyRating = Object.values(categoryRatings).some(r => r > 0);
 
     return (
         <AnimatePresence>
@@ -113,201 +116,141 @@ export default function BusinessFeedbackModal({
                         className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50"
                     />
 
-                    {/* Modal */}
+                    {/* Modal - Fullscreen like Filter */}
                     <motion.div
-                        initial={{ y: "100%" }}
-                        animate={{ y: 0 }}
-                        exit={{ y: "100%" }}
-                        transition={{ type: "spring", damping: 30, stiffness: 300 }}
-                        className="fixed bottom-0 left-0 right-0 z-50 rounded-t-3xl max-h-[95vh] overflow-hidden transition-colors duration-300"
-                        style={{ backgroundColor: theme.feedbackCardBgColor || theme.cardColor, color: theme.feedbackTextColor || theme.textColor }}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="fixed inset-0 z-50 bg-black flex flex-col"
                     >
                         {/* Header */}
-                        <div className="flex items-center justify-between p-4 border-b sticky top-0 z-10" style={{ backgroundColor: theme.feedbackCardBgColor || theme.cardColor, borderColor: theme.cardBorderColor || 'rgba(255,255,255,0.1)' }}>
-                            <div>
-                                <h2 className="text-lg font-bold" style={{ color: theme.feedbackTextColor || theme.textColor }}>İşletmeyi Değerlendir</h2>
-                                <p className="text-sm opacity-50">{businessName}</p>
-                            </div>
+                        <div className="flex items-center justify-between p-4 border-b border-white/10">
+                            <h2 className="text-lg font-bold text-white">Değerlendirin</h2>
                             <button
                                 onClick={onClose}
-                                className="w-10 h-10 rounded-full flex items-center justify-center transition-colors"
-                                style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}
+                                className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors"
                             >
-                                <X className="w-5 h-5" />
+                                <X className="w-5 h-5 text-white" />
                             </button>
                         </div>
 
                         {/* Content */}
-                        <div className="overflow-y-auto max-h-[calc(95vh-80px)]">
-                            {isSubmitted ? (
-                                <motion.div
-                                    initial={{ opacity: 0, scale: 0.9 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    className="p-8 text-center"
-                                >
-                                    <div className="w-24 h-24 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center mx-auto mb-4">
+                        {isSubmitted ? (
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                className="flex-1 flex items-center justify-center p-8 text-center"
+                            >
+                                <div>
+                                    <div className="w-20 h-20 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-4">
                                         <motion.div
-                                            initial={{ scale: 0, rotate: -180 }}
-                                            animate={{ scale: 1, rotate: 0 }}
+                                            initial={{ scale: 0 }}
+                                            animate={{ scale: 1 }}
                                             transition={{ delay: 0.2, type: "spring" }}
+                                            className="text-4xl text-green-400"
                                         >
-                                            <Star className="w-12 h-12 text-white fill-white" />
+                                            ✓
                                         </motion.div>
                                     </div>
-                                    <h3 className="text-2xl font-bold mb-2">Teşekkür Ederiz!</h3>
-                                    <p className="opacity-60">Değerli görüşleriniz için teşekkürler</p>
-                                </motion.div>
-                            ) : (
-                                <form onSubmit={handleSubmit} className="p-6 space-y-8">
-                                    {/* Overall Rating */}
-                                    <div className="text-center">
-                                        <p className="font-medium mb-4">Genel Deneyiminiz</p>
-                                        <div className="flex justify-center">
-                                            <StarRating
-                                                rating={overallRating}
-                                                onRatingChange={setOverallRating}
-                                                size="lg"
-                                            />
-                                        </div>
-                                        {overallRating > 0 && (
-                                            <motion.p
-                                                initial={{ opacity: 0, y: 10 }}
-                                                animate={{ opacity: 1, y: 0 }}
-                                                className="mt-3 text-lg font-medium text-yellow-400"
-                                            >
-                                                {overallRating === 1 && "Çok kötüydü 😞"}
-                                                {overallRating === 2 && "Beklentimi karşılamadı 😕"}
-                                                {overallRating === 3 && "Fena değildi 🙂"}
-                                                {overallRating === 4 && "Çok iyiydi! 😊"}
-                                                {overallRating === 5 && "Mükemmeldi! 🤩"}
-                                            </motion.p>
-                                        )}
-                                    </div>
+                                    <h3 className="text-xl font-bold text-white mb-2">Teşekkürler!</h3>
+                                    <p className="text-white/60">Değerlendirmeniz gönderildi</p>
+                                </div>
+                            </motion.div>
+                        ) : (
+                            <form onSubmit={handleSubmit} className="flex-1 flex flex-col overflow-hidden">
+                                <div className="flex-1 overflow-y-auto p-4 space-y-6">
 
-                                    {/* Author Name & Phone */}
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div>
-                                            <label className="font-medium mb-2 block">
-                                                Ad Soyad
-                                            </label>
-                                            <input
-                                                type="text"
-                                                value={authorName}
-                                                onChange={(e) => setAuthorName(e.target.value)}
-                                                placeholder="İsteğe bağlı"
-                                                className="w-full px-4 py-3 rounded-xl placeholder:opacity-30 focus:outline-none"
-                                                style={{ backgroundColor: theme.primaryColor, color: theme.feedbackTextColor || theme.textColor }}
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="font-medium mb-2 block">
-                                                Telefon
-                                            </label>
-                                            <input
-                                                type="tel"
-                                                value={phone}
-                                                onChange={(e) => setPhone(e.target.value)}
-                                                placeholder="İsteğe bağlı"
-                                                className="w-full px-4 py-3 rounded-xl placeholder:opacity-30 focus:outline-none"
-                                                style={{ backgroundColor: theme.primaryColor, color: theme.feedbackTextColor || theme.textColor }}
-                                            />
-                                        </div>
-                                    </div>
-
-                                    {/* Category Ratings */}
-                                    <div>
-                                        <p className="font-medium mb-4">Detaylı Değerlendirme</p>
-                                        <div className="space-y-4">
-                                            {feedbackCategories.map((category) => (
-                                                <div
-                                                    key={category.id}
-                                                    className="flex items-center justify-between p-3 rounded-xl"
-                                                    style={{ backgroundColor: theme.primaryColor }}
-                                                >
-                                                    <div className="flex items-center gap-3">
-                                                        <span className="text-2xl">{category.emoji}</span>
-                                                        <span className="opacity-80">{category.label}</span>
+                                    {/* Detailed Ratings - Main Content */}
+                                    <div className="space-y-3">
+                                        <h3 className="text-sm font-medium text-white/60 uppercase tracking-wider">
+                                            Değerlendirme
+                                        </h3>
+                                        {feedbackCategories.map((category) => {
+                                            const Icon = category.icon;
+                                            return (
+                                                <div key={category.id} className="bg-neutral-900 rounded-xl p-4">
+                                                    <div className="text-center">
+                                                        <div className="flex items-center justify-center gap-2 mb-3">
+                                                            <Icon className="w-5 h-5 text-white/60" />
+                                                            <span className="text-white font-medium">{category.label}</span>
+                                                        </div>
+                                                        <div className="flex justify-center">
+                                                            <StarRating
+                                                                rating={categoryRatings[category.id] || 0}
+                                                                onRatingChange={(r) => handleCategoryRating(category.id, r)}
+                                                                size="md"
+                                                            />
+                                                        </div>
                                                     </div>
-                                                    <StarRating
-                                                        rating={categoryRatings[category.id] || 0}
-                                                        onRatingChange={(r) => handleCategoryRating(category.id, r)}
-                                                        size="sm"
-                                                    />
                                                 </div>
-                                            ))}
-                                        </div>
-                                    </div>
-
-                                    {/* Would Recommend */}
-                                    <div>
-                                        <p className="font-medium mb-4">Tavsiye eder misiniz?</p>
-                                        <div className="flex gap-3">
-                                            <button
-                                                type="button"
-                                                onClick={() => setWouldRecommend(true)}
-                                                className={`flex-1 flex items-center justify-center gap-2 py-4 rounded-xl font-medium transition-all ${wouldRecommend === true
-                                                    ? "bg-green-500 text-white"
-                                                    : ""
-                                                    }`}
-                                                style={wouldRecommend !== true ? { backgroundColor: theme.primaryColor, color: theme.feedbackTextColor || theme.textColor } : {}}
-                                            >
-                                                <ThumbsUp className="w-5 h-5" />
-                                                Evet
-                                            </button>
-                                            <button
-                                                type="button"
-                                                onClick={() => setWouldRecommend(false)}
-                                                className={`flex-1 flex items-center justify-center gap-2 py-4 rounded-xl font-medium transition-all ${wouldRecommend === false
-                                                    ? "bg-red-500 text-white"
-                                                    : ""
-                                                    }`}
-                                                style={wouldRecommend !== false ? { backgroundColor: theme.primaryColor, color: theme.feedbackTextColor || theme.textColor } : {}}
-                                            >
-                                                <ThumbsUp className="w-5 h-5 rotate-180" />
-                                                Hayır
-                                            </button>
-                                        </div>
+                                            );
+                                        })}
                                     </div>
 
                                     {/* Comment */}
                                     <div>
-                                        <label className="font-medium mb-2 block">
-                                            Yorumunuz
-                                        </label>
+                                        <h3 className="text-sm font-medium text-white/60 uppercase tracking-wider mb-2">
+                                            YORUMUNUZ (OPSİYONEL)
+                                        </h3>
                                         <textarea
                                             value={comment}
                                             onChange={(e) => setComment(e.target.value)}
-                                            placeholder="Deneyiminizi paylaşın... (İsteğe bağlı)"
+                                            placeholder="Deneyiminizi anlatın..."
                                             rows={4}
-                                            className="w-full px-4 py-3 rounded-xl placeholder:opacity-30 focus:outline-none resize-none"
-                                            style={{ backgroundColor: theme.primaryColor, color: theme.feedbackTextColor || theme.textColor }}
+                                            className="w-full px-4 py-3 bg-neutral-900 rounded-xl text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-white/20 resize-none"
                                         />
                                     </div>
 
-                                    {/* Submit Button */}
+                                    {/* User Info - At Bottom */}
+                                    <div className="space-y-3">
+                                        <h3 className="text-sm font-medium text-white/60 uppercase tracking-wider">
+                                            İletişim Bilgileri (Opsiyonel)
+                                        </h3>
+                                        <input
+                                            type="text"
+                                            value={authorName}
+                                            onChange={(e) => setAuthorName(e.target.value)}
+                                            placeholder="Ad"
+                                            className="w-full px-4 py-3 bg-neutral-900 rounded-xl text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-white/20"
+                                        />
+                                        <input
+                                            type="text"
+                                            value={lastName}
+                                            onChange={(e) => setLastName(e.target.value)}
+                                            placeholder="Soyad"
+                                            className="w-full px-4 py-3 bg-neutral-900 rounded-xl text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-white/20"
+                                        />
+                                        <input
+                                            type="tel"
+                                            value={phone}
+                                            onChange={(e) => setPhone(e.target.value)}
+                                            placeholder="Telefon"
+                                            className="w-full px-4 py-3 bg-neutral-900 rounded-xl text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-white/20"
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Submit Button - Fixed at bottom */}
+                                <div className="p-4 pb-[10px] border-t border-white/10">
                                     <motion.button
                                         whileTap={{ scale: 0.98 }}
                                         type="submit"
-                                        disabled={overallRating === 0 || isSubmitting}
-                                        className="w-full flex items-center justify-center gap-2 py-4 rounded-xl font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                        style={{
-                                            backgroundColor: theme.buttonColor,
-                                            color: theme.buttonTextColor,
-                                            borderRadius: theme.buttonRadius
-                                        }}
+                                        disabled={!hasAnyRating || isSubmitting}
+                                        className="w-full flex items-center justify-center gap-2 py-4 bg-white text-black rounded-2xl font-semibold hover:bg-neutral-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
                                         {isSubmitting ? (
-                                            <div className="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: theme.buttonTextColor }} />
+                                            <div className="w-5 h-5 border-2 border-black/20 border-t-black rounded-full animate-spin" />
                                         ) : (
                                             <>
-                                                <ArrowRight className="w-5 h-5" />
+                                                <Send className="w-5 h-5" />
                                                 Gönder
                                             </>
                                         )}
                                     </motion.button>
-                                </form>
-                            )}
-                        </div>
+                                </div>
+                            </form>
+                        )}
                     </motion.div>
                 </>
             )}

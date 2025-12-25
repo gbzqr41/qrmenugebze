@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState, useEffect, useCallback, useMemo } from "react";
+import { Info, Star } from "lucide-react";
 import { useParams, notFound } from "next/navigation";
 import Slider from "@/components/Slider";
 import CategoryBar from "@/components/CategoryBar";
@@ -21,7 +22,7 @@ export default function BusinessMenuPage() {
 
     const { products, categories, business } = useDataStore();
     const { theme } = useTheme();
-    const { openFeedbackModal } = useFeedback();
+    const { openFeedbackModal, isFeedbackModalOpen } = useFeedback();
     const [activeCategory, setActiveCategory] = useState(categories[0]?.id || "1");
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -150,6 +151,21 @@ export default function BusinessMenuPage() {
 
     return (
         <main className="min-h-screen pb-24" style={{ backgroundColor: theme.primaryColor }}>
+            {/* Header */}
+            <div
+                className="h-[60px] flex items-center justify-between px-4 sticky top-0 z-40"
+                style={{ backgroundColor: theme.bottomNavBgColor || "rgba(0,0,0,0.95)" }}
+            >
+                <span className="text-white font-bold text-lg">RESITAL LOUNGE</span>
+                <button
+                    onClick={() => openFeedbackModal()}
+                    className="h-[42px] px-4 rounded-full bg-white/10 flex items-center gap-2 hover:bg-white/20 transition-colors"
+                >
+                    <Star className="w-5 h-5 text-white" />
+                    <span className="text-white text-sm font-medium">Değerlendir</span>
+                </button>
+            </div>
+
             {/* Slider Section */}
             <Slider />
 
@@ -160,27 +176,29 @@ export default function BusinessMenuPage() {
             />
 
             {/* Active Filters Indicator */}
-            {hasActiveFilters && (
-                <div className="px-5 py-2 bg-neutral-900">
-                    <div className="flex items-center justify-between">
-                        <span className="text-sm text-white/60">
-                            {filteredProducts.length} ürün bulundu
-                        </span>
-                        <button
-                            onClick={() =>
-                                setFilters({
-                                    categories: [],
-                                    priceRange: { min: 0, max: 1000 },
-                                    tags: [],
-                                })
-                            }
-                            className="text-sm text-white/60 hover:text-white transition-colors"
-                        >
-                            Filtreleri Temizle
-                        </button>
+            {
+                hasActiveFilters && (
+                    <div className="px-5 py-2 bg-neutral-900">
+                        <div className="flex items-center justify-between">
+                            <span className="text-sm text-white/60">
+                                {filteredProducts.length} ürün bulundu
+                            </span>
+                            <button
+                                onClick={() =>
+                                    setFilters({
+                                        categories: [],
+                                        priceRange: { min: 0, max: 1000 },
+                                        tags: [],
+                                    })
+                                }
+                                className="text-sm text-white/60 hover:text-white transition-colors"
+                            >
+                                Filtreleri Temizle
+                            </button>
+                        </div>
                     </div>
-                </div>
-            )}
+                )
+            }
 
             {/* Product Feed */}
             <ProductFeed
@@ -191,29 +209,31 @@ export default function BusinessMenuPage() {
             />
 
             {/* Bottom Navigation - hide when modals are open */}
-            {!isFilterOpen && !isSearchOpen && !isBusinessInfoOpen && (
-                <BottomNav
-                    onSearchClick={() => {
-                        setIsSearchOpen(true);
-                        setIsBusinessInfoOpen(false);
-                        setIsFilterOpen(false);
-                    }}
-                    onFilterClick={() => {
-                        setIsFilterOpen(true);
-                        setIsBusinessInfoOpen(false);
-                        setIsSearchOpen(false);
-                    }}
-                    onFeedbackClick={() => {
-                        openFeedbackModal();
-                        setIsBusinessInfoOpen(false);
-                    }}
-                    onBusinessClick={() => {
-                        setIsBusinessInfoOpen(true);
-                        setIsSearchOpen(false);
-                        setIsFilterOpen(false);
-                    }}
-                />
-            )}
+            {
+                !isFilterOpen && !isSearchOpen && !isBusinessInfoOpen && !isFeedbackModalOpen && (
+                    <BottomNav
+                        onSearchClick={() => {
+                            setIsSearchOpen(true);
+                            setIsBusinessInfoOpen(false);
+                            setIsFilterOpen(false);
+                        }}
+                        onFilterClick={() => {
+                            setIsFilterOpen(true);
+                            setIsBusinessInfoOpen(false);
+                            setIsSearchOpen(false);
+                        }}
+                        onFeedbackClick={() => {
+                            openFeedbackModal();
+                            setIsBusinessInfoOpen(false);
+                        }}
+                        onBusinessClick={() => {
+                            setIsBusinessInfoOpen(true);
+                            setIsSearchOpen(false);
+                            setIsFilterOpen(false);
+                        }}
+                    />
+                )
+            }
 
             {/* Product Detail Modal */}
             <ProductDetailModal
@@ -242,6 +262,6 @@ export default function BusinessMenuPage() {
                 isOpen={isBusinessInfoOpen}
                 onClose={() => setIsBusinessInfoOpen(false)}
             />
-        </main>
+        </main >
     );
 }

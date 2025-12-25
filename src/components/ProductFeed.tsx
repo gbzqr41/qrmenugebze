@@ -70,7 +70,7 @@ const ProductFeed = forwardRef<HTMLDivElement, ProductFeedProps>(
 
                                 {/* Product Grid */}
                                 <div
-                                    className="grid grid-cols-2"
+                                    className="grid grid-cols-1"
                                     style={{ gap: `${cardGap}px` }}
                                 >
                                     {categoryProducts.map((product, index) => (

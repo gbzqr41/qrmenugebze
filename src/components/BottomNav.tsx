@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { Home, Search, Filter, Star, Info } from "lucide-react";
+import { Home, Search, Filter, Heart, Info } from "lucide-react";
 import { useTheme } from "@/context/ThemeContext";
 
 interface NavItem {
@@ -23,7 +23,7 @@ const navItems: NavItem[] = [
     { icon: Home, label: "Anasayfa", href: "/" },
     { icon: Search, label: "Ara", action: "search" },
     { icon: Filter, label: "Filtre", action: "filter" },
-    { icon: Star, label: "Yorumlar", action: "feedback" },
+    { icon: Heart, label: "Favori" },
     { icon: Info, label: "Profil", action: "business" },
 ];
 
