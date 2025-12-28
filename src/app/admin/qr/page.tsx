@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { motion } from "framer-motion";
-import { Download, Copy, Check, Palette, RefreshCw } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Download, Copy, Check, Palette, RefreshCw, ChevronRight, X } from "lucide-react";
 import QRCode from "qrcode";
 
 const colorPresets = [
@@ -19,6 +19,10 @@ export default function QRCodePage() {
     const [menuUrl, setMenuUrl] = useState<string>("");
     const [selectedPreset, setSelectedPreset] = useState(0);
     const [copied, setCopied] = useState(false);
+    const [showColorModal, setShowColorModal] = useState(false);
+    const [customFg, setCustomFg] = useState("#000000");
+    const [customBg, setCustomBg] = useState("#FFFFFF");
+    const [useCustomColors, setUseCustomColors] = useState(false);
     const canvasRef = useRef<HTMLCanvasElement>(null);
 
     // Get the menu URL
@@ -34,13 +38,14 @@ export default function QRCodePage() {
 
         const generateQR = async () => {
             try {
-                const preset = colorPresets[selectedPreset];
+                const fg = useCustomColors ? customFg : colorPresets[selectedPreset].fg;
+                const bg = useCustomColors ? customBg : colorPresets[selectedPreset].bg;
                 const dataUrl = await QRCode.toDataURL(menuUrl, {
                     width: 512,
                     margin: 2,
                     color: {
-                        dark: preset.fg,
-                        light: preset.bg,
+                        dark: fg,
+                        light: bg,
                     },
                     errorCorrectionLevel: "H",
                 });
@@ -51,7 +56,7 @@ export default function QRCodePage() {
         };
 
         generateQR();
-    }, [menuUrl, selectedPreset]);
+    }, [menuUrl, selectedPreset, customFg, customBg, useCustomColors]);
 
     const handleCopyLink = async () => {
         try {
@@ -71,6 +76,18 @@ export default function QRCodePage() {
         link.href = qrDataUrl;
         link.click();
     };
+
+    const handleApplyCustomColors = () => {
+        setUseCustomColors(true);
+        setShowColorModal(false);
+    };
+
+    const handleSelectPreset = (index: number) => {
+        setSelectedPreset(index);
+        setUseCustomColors(false);
+    };
+
+    const currentBg = useCustomColors ? customBg : colorPresets[selectedPreset].bg;
 
     return (
         <div className="p-6 lg:p-8">
@@ -94,7 +111,7 @@ export default function QRCodePage() {
                 >
                     <div
                         className="w-72 h-72 rounded-3xl flex items-center justify-center p-6 shadow-2xl"
-                        style={{ backgroundColor: colorPresets[selectedPreset].bg }}
+                        style={{ backgroundColor: currentBg }}
                     >
                         {qrDataUrl ? (
                             <img
@@ -110,21 +127,40 @@ export default function QRCodePage() {
                     {/* Menu URL */}
                     <div className="mt-6 w-full max-w-sm">
                         <label className="text-sm text-white/40 mb-2 block">Menü Linki</label>
-                        <div className="flex items-center gap-2">
-                            <div className="flex-1 px-4 py-3 bg-neutral-900 rounded-xl text-white/60 truncate text-sm">
-                                {menuUrl}
-                            </div>
-                            <button
-                                onClick={handleCopyLink}
-                                className="w-12 h-12 rounded-xl bg-neutral-900 flex items-center justify-center hover:bg-neutral-800 transition-colors"
-                            >
-                                {copied ? (
-                                    <Check className="w-5 h-5 text-green-400" />
-                                ) : (
-                                    <Copy className="w-5 h-5 text-white" />
-                                )}
-                            </button>
+                        <div className="px-4 py-3 bg-neutral-900 rounded-xl text-white/60 truncate text-sm text-center">
+                            {menuUrl}
                         </div>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex gap-3 mt-4 w-full max-w-sm">
+                        <button
+                            onClick={handleCopyLink}
+                            className="flex-1 flex flex-col items-center gap-2 px-6 py-5 bg-neutral-900 rounded-xl hover:bg-neutral-800 transition-colors"
+                        >
+                            {copied ? (
+                                <Check className="w-5 h-5 text-green-400" />
+                            ) : (
+                                <Copy className="w-5 h-5 text-white" />
+                            )}
+                            <span className="text-xs text-white/60">{copied ? "Kopyalandı" : "Kopyala"}</span>
+                        </button>
+                        <button
+                            onClick={() => setShowColorModal(true)}
+                            className="flex-1 flex flex-col items-center gap-2 px-6 py-5 bg-neutral-900 rounded-xl hover:bg-neutral-800 transition-colors"
+                        >
+                            <Palette className="w-5 h-5 text-white" />
+                            <span className="text-xs text-white/60">Ayarlar</span>
+                        </button>
+                        <a
+                            href={menuUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex-1 flex flex-col items-center gap-2 px-6 py-5 bg-neutral-900 rounded-xl hover:bg-neutral-800 transition-colors"
+                        >
+                            <ChevronRight className="w-5 h-5 text-white" />
+                            <span className="text-xs text-white/60">Siteye Git</span>
+                        </a>
                     </div>
 
                     {/* Download Buttons */}
@@ -157,10 +193,10 @@ export default function QRCodePage() {
                             {colorPresets.map((preset, index) => (
                                 <button
                                     key={preset.name}
-                                    onClick={() => setSelectedPreset(index)}
-                                    className={`p-4 rounded-xl border-2 transition-all ${selectedPreset === index
-                                            ? "border-white"
-                                            : "border-transparent hover:border-white/20"
+                                    onClick={() => handleSelectPreset(index)}
+                                    className={`p-4 rounded-xl border-2 transition-all ${!useCustomColors && selectedPreset === index
+                                        ? "border-white"
+                                        : "border-transparent hover:border-white/20"
                                         }`}
                                     style={{ backgroundColor: preset.bg }}
                                 >
@@ -214,6 +250,85 @@ export default function QRCodePage() {
             </div>
 
             <canvas ref={canvasRef} className="hidden" />
+
+            {/* Color Settings Modal */}
+            <AnimatePresence>
+                {showColorModal && (
+                    <>
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setShowColorModal(false)}
+                            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50"
+                        />
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm bg-neutral-900 rounded-2xl p-6 z-50 border border-white/10"
+                        >
+                            <div className="flex items-center justify-between mb-6">
+                                <h2 className="text-lg font-bold text-white">QR Renk Ayarları</h2>
+                                <button
+                                    onClick={() => setShowColorModal(false)}
+                                    className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                                >
+                                    <X className="w-5 h-5 text-white" />
+                                </button>
+                            </div>
+
+                            <div className="space-y-5">
+                                {/* Foreground Color */}
+                                <div>
+                                    <label className="text-sm text-white/60 mb-2 block">İç Renk (QR Kodu)</label>
+                                    <div className="flex items-center gap-3">
+                                        <input
+                                            type="color"
+                                            value={customFg}
+                                            onChange={(e) => setCustomFg(e.target.value)}
+                                            className="w-12 h-12 rounded-xl cursor-pointer border-0 bg-transparent"
+                                        />
+                                        <input
+                                            type="text"
+                                            value={customFg}
+                                            onChange={(e) => setCustomFg(e.target.value)}
+                                            className="flex-1 px-4 py-3 bg-neutral-800 rounded-xl text-white uppercase"
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Background Color */}
+                                <div>
+                                    <label className="text-sm text-white/60 mb-2 block">Dış Renk (Arkaplan)</label>
+                                    <div className="flex items-center gap-3">
+                                        <input
+                                            type="color"
+                                            value={customBg}
+                                            onChange={(e) => setCustomBg(e.target.value)}
+                                            className="w-12 h-12 rounded-xl cursor-pointer border-0 bg-transparent"
+                                        />
+                                        <input
+                                            type="text"
+                                            value={customBg}
+                                            onChange={(e) => setCustomBg(e.target.value)}
+                                            className="flex-1 px-4 py-3 bg-neutral-800 rounded-xl text-white uppercase"
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Apply Button */}
+                                <button
+                                    onClick={handleApplyCustomColors}
+                                    className="w-full py-3 bg-white text-black rounded-xl font-medium hover:bg-neutral-100 transition-colors"
+                                >
+                                    Uygula
+                                </button>
+                            </div>
+                        </motion.div>
+                    </>
+                )}
+            </AnimatePresence>
         </div>
     );
 }

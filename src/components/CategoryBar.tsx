@@ -33,6 +33,7 @@ interface CategoryBarProps {
 export default function CategoryBar({ activeCategory, onCategoryClick }: CategoryBarProps) {
     const { categories } = useDataStore();
     const { theme } = useTheme();
+    const containerRef = useRef<HTMLDivElement>(null);
     const scrollRef = useRef<HTMLDivElement>(null);
     const [isSticky, setIsSticky] = useState(false);
 
@@ -41,6 +42,8 @@ export default function CategoryBar({ activeCategory, onCategoryClick }: Categor
     const activeColor = theme.categoryActiveColor || theme.buttonColor;
     const inactiveColor = theme.categoryInactiveColor || theme.cardColor;
     const activeTextColor = theme.categoryActiveTextColor || theme.buttonTextColor;
+    const inactiveTextColor = theme.categoryInactiveTextColor || "#ffffff";
+    const iconColor = theme.categoryIconColor || "#ffffff";
     const buttonRadius = theme.categoryButtonRadius || 12;
     const gap = theme.categoryGap || 12;
     const paddingX = theme.categoryPaddingX || 16;
@@ -49,9 +52,9 @@ export default function CategoryBar({ activeCategory, onCategoryClick }: Categor
     // Sticky pozisyon kontrolü
     useEffect(() => {
         const handleScroll = () => {
-            if (scrollRef.current) {
-                const rect = scrollRef.current.getBoundingClientRect();
-                setIsSticky(rect.top <= 0);
+            if (containerRef.current) {
+                const rect = containerRef.current.getBoundingClientRect();
+                setIsSticky(rect.top <= 60);
             }
         };
 
@@ -59,50 +62,59 @@ export default function CategoryBar({ activeCategory, onCategoryClick }: Categor
         return () => window.removeEventListener("scroll", handleScroll);
     }, []);
 
-    // Aktif kategoriyi görünür alana scroll et
+    // Aktif kategoriyi görünür alana scroll et ve ortala
     useEffect(() => {
         const activeBtn = document.getElementById(`category-${activeCategory}`);
         if (activeBtn && scrollRef.current) {
             const container = scrollRef.current;
-            const scrollLeft = activeBtn.offsetLeft - container.offsetWidth / 2 + activeBtn.offsetWidth / 2;
+            const containerWidth = container.offsetWidth;
+            const btnOffsetLeft = activeBtn.offsetLeft;
+            const btnWidth = activeBtn.offsetWidth;
+
+            // Butonu ortalamak için scroll pozisyonu
+            const scrollLeft = btnOffsetLeft - (containerWidth / 2) + (btnWidth / 2);
             container.scrollTo({ left: scrollLeft, behavior: "smooth" });
         }
     }, [activeCategory]);
 
     return (
         <div
-            ref={scrollRef}
-            className={`sticky top-0 z-50 ${isSticky ? "shadow-lg shadow-black/50" : ""}`}
+            ref={containerRef}
+            className={`sticky top-[60px] z-50 ${isSticky ? "shadow-lg shadow-black/50" : ""}`}
             style={{ backgroundColor: bgColor }}
         >
             <div
+                ref={scrollRef}
                 className="flex items-center px-5 py-4 overflow-x-auto scrollbar-hide"
                 style={{ gap: `${gap}px` }}
             >
-                {categories.map((category) => {
-                    const Icon = iconMap[category.icon] || UtensilsCrossed;
-                    const isActive = activeCategory === category.id;
+                {categories
+                    .filter((category) => !category.isFeatured)
+                    .map((category) => {
+                        const Icon = iconMap[category.icon] || UtensilsCrossed;
+                        const isActive = activeCategory === category.id;
+                        const textColor = isActive ? activeTextColor : inactiveTextColor;
 
-                    return (
-                        <button
-                            id={`category-${category.id}`}
-                            key={category.id}
-                            onClick={() => onCategoryClick(category.id)}
-                            className="flex items-center gap-2 whitespace-nowrap"
-                            style={{
-                                backgroundColor: isActive ? activeColor : inactiveColor,
-                                color: isActive ? activeTextColor : theme.textColor,
-                                opacity: isActive ? 1 : 0.7,
-                                fontFamily: theme.fontFamily,
-                                borderRadius: `${buttonRadius}px`,
-                                padding: `${paddingY}px ${paddingX}px`,
-                            }}
-                        >
-                            <Icon className="w-4 h-4" />
-                            <span className="text-sm font-medium">{category.name}</span>
-                        </button>
-                    );
-                })}
+                        return (
+                            <button
+                                id={`category-${category.id}`}
+                                key={category.id}
+                                onClick={() => onCategoryClick(category.id)}
+                                className="flex items-center gap-2 whitespace-nowrap transition-all duration-300"
+                                style={{
+                                    backgroundColor: isActive ? activeColor : inactiveColor,
+                                    color: textColor,
+                                    opacity: isActive ? 1 : 0.7,
+                                    fontFamily: theme.fontFamily,
+                                    borderRadius: `${buttonRadius}px`,
+                                    padding: `${paddingY}px ${paddingX}px`,
+                                }}
+                            >
+                                <Icon className="w-4 h-4" style={{ color: isActive ? textColor : iconColor }} />
+                                <span className="text-sm font-medium">{category.name}</span>
+                            </button>
+                        );
+                    })}
             </div>
         </div>
     );

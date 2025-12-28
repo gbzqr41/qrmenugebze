@@ -83,14 +83,6 @@ export default function ProfilePage() {
                 </div>
 
                 <div className="p-6 space-y-5">
-                    {/* Avatar */}
-                    <div className="flex justify-center mb-6">
-                        <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-                            <span className="text-3xl font-bold text-white">
-                                {adminInfo.name.charAt(0).toUpperCase()}
-                            </span>
-                        </div>
-                    </div>
 
                     {/* Name */}
                     <div>

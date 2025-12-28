@@ -6,30 +6,28 @@ import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useFeedback } from "@/context/FeedbackContext";
 import {
-    LayoutDashboard,
     QrCode,
     Settings,
     Menu,
     X,
     ChevronLeft,
+    ChevronRight,
+    ArrowRight,
     LogOut,
     User,
-    BarChart3,
-    UtensilsCrossed,
     Palette,
     Inbox,
+    Search,
 } from "lucide-react";
 
 interface NavItem {
-    icon: typeof LayoutDashboard;
+    icon: typeof Menu;
     label: string;
     href: string;
 }
 
 const navItems: NavItem[] = [
-    { icon: LayoutDashboard, label: "Dashboard", href: "/admin" },
-    { icon: BarChart3, label: "İstatistikler", href: "/admin/statistics" },
-    { icon: UtensilsCrossed, label: "Menü Yönetimi", href: "/admin/menu" },
+    { icon: Menu, label: "Menü Yönetimi", href: "/admin/menu" },
     { icon: Inbox, label: "Gelen Kutusu", href: "/admin/inbox" },
     { icon: Palette, label: "Tasarım", href: "/admin/design" },
     { icon: QrCode, label: "QR Kod", href: "/admin/qr" },
@@ -117,16 +115,19 @@ export default function AdminLayout({
                             transition={{ type: "spring", damping: 25, stiffness: 200 }}
                             className="fixed top-0 left-0 bottom-0 w-80 bg-neutral-950 z-50 lg:hidden flex flex-col"
                         >
-                            <div className="p-6 border-b border-white/10 flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center">
-                                        <span className="text-black font-bold">AG</span>
-                                    </div>
-                                    <span className="text-white font-bold">Admin Panel</span>
+                            <div className="p-6 border-b border-white/10">
+                                <span className="text-[26px] font-bold text-white block">GEBZEM</span>
+                                <div className="mt-3 relative">
+                                    <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-white/40" />
+                                    <input
+                                        type="text"
+                                        placeholder="Ara..."
+                                        className="w-full pl-10 pr-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-sm text-white placeholder:text-white/40 outline-none focus:border-white/20 focus:bg-white/10 transition-colors"
+                                    />
                                 </div>
                                 <button
                                     onClick={() => setIsSidebarOpen(false)}
-                                    className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center"
+                                    className="absolute top-4 right-4 w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center"
                                 >
                                     <X className="w-5 h-5 text-white" />
                                 </button>
@@ -144,16 +145,16 @@ export default function AdminLayout({
                                             href={item.href}
                                             onClick={() => setIsSidebarOpen(false)}
                                             className={`flex items-center justify-between px-4 py-3 rounded-xl transition-all ${isActive
-                                                ? "bg-white text-black"
+                                                ? "bg-white/10 text-white"
                                                 : "text-white/60 hover:bg-white/10 hover:text-white"
                                                 }`}
                                         >
                                             <div className="flex items-center gap-3">
-                                                <Icon className="w-5 h-5" />
+                                                <Icon className={`w-5 h-5 ${isActive ? "text-white" : ""}`} />
                                                 <span className="font-medium">{item.label}</span>
                                             </div>
                                             {isInbox && unreadCount > 0 && (
-                                                <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${isActive ? "bg-black text-white" : "bg-white text-black"}`}>
+                                                <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold bg-white text-black`}>
                                                     {unreadCount}
                                                 </span>
                                             )}
@@ -162,13 +163,22 @@ export default function AdminLayout({
                                 })}
                             </nav>
 
-                            <div className="p-4 border-t border-white/10">
+                            <div className="p-4 mt-auto border-t border-white/10">
+                                <a
+                                    href="/"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-white/60 hover:bg-white/10 hover:text-white transition-all font-medium"
+                                >
+                                    <ChevronRight className="w-5 h-5" />
+                                    Siteye Git
+                                </a>
                                 <button
                                     onClick={handleLogout}
                                     className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-400 hover:bg-red-500/10 transition-all font-medium"
                                 >
-                                    <LogOut className="w-5 h-5" />
                                     Çıkış Yap
+                                    <ArrowRight className="w-5 h-5" />
                                 </button>
                             </div>
                         </motion.aside>
@@ -178,16 +188,21 @@ export default function AdminLayout({
 
             {/* Sidebar Desktop */}
             <aside className="fixed top-0 left-0 bottom-0 w-72 bg-black border-r border-white/10 hidden lg:flex flex-col">
-                <div className="p-8">
-                    <div className="flex items-center gap-3 mb-2">
-                        <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center">
-                            <span className="text-black font-bold text-xl">AG</span>
-                        </div>
-                        <h1 className="text-xl font-bold text-white tracking-tight">Admin</h1>
+                <div className="p-6">
+                    <span className="text-[26px] font-bold text-white block">GEBZEM</span>
+                    <div className="mt-3 relative">
+                        <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-white/40" />
+                        <input
+                            type="text"
+                            placeholder="Ara..."
+                            className="w-full pl-10 pr-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-sm text-white placeholder:text-white/40 outline-none focus:border-white/20 focus:bg-white/10 transition-colors"
+                        />
                     </div>
                 </div>
 
-                <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+                <div className="border-t border-white/10" />
+
+                <nav className="p-4 space-y-2 overflow-y-auto">
                     {navItems.map((item) => {
                         const Icon = item.icon;
                         const isActive = pathname === item.href;
@@ -198,16 +213,16 @@ export default function AdminLayout({
                                 key={item.href}
                                 href={item.href}
                                 className={`flex items-center justify-between px-4 py-3.5 rounded-xl transition-all duration-200 group ${isActive
-                                    ? "bg-white text-black shadow-lg shadow-white/10"
+                                    ? "bg-white/10 text-white"
                                     : "text-white/50 hover:bg-white/5 hover:text-white"
                                     }`}
                             >
                                 <div className="flex items-center gap-3">
-                                    <Icon className={`w-5 h-5 ${isActive ? "text-black" : "text-white/40 group-hover:text-white"}`} />
+                                    <Icon className={`w-5 h-5 ${isActive ? "text-white" : "text-white/40 group-hover:text-white"}`} />
                                     <span className="font-medium">{item.label}</span>
                                 </div>
                                 {isInbox && unreadCount > 0 && (
-                                    <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${isActive ? "bg-black text-white" : "bg-white text-black"}`}>
+                                    <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${isActive ? "bg-white text-black" : "bg-white text-black"}`}>
                                         {unreadCount}
                                     </span>
                                 )}
@@ -216,27 +231,31 @@ export default function AdminLayout({
                     })}
                 </nav>
 
-                <div className="p-4 border-t border-white/10 space-y-2">
-                    <Link
+                <div className="mt-auto p-4 border-t border-white/10">
+                    <a
                         href="/"
-                        className="flex items-center gap-3 px-4 py-3 rounded-xl text-white/50 hover:bg-white/5 hover:text-white transition-all font-medium"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-white/60 hover:bg-white/10 hover:text-white transition-all font-medium"
                     >
-                        <ChevronLeft className="w-5 h-5" />
-                        Siteye Dön
-                    </Link>
+                        <ChevronRight className="w-5 h-5" />
+                        Siteye Git
+                    </a>
                     <button
                         onClick={handleLogout}
-                        className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-500/80 hover:bg-red-500/10 transition-all font-medium"
+                        className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-400 hover:bg-red-500/10 transition-all font-medium"
                     >
-                        <LogOut className="w-5 h-5" />
                         Çıkış Yap
+                        <ArrowRight className="w-5 h-5" />
                     </button>
                 </div>
             </aside>
 
             {/* Main Content */}
             <main className="lg:pl-72 pt-16 lg:pt-0 min-h-screen">
-                {children}
+                <div className="max-w-[1100px] mx-auto">
+                    {children}
+                </div>
             </main>
         </div>
     );

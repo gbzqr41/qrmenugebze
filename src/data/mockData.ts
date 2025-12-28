@@ -35,11 +35,19 @@ export interface Business {
         twitter?: string;
         youtube?: string;
         tiktok?: string;
+        website?: string;
     };
     slogan?: string;
     gallery: string[];
     workingHours: WorkingHours[];
     sliderItems?: SliderItem[];
+    welcomeSettings?: {
+        logoText: string;
+        description: string;
+        backgroundImage?: string;
+        backgroundVideo?: string;
+        showWelcome: boolean;
+    };
 }
 
 export interface Category {

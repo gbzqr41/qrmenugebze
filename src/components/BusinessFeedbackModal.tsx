@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Send, Utensils, Users, Sparkles, Wallet, Zap } from "lucide-react";
+import { X, Star, ArrowRight } from "lucide-react";
 import StarRating from "./StarRating";
 import { useFeedback } from "@/context/FeedbackContext";
 
@@ -13,11 +13,11 @@ interface BusinessFeedbackModalProps {
 }
 
 const feedbackCategories = [
-    { id: "food", label: "Lezzet", icon: Utensils },
-    { id: "service", label: "Hizmet", icon: Users },
-    { id: "ambiance", label: "Sunum", icon: Sparkles },
-    { id: "price", label: "Fiyat/Performans", icon: Wallet },
-    { id: "speed", label: "Hız", icon: Zap },
+    { id: "food", label: "Lezzet" },
+    { id: "service", label: "Hizmet" },
+    { id: "ambiance", label: "Sunum" },
+    { id: "price", label: "Fiyat/Performans" },
+    { id: "speed", label: "Hız" },
 ];
 
 export default function BusinessFeedbackModal({
@@ -126,7 +126,10 @@ export default function BusinessFeedbackModal({
                     >
                         {/* Header */}
                         <div className="flex items-center justify-between p-4 border-b border-white/10">
-                            <h2 className="text-lg font-bold text-white">Değerlendirin</h2>
+                            <div className="flex items-center gap-2">
+                                <Star className="w-5 h-5 text-white" />
+                                <h2 className="text-lg font-bold text-white">Değerlendirin</h2>
+                            </div>
                             <button
                                 onClick={onClose}
                                 className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors"
@@ -167,14 +170,10 @@ export default function BusinessFeedbackModal({
                                             Değerlendirme
                                         </h3>
                                         {feedbackCategories.map((category) => {
-                                            const Icon = category.icon;
                                             return (
                                                 <div key={category.id} className="bg-neutral-900 rounded-xl p-4">
                                                     <div className="text-center">
-                                                        <div className="flex items-center justify-center gap-2 mb-3">
-                                                            <Icon className="w-5 h-5 text-white/60" />
-                                                            <span className="text-white font-medium">{category.label}</span>
-                                                        </div>
+                                                        <span className="text-white font-medium mb-3 block">{category.label}</span>
                                                         <div className="flex justify-center">
                                                             <StarRating
                                                                 rating={categoryRatings[category.id] || 0}
@@ -243,8 +242,8 @@ export default function BusinessFeedbackModal({
                                             <div className="w-5 h-5 border-2 border-black/20 border-t-black rounded-full animate-spin" />
                                         ) : (
                                             <>
-                                                <Send className="w-5 h-5" />
                                                 Gönder
+                                                <ArrowRight className="w-5 h-5" />
                                             </>
                                         )}
                                     </motion.button>

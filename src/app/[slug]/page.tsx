@@ -1,8 +1,9 @@
 "use client";
 
 import { useRef, useState, useEffect, useCallback, useMemo } from "react";
-import { Languages, Star } from "lucide-react";
+import { Star } from "lucide-react";
 import { useParams, notFound } from "next/navigation";
+import { AnimatePresence } from "framer-motion";
 import Slider from "@/components/Slider";
 import CategoryBar from "@/components/CategoryBar";
 import ProductFeed from "@/components/ProductFeed";
@@ -12,7 +13,7 @@ import SearchModal from "@/components/SearchModal";
 import FilterModal, { type FilterState } from "@/components/FilterModal";
 import BusinessInfoModal from "@/components/BusinessInfoModal";
 import FavoritesModal from "@/components/FavoritesModal";
-import LanguageModal from "@/components/LanguageModal";
+import WelcomePage from "@/components/WelcomePage";
 import { type Product } from "@/data/mockData";
 import { useDataStore } from "@/context/DataStoreContext";
 import { useTheme } from "@/context/ThemeContext";
@@ -32,7 +33,7 @@ export default function BusinessMenuPage() {
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [isBusinessInfoOpen, setIsBusinessInfoOpen] = useState(false);
     const [isFavoritesOpen, setIsFavoritesOpen] = useState(false);
-    const [isLanguageOpen, setIsLanguageOpen] = useState(false);
+    const [showWelcome, setShowWelcome] = useState(true);
     const [filters, setFilters] = useState<FilterState>({
         categories: [],
         priceRange: { min: 0, max: 1000 },
@@ -135,7 +136,7 @@ export default function BusinessMenuPage() {
         const handleScroll = () => {
             if (isScrollingRef.current) return;
 
-            const scrollPosition = window.scrollY + 100;
+            const scrollPosition = window.scrollY + 140;
 
             for (const category of categories) {
                 const element = categoryRefs.current[category.id];
@@ -154,152 +155,156 @@ export default function BusinessMenuPage() {
     }, [categories]);
 
     return (
-        <main className="min-h-screen pb-24" style={{ backgroundColor: theme.primaryColor }}>
-            {/* Header */}
-            <div
-                className="h-[60px] flex items-center justify-between px-4 sticky top-0 z-40"
-                style={{ backgroundColor: theme.bottomNavBgColor || "rgba(0,0,0,0.95)" }}
-            >
-                <span className="text-white font-bold text-lg">RESITAL LOUNGE</span>
+        <>
+            {/* Welcome Page */}
+            <AnimatePresence>
+                {showWelcome && business?.welcomeSettings?.showWelcome !== false && (
+                    <WelcomePage onEnter={() => setShowWelcome(false)} />
+                )}
+            </AnimatePresence>
 
-                {/* Right side buttons */}
-                <div className="flex items-center gap-[10px]">
-                    {/* Language Button */}
-                    <button
-                        onClick={() => setIsLanguageOpen(true)}
-                        className="w-[42px] h-[42px] rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors"
+            <main className="min-h-screen pb-[20px]" style={{ backgroundColor: theme.primaryColor }}>
+                {/* Header */}
+                <div
+                    className="h-[60px] flex items-center justify-between px-4 sticky top-0 z-40"
+                    style={{ backgroundColor: theme.headerBgColor || "rgba(0,0,0,0.95)" }}
+                >
+                    <span
+                        className="font-bold text-lg"
+                        style={{ color: theme.headerTitleColor || "#ffffff" }}
                     >
-                        <Languages className="w-5 h-5 text-white" />
-                    </button>
+                        RESITAL LOUNGE
+                    </span>
 
-                    {/* Star Icon Button */}
-                    <button
-                        onClick={() => openFeedbackModal()}
-                        className="w-[42px] h-[42px] rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors"
-                    >
-                        <Star className="w-5 h-5 text-white" />
-                    </button>
-                </div>
-            </div>
-
-            {/* Slider Section */}
-            <Slider />
-
-            {/* Category Navigation */}
-            <CategoryBar
-                activeCategory={activeCategory}
-                onCategoryClick={handleCategoryClick}
-            />
-
-            {/* Active Filters Indicator */}
-            {
-                hasActiveFilters && (
-                    <div className="px-5 py-2 bg-neutral-900">
-                        <div className="flex items-center justify-between">
-                            <span className="text-sm text-white/60">
-                                {filteredProducts.length} ürün bulundu
-                            </span>
-                            <button
-                                onClick={() =>
-                                    setFilters({
-                                        categories: [],
-                                        priceRange: { min: 0, max: 1000 },
-                                        tags: [],
-                                    })
-                                }
-                                className="text-sm text-white/60 hover:text-white transition-colors"
-                            >
-                                Filtreleri Temizle
-                            </button>
-                        </div>
+                    {/* Right side buttons */}
+                    <div className="flex items-center gap-[10px]">
+                        {/* Star Icon Button */}
+                        <button
+                            onClick={() => openFeedbackModal()}
+                            className="w-[42px] h-[42px] rounded-full flex items-center justify-center hover:opacity-80 transition-opacity"
+                            style={{ backgroundColor: theme.headerStarBgColor || "rgba(255,255,255,0.1)" }}
+                        >
+                            <Star
+                                className="w-5 h-5"
+                                style={{ color: theme.headerStarColor || "#ffffff" }}
+                            />
+                        </button>
                     </div>
-                )
-            }
+                </div>
 
-            {/* Product Feed */}
-            <ProductFeed
-                ref={feedRef}
-                categoryRefs={categoryRefs}
-                onProductClick={handleProductClick}
-                filteredProducts={hasActiveFilters ? filteredProducts : undefined}
-            />
+                {/* Slider Section */}
+                <Slider />
 
-            {/* Bottom Navigation - hide when modals are open */}
-            {
-                !isFilterOpen && !isSearchOpen && !isBusinessInfoOpen && !isFeedbackModalOpen && !isFavoritesOpen && !isLanguageOpen && (
-                    <BottomNav
-                        onSearchClick={() => {
-                            setIsSearchOpen(true);
-                            setIsBusinessInfoOpen(false);
-                            setIsFilterOpen(false);
-                        }}
-                        onFilterClick={() => {
-                            setIsFilterOpen(true);
-                            setIsBusinessInfoOpen(false);
-                            setIsSearchOpen(false);
-                        }}
-                        onFeedbackClick={() => {
-                            openFeedbackModal();
-                            setIsBusinessInfoOpen(false);
-                        }}
-                        onFavoritesClick={() => {
-                            setIsFavoritesOpen(true);
-                            setIsSearchOpen(false);
-                            setIsFilterOpen(false);
-                            setIsBusinessInfoOpen(false);
-                        }}
-                        onBusinessClick={() => {
-                            setIsBusinessInfoOpen(true);
-                            setIsSearchOpen(false);
-                            setIsFilterOpen(false);
-                        }}
-                    />
-                )
-            }
+                {/* Category Navigation */}
+                <CategoryBar
+                    activeCategory={activeCategory}
+                    onCategoryClick={handleCategoryClick}
+                />
 
-            {/* Product Detail Modal */}
-            <ProductDetailModal
-                product={selectedProduct}
-                isOpen={isModalOpen}
-                onClose={handleModalClose}
-            />
+                {/* Active Filters Indicator */}
+                {
+                    hasActiveFilters && (
+                        <div className="px-5 py-2 bg-neutral-900">
+                            <div className="flex items-center justify-between">
+                                <span className="text-sm text-white/60">
+                                    {filteredProducts.length} ürün bulundu
+                                </span>
+                                <button
+                                    onClick={() =>
+                                        setFilters({
+                                            categories: [],
+                                            priceRange: { min: 0, max: 1000 },
+                                            tags: [],
+                                        })
+                                    }
+                                    className="text-sm text-white/60 hover:text-white transition-colors"
+                                >
+                                    Filtreleri Temizle
+                                </button>
+                            </div>
+                        </div>
+                    )
+                }
 
-            {/* Search Modal */}
-            <SearchModal
-                isOpen={isSearchOpen}
-                onClose={() => setIsSearchOpen(false)}
-                onProductSelect={handleSearchProductSelect}
-            />
+                {/* Product Feed */}
+                <ProductFeed
+                    ref={feedRef}
+                    categoryRefs={categoryRefs}
+                    onProductClick={handleProductClick}
+                    filteredProducts={hasActiveFilters ? filteredProducts : undefined}
+                />
 
-            {/* Filter Modal */}
-            <FilterModal
-                isOpen={isFilterOpen}
-                onClose={() => setIsFilterOpen(false)}
-                onApply={handleFilterApply}
-                initialFilters={filters}
-            />
+                {/* Bottom Navigation - hide when modals are open */}
+                {
+                    !isFilterOpen && !isSearchOpen && !isBusinessInfoOpen && !isFeedbackModalOpen && !isFavoritesOpen && (
+                        <BottomNav
+                            onSearchClick={() => {
+                                setIsSearchOpen(true);
+                                setIsBusinessInfoOpen(false);
+                                setIsFilterOpen(false);
+                            }}
+                            onFilterClick={() => {
+                                setIsFilterOpen(true);
+                                setIsBusinessInfoOpen(false);
+                                setIsSearchOpen(false);
+                            }}
+                            onFeedbackClick={() => {
+                                openFeedbackModal();
+                                setIsBusinessInfoOpen(false);
+                            }}
+                            onFavoritesClick={() => {
+                                setIsFavoritesOpen(true);
+                                setIsSearchOpen(false);
+                                setIsFilterOpen(false);
+                                setIsBusinessInfoOpen(false);
+                            }}
+                            onBusinessClick={() => {
+                                setIsBusinessInfoOpen(true);
+                                setIsSearchOpen(false);
+                                setIsFilterOpen(false);
+                            }}
+                        />
+                    )
+                }
 
-            {/* Business Info Modal */}
-            <BusinessInfoModal
-                isOpen={isBusinessInfoOpen}
-                onClose={() => setIsBusinessInfoOpen(false)}
-            />
+                {/* Product Detail Modal */}
+                <ProductDetailModal
+                    product={selectedProduct}
+                    isOpen={isModalOpen}
+                    onClose={handleModalClose}
+                />
 
-            {/* Favorites Modal */}
-            <FavoritesModal
-                isOpen={isFavoritesOpen}
-                onClose={() => setIsFavoritesOpen(false)}
-                onProductClick={(product) => {
-                    setSelectedProduct(product);
-                    setIsModalOpen(true);
-                }}
-            />
+                {/* Search Modal */}
+                <SearchModal
+                    isOpen={isSearchOpen}
+                    onClose={() => setIsSearchOpen(false)}
+                    onProductSelect={handleSearchProductSelect}
+                />
 
-            {/* Language Modal */}
-            <LanguageModal
-                isOpen={isLanguageOpen}
-                onClose={() => setIsLanguageOpen(false)}
-            />
-        </main >
+                {/* Filter Modal */}
+                <FilterModal
+                    isOpen={isFilterOpen}
+                    onClose={() => setIsFilterOpen(false)}
+                    onApply={handleFilterApply}
+                    initialFilters={filters}
+                />
+
+                {/* Business Info Modal */}
+                <BusinessInfoModal
+                    isOpen={isBusinessInfoOpen}
+                    onClose={() => setIsBusinessInfoOpen(false)}
+                />
+
+                {/* Favorites Modal */}
+                <FavoritesModal
+                    isOpen={isFavoritesOpen}
+                    onClose={() => setIsFavoritesOpen(false)}
+                    onProductClick={(product) => {
+                        setSelectedProduct(product);
+                        setIsModalOpen(true);
+                    }}
+                />
+            </main>
+        </>
     );
 }

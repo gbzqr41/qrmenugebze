@@ -87,12 +87,16 @@ interface DataStoreContextType {
     addTag: (tag: string) => void;
     removeTag: (tag: string) => void;
 
+    // Clear all data
+    clearAllMenuData: () => void;
+
     // Loading state
     isLoading: boolean;
 
     // Reset to initial data
     resetData: () => void;
 }
+
 
 const DataStoreContext = createContext<DataStoreContextType | null>(null);
 
@@ -160,7 +164,7 @@ export function DataStoreProvider({ children }: { children: ReactNode }) {
     const addProduct = useCallback((productData: Omit<Product, "id">): Product => {
         console.log("[DataStore] addProduct called with:", JSON.stringify(productData).substring(0, 300) + "...");
 
-        const newId = `p${Date.now()}`;
+        const newId = `p${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         const newProduct: Product = {
             ...productData,
             id: newId,
@@ -210,7 +214,7 @@ export function DataStoreProvider({ children }: { children: ReactNode }) {
 
     // Categories CRUD
     const addCategory = useCallback((categoryData: Omit<Category, "id" | "productCount">): Category => {
-        const newId = `cat${Date.now()}`;
+        const newId = `cat${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         const newCategory: Category = {
             ...categoryData,
             id: newId,
@@ -274,13 +278,21 @@ export function DataStoreProvider({ children }: { children: ReactNode }) {
         }
     }, []);
 
+    // Clear all menu data (categories and products)
+    const clearAllMenuData = useCallback(() => {
+        setProducts([]);
+        setCategories([]);
+    }, []);
+
     return (
         <DataStoreContext.Provider value={{
             products, addProduct, updateProduct, deleteProduct, getProduct, reorderProducts,
             categories, addCategory, updateCategory, deleteCategory, getCategory, reorderCategories,
             business, updateBusiness, getStats, isLoading, resetData,
             // Tags
-            tags, addTag, removeTag
+            tags, addTag, removeTag,
+            // Clear all
+            clearAllMenuData
         }}>
             {children}
         </DataStoreContext.Provider>

@@ -28,7 +28,8 @@ export default function EditProductPage() {
     const [mediaFiles, setMediaFiles] = useState<string[]>([]);
     const [preparationTime, setPreparationTime] = useState("");
     const [calories, setCalories] = useState("");
-    const [allergens, setAllergens] = useState("");
+    const [allergenList, setAllergenList] = useState<string[]>([]);
+    const [allergenInput, setAllergenInput] = useState("");
     const [selectedTags, setSelectedTags] = useState<string[]>([]);
     const [isFeatured, setIsFeatured] = useState(false);
     const [isNew, setIsNew] = useState(false);
@@ -55,7 +56,7 @@ export default function EditProductPage() {
 
             setPreparationTime(foundProduct.preparationTime || "");
             setCalories(foundProduct.calories?.toString() || "");
-            setAllergens(foundProduct.allergens?.join(", ") || "");
+            setAllergenList(foundProduct.allergens || []);
             setSelectedTags(foundProduct.tags || []);
             setIsFeatured(foundProduct.isFeatured);
             setIsNew(foundProduct.isNew);
@@ -125,7 +126,7 @@ export default function EditProductPage() {
             gallery: gallery.length > 0 ? gallery : undefined,
             preparationTime: preparationTime || undefined,
             calories: calories ? Number(calories) : undefined,
-            allergens: allergens ? allergens.split(",").map((a) => a.trim()) : undefined,
+            allergens: allergenList.length > 0 ? allergenList : undefined,
             tags: selectedTags,
             isFeatured,
             isNew,
@@ -170,7 +171,7 @@ export default function EditProductPage() {
     }
 
     return (
-        <div className="min-h-screen bg-neutral-950 p-6 lg:p-8">
+        <div className="p-6 lg:p-8">
             {/* Header with icons */}
             <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center gap-4">
@@ -185,33 +186,10 @@ export default function EditProductPage() {
                         <p className="text-white/40 text-sm">{product.name}</p>
                     </div>
                 </div>
-
-                {/* Action icons on the right */}
-                <div className="flex items-center gap-2">
-                    <button
-                        onClick={handleSave}
-                        disabled={!name.trim() || !price || isSubmitting}
-                        className="w-10 h-10 rounded-lg bg-white flex items-center justify-center hover:bg-neutral-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        title="Kaydet"
-                    >
-                        {isSubmitting ? (
-                            <div className="w-5 h-5 border-2 border-black/20 border-t-black rounded-full animate-spin" />
-                        ) : (
-                            <Save className="w-5 h-5 text-black" />
-                        )}
-                    </button>
-                    <button
-                        onClick={handleDelete}
-                        className="w-10 h-10 rounded-lg bg-red-500/10 flex items-center justify-center hover:bg-red-500/20 transition-colors"
-                        title="Sil"
-                    >
-                        <Trash2 className="w-5 h-5 text-red-400" />
-                    </button>
-                </div>
             </div>
 
             {/* Form */}
-            <div className="max-w-4xl space-y-6">
+            <div className="space-y-6">
                 {/* Basic Info */}
                 <div className="bg-neutral-900 rounded-2xl p-6">
                     <h2 className="text-lg font-bold text-white mb-4">Temel Bilgiler</h2>
@@ -317,13 +295,55 @@ export default function EditProductPage() {
 
                         <div>
                             <label className="text-sm text-white/60 mb-2 block">Alerjenler</label>
-                            <input
-                                type="text"
-                                value={allergens}
-                                onChange={(e) => setAllergens(e.target.value)}
-                                placeholder="Örn: Süt, Gluten"
-                                className="w-full px-4 py-3 bg-neutral-800 rounded-xl text-white placeholder:text-white/30 focus:outline-none"
-                            />
+                            <div className="flex gap-2">
+                                <input
+                                    type="text"
+                                    value={allergenInput}
+                                    onChange={(e) => setAllergenInput(e.target.value)}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter' && allergenInput.trim()) {
+                                            e.preventDefault();
+                                            if (!allergenList.includes(allergenInput.trim())) {
+                                                setAllergenList(prev => [...prev, allergenInput.trim()]);
+                                            }
+                                            setAllergenInput("");
+                                        }
+                                    }}
+                                    placeholder="Yazıp Enter'a basın"
+                                    className="flex-1 px-4 py-3 bg-neutral-800 rounded-xl text-white placeholder:text-white/30 focus:outline-none"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        if (allergenInput.trim() && !allergenList.includes(allergenInput.trim())) {
+                                            setAllergenList(prev => [...prev, allergenInput.trim()]);
+                                            setAllergenInput("");
+                                        }
+                                    }}
+                                    className="px-4 py-3 bg-white/10 rounded-xl text-white hover:bg-white/20"
+                                >
+                                    <Plus className="w-5 h-5" />
+                                </button>
+                            </div>
+                            {allergenList.length > 0 && (
+                                <div className="flex flex-wrap gap-2 mt-3">
+                                    {allergenList.map((allergen, idx) => (
+                                        <div
+                                            key={idx}
+                                            className="flex items-center gap-2 px-3 py-1.5 bg-neutral-800 rounded-lg text-white text-sm"
+                                        >
+                                            <span>{allergen}</span>
+                                            <button
+                                                type="button"
+                                                onClick={() => setAllergenList(prev => prev.filter((_, i) => i !== idx))}
+                                                className="text-red-400 hover:text-red-300"
+                                            >
+                                                <Trash2 className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     </div>
 
@@ -375,112 +395,31 @@ export default function EditProductPage() {
                             />
                             <span className="text-white/80">Öne Çıkan</span>
                         </label>
-                        <label className="flex items-center gap-2 cursor-pointer">
-                            <input
-                                type="checkbox"
-                                checked={isNew}
-                                onChange={(e) => setIsNew(e.target.checked)}
-                                className="w-5 h-5 rounded bg-neutral-800 border-white/20"
-                            />
-                            <span className="text-white/80">Yeni Ürün</span>
-                        </label>
                     </div>
                 </div>
+            </div>
 
-                {/* Variations */}
-                <div className="bg-neutral-900 rounded-2xl p-6">
-                    <div className="flex items-center justify-between mb-4">
-                        <h2 className="text-lg font-bold text-white">Varyasyonlar</h2>
-                        <button
-                            type="button"
-                            onClick={addVariation}
-                            className="flex items-center gap-2 px-3 py-2 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors text-sm"
-                        >
-                            <Plus className="w-4 h-4" />
-                            Ekle
-                        </button>
-                    </div>
-
-                    {variations.length === 0 ? (
-                        <p className="text-white/40 text-sm">Henüz varyasyon eklenmedi</p>
+            {/* Fixed Action Buttons */}
+            <div className="fixed bottom-8 right-[50px] flex items-center gap-2 z-50">
+                <button
+                    onClick={handleSave}
+                    disabled={!name.trim() || !price || isSubmitting}
+                    className="flex items-center gap-2 px-[15px] py-[10px] rounded-xl bg-white text-black font-medium hover:bg-neutral-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+                >
+                    {isSubmitting ? (
+                        <div className="w-5 h-5 border-2 border-black/20 border-t-black rounded-full animate-spin" />
                     ) : (
-                        <div className="space-y-3">
-                            {variations.map((variation, index) => (
-                                <div key={variation.id} className="flex gap-3 items-center">
-                                    <input
-                                        type="text"
-                                        value={variation.name}
-                                        onChange={(e) => updateVariationField(index, "name", e.target.value)}
-                                        placeholder="Varyasyon adı"
-                                        className="flex-1 px-4 py-3 bg-neutral-800 rounded-xl text-white placeholder:text-white/30 focus:outline-none"
-                                    />
-                                    <input
-                                        type="number"
-                                        value={variation.priceModifier}
-                                        onChange={(e) => updateVariationField(index, "priceModifier", e.target.value)}
-                                        placeholder="Fiyat farkı"
-                                        className="w-32 px-4 py-3 bg-neutral-800 rounded-xl text-white placeholder:text-white/30 focus:outline-none"
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={() => removeVariation(index)}
-                                        className="w-10 h-10 rounded-lg bg-red-500/10 text-red-400 flex items-center justify-center hover:bg-red-500/20 transition-colors"
-                                    >
-                                        <Trash2 className="w-4 h-4" />
-                                    </button>
-                                </div>
-                            ))}
-                        </div>
+                        <Save className="w-5 h-5" />
                     )}
-                </div>
-
-                {/* Extras */}
-                <div className="bg-neutral-900 rounded-2xl p-6">
-                    <div className="flex items-center justify-between mb-4">
-                        <h2 className="text-lg font-bold text-white">Ekstra Seçenekler</h2>
-                        <button
-                            type="button"
-                            onClick={addExtra}
-                            className="flex items-center gap-2 px-3 py-2 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors text-sm"
-                        >
-                            <Plus className="w-4 h-4" />
-                            Ekle
-                        </button>
-                    </div>
-
-                    {extras.length === 0 ? (
-                        <p className="text-white/40 text-sm">Henüz ekstra seçenek eklenmedi</p>
-                    ) : (
-                        <div className="space-y-3">
-                            {extras.map((extra, index) => (
-                                <div key={extra.id} className="flex gap-3 items-center">
-                                    <input
-                                        type="text"
-                                        value={extra.name}
-                                        onChange={(e) => updateExtraField(index, "name", e.target.value)}
-                                        placeholder="Ekstra adı"
-                                        className="flex-1 px-4 py-3 bg-neutral-800 rounded-xl text-white placeholder:text-white/30 focus:outline-none"
-                                    />
-                                    <input
-                                        type="number"
-                                        value={extra.price}
-                                        onChange={(e) => updateExtraField(index, "price", e.target.value)}
-                                        placeholder="Fiyat"
-                                        min="0"
-                                        className="w-32 px-4 py-3 bg-neutral-800 rounded-xl text-white placeholder:text-white/30 focus:outline-none"
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={() => removeExtra(index)}
-                                        className="w-10 h-10 rounded-lg bg-red-500/10 text-red-400 flex items-center justify-center hover:bg-red-500/20 transition-colors"
-                                    >
-                                        <Trash2 className="w-4 h-4" />
-                                    </button>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
+                    <span>Kaydet</span>
+                </button>
+                <button
+                    onClick={handleDelete}
+                    className="flex items-center gap-2 px-[15px] py-[10px] rounded-xl bg-red-500/10 text-red-400 font-medium hover:bg-red-500/20 transition-colors shadow-lg"
+                >
+                    <Trash2 className="w-5 h-5" />
+                    <span>Sil</span>
+                </button>
             </div>
         </div>
     );

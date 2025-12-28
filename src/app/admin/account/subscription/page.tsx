@@ -147,17 +147,6 @@ export default function SubscriptionPage() {
                     </div>
                 </div>
             </div>
-
-            {/* Upgrade Button */}
-            {adminInfo.package !== "enterprise" && (
-                <motion.button
-                    whileTap={{ scale: 0.98 }}
-                    className="w-full py-4 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-xl font-semibold hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
-                >
-                    <Zap className="w-5 h-5" />
-                    Paketi Yükselt
-                </motion.button>
-            )}
         </div>
     );
 }

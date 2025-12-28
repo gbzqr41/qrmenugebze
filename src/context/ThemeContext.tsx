@@ -26,6 +26,10 @@ export interface ThemeSettings {
     cardBorderWidth?: number;
     cardGap?: number;
     cardImageHeight?: number;
+    cardShadowEnabled?: boolean;
+    cardShadowColor?: string;
+    imageShadowEnabled?: boolean;
+    imageShadowColor?: string;
 
     // Typography
     titleSize: string;
@@ -43,11 +47,19 @@ export interface ThemeSettings {
     sliderPaddingLeft?: number;
     sliderPaddingRight?: number;
 
+    // Header (Üst Menü)
+    headerBgColor?: string;
+    headerTitleColor?: string;
+    headerStarColor?: string;
+    headerStarBgColor?: string;
+
     // Category Bar
     categoryBgColor?: string;
     categoryActiveColor?: string;
     categoryInactiveColor?: string;
     categoryActiveTextColor?: string;
+    categoryInactiveTextColor?: string;
+    categoryIconColor?: string;
     categoryButtonRadius?: number;
     categoryGap?: number;
     categoryPaddingX?: number;
@@ -62,6 +74,24 @@ export interface ThemeSettings {
     bottomNavGap?: number;
     bottomNavPaddingY?: number;
 
+    // Content Area
+    categoryTitleColor?: string;
+    productCountColor?: string;
+    menuBgColor?: string;
+    menuTitleColor?: string;
+    menuDescriptionColor?: string;
+    menuImageRadius?: number;
+    menuCardRadius?: number;
+
+    // Featured Section (Öne Çıkan)
+    featuredTitleColor?: string;
+    featuredNameColor?: string;
+    featuredPriceColor?: string;
+    featuredCardBgColor?: string;
+    featuredCardRadius?: number;
+    featuredMenuRadius?: number;
+    featuredImageRadius?: number;
+
     // Search Modal
     searchBgColor?: string;
     searchInputBgColor?: string;
@@ -69,12 +99,21 @@ export interface ThemeSettings {
     searchResultBgColor?: string;
     searchResultTextColor?: string;
 
-    // Product Detail Modal
+    // Product Detail Modal (Menü Detay)
     productModalBgColor?: string; // Backdrop/Container
     productCardBgColor?: string; // The text area
     productTextColor?: string;
     productCloseButtonBgColor?: string;
     productCloseIconColor?: string;
+    productFavButtonBgColor?: string; // Favorite button bg (right)
+    productTitleColor?: string;
+    productDescriptionColor?: string;
+    productPriceColor?: string;
+    productInfoIconColor?: string; // Calorie, time icons
+    productDividerColor?: string;
+    productTagBgColor?: string;
+    productTagTextColor?: string;
+    productTagRadius?: number;
 
     // Feedback Modal
     feedbackModalBgColor?: string;
@@ -112,6 +151,10 @@ const defaultTheme: ThemeSettings = {
     cardBorderWidth: 1,
     cardGap: 16,
     cardImageHeight: 160,
+    cardShadowEnabled: true,
+    cardShadowColor: "rgba(0,0,0,0.3)",
+    imageShadowEnabled: false,
+    imageShadowColor: "rgba(0,0,0,0.3)",
     titleSize: "16px",
     descriptionSize: "14px",
     priceSize: "18px",
@@ -123,11 +166,18 @@ const defaultTheme: ThemeSettings = {
     sliderPaddingBottom: 0,
     sliderPaddingLeft: 0,
     sliderPaddingRight: 0,
+    // Header defaults
+    headerBgColor: "rgba(0,0,0,0.95)",
+    headerTitleColor: "#ffffff",
+    headerStarColor: "#ffffff",
+    headerStarBgColor: "rgba(255,255,255,0.1)",
     // Category defaults
     categoryBgColor: "#000000",
     categoryActiveColor: "#ffffff",
     categoryInactiveColor: "#171717",
     categoryActiveTextColor: "#000000",
+    categoryInactiveTextColor: "#ffffff",
+    categoryIconColor: "#ffffff",
     categoryButtonRadius: 12,
     categoryGap: 12,
     categoryPaddingX: 16,
@@ -140,6 +190,13 @@ const defaultTheme: ThemeSettings = {
     bottomNavIconSize: 24,
     bottomNavGap: 0,
     bottomNavPaddingY: 12,
+    // Content Area defaults
+    categoryTitleColor: "#ffffff",
+    productCountColor: "rgba(255,255,255,0.4)",
+    menuBgColor: "#171717",
+    menuTitleColor: "#ffffff",
+    menuDescriptionColor: "rgba(255,255,255,0.5)",
+    menuImageRadius: 8,
     // Search defaults
     searchBgColor: "#000000",
     searchInputBgColor: "#171717",

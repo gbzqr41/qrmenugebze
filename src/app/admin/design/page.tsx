@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
     Save,
     Palette,
@@ -14,20 +14,14 @@ import {
     MessageSquare,
     Filter,
     X,
+    Trash2,
 } from "lucide-react";
 import { useTheme, type ThemeSettings } from "@/context/ThemeContext";
 
 // Tab definitions
 const tabs = [
     { id: "general", label: "Genel", icon: Palette },
-    { id: "slider", label: "Slider", icon: SlidersHorizontal },
-    { id: "category", label: "Filtreleme", icon: Filter },
-    { id: "menu", label: "Menü Kartları", icon: Menu },
-    { id: "search", label: "Arama", icon: Search },
-    { id: "product", label: "Ürün Detayı", icon: ShoppingBag },
-    { id: "feedback", label: "Yorumlar", icon: MessageSquare },
-    { id: "bottomNav", label: "Alt Menü", icon: Navigation },
-    { id: "business", label: "İşletme Profili", icon: LayoutGrid },
+    { id: "menu", label: "Menü", icon: Menu },
 ];
 
 // Font options
@@ -46,12 +40,68 @@ const colorPresets = [
     { name: "Mor", primary: "#4c1d95", accent: "#a78bfa", card: "#3b1574" },
     { name: "Altın", primary: "#1c1917", accent: "#d4af37", card: "#292524" },
 ];
+// Color input component - defined outside to prevent re-render
+const ColorInput = ({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) => (
+    <div>
+        <div className="flex items-center justify-between mb-2">
+            <label className="text-sm text-white/60">{label}</label>
+            {value === "transparent" && (
+                <span className="text-xs text-white/30 italic">Renk Yok</span>
+            )}
+        </div>
+        <div className="flex gap-3">
+            <div
+                className="relative w-10 h-10 rounded-full overflow-hidden cursor-pointer flex-shrink-0"
+                style={{ backgroundColor: value === "transparent" ? "#000" : value }}
+            >
+                <input
+                    type="color"
+                    value={value === "transparent" ? "#000000" : value}
+                    onInput={(e) => onChange((e.target as HTMLInputElement).value)}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                />
+                {value === "transparent" && (
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <Trash2 className="w-5 h-5 text-red-500" />
+                    </div>
+                )}
+            </div>
+
+            <div className="flex-1 flex gap-2">
+                <input
+                    type="text"
+                    value={value}
+                    onChange={(e) => onChange(e.target.value)}
+                    className="flex-1 px-4 py-3 bg-neutral-800 rounded-xl text-white font-mono text-sm focus:outline-none focus:ring-2 focus:ring-white/20"
+                />
+                <button
+                    type="button"
+                    onClick={() => onChange("transparent")}
+                    className="px-3 py-2 bg-neutral-800 rounded-xl text-white/40 hover:text-red-500 hover:bg-neutral-700 transition-colors"
+                    title="Rengi Sil"
+                >
+                    <Trash2 className="w-4 h-4" />
+                </button>
+            </div>
+        </div>
+    </div>
+);
 
 export default function DesignPage() {
     const { theme, updateTheme, showToast } = useTheme();
-    const [activeTab, setActiveTab] = useState("general");
+    const [activeTab, setActiveTab] = useState(() => {
+        if (typeof window !== "undefined") {
+            return localStorage.getItem("designActiveTab") || "general";
+        }
+        return "general";
+    });
     const [localTheme, setLocalTheme] = useState<ThemeSettings>(theme);
     const [hasChanges, setHasChanges] = useState(false);
+
+    // Persist activeTab to localStorage
+    useEffect(() => {
+        localStorage.setItem("designActiveTab", activeTab);
+    }, [activeTab]);
 
     // Sync with theme context
     useEffect(() => {
@@ -79,48 +129,6 @@ export default function DesignPage() {
         setHasChanges(false);
     };
 
-    // Color input component
-    const ColorInput = ({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) => (
-        <div>
-            <div className="flex items-center justify-between mb-2">
-                <label className="text-sm text-white/60">{label}</label>
-                {value === "transparent" && (
-                    <span className="text-xs text-white/30 italic">Renk Yok</span>
-                )}
-            </div>
-            <div className="flex gap-3">
-                <div className="relative">
-                    <input
-                        type="color"
-                        value={value === "transparent" ? "#000000" : value}
-                        onChange={(e) => onChange(e.target.value)}
-                        className="w-12 h-12 rounded-xl border-2 border-white/10 cursor-pointer bg-transparent p-0"
-                    />
-                    {value === "transparent" && (
-                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                            <X className="w-5 h-5 text-red-500" />
-                        </div>
-                    )}
-                </div>
-
-                <div className="flex-1 flex gap-2">
-                    <input
-                        type="text"
-                        value={value}
-                        onChange={(e) => onChange(e.target.value)}
-                        className="flex-1 px-4 py-3 bg-neutral-800 rounded-xl text-white font-mono text-sm focus:outline-none focus:ring-2 focus:ring-white/20"
-                    />
-                    <button
-                        onClick={() => onChange("transparent")}
-                        className="px-3 py-2 bg-neutral-800 rounded-xl text-white/40 hover:text-white hover:bg-neutral-700 transition-colors"
-                        title="Renk Yok (Transparent)"
-                    >
-                        <X className="w-4 h-4" />
-                    </button>
-                </div>
-            </div>
-        </div>
-    );
 
     // Switch / Toggle Component
     const Toggle = ({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) => (
@@ -138,39 +146,47 @@ export default function DesignPage() {
     // Number input with unit
     const NumberInput = ({ label, value, onChange, unit = "px", min = 0, max = 500 }: {
         label: string; value: number; onChange: (v: number) => void; unit?: string; min?: number; max?: number
-    }) => (
-        <div>
-            <label className="text-sm text-white/60 mb-2 block">{label}</label>
-            <div className="flex items-center gap-2">
-                <button
-                    type="button"
-                    onClick={() => onChange(Math.max(min, value - 1))}
-                    className="w-10 h-10 rounded-lg bg-neutral-800 text-white hover:bg-neutral-700 flex items-center justify-center text-lg font-bold"
-                >
-                    −
-                </button>
-                <input
-                    type="number"
-                    min={min}
-                    max={max}
-                    value={value}
-                    onChange={(e) => onChange(Math.min(max, Math.max(min, Number(e.target.value) || 0)))}
-                    className="flex-1 px-4 py-2.5 bg-neutral-800 rounded-xl text-white text-center font-mono focus:outline-none focus:ring-2 focus:ring-white/20"
-                />
-                <button
-                    type="button"
-                    onClick={() => onChange(Math.min(max, value + 1))}
-                    className="w-10 h-10 rounded-lg bg-neutral-800 text-white hover:bg-neutral-700 flex items-center justify-center text-lg font-bold"
-                >
-                    +
-                </button>
-                <span className="text-white/50 font-mono text-sm w-8">{unit}</span>
+    }) => {
+        const [inputValue, setInputValue] = React.useState(String(value));
+
+        // Sync inputValue when value prop changes (from parent)
+        React.useEffect(() => {
+            setInputValue(String(value));
+        }, [value]);
+
+        const handleBlur = () => {
+            const num = parseInt(inputValue, 10);
+            if (isNaN(num) || inputValue === "") {
+                onChange(min);
+                setInputValue(String(min));
+            } else {
+                const clamped = Math.min(max, Math.max(min, num));
+                onChange(clamped);
+                setInputValue(String(clamped));
+            }
+        };
+
+        return (
+            <div>
+                <label className="text-sm text-white/60 mb-2 block">{label}</label>
+                <div className="flex items-center gap-2">
+                    <input
+                        type="text"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        value={inputValue}
+                        onChange={(e) => setInputValue(e.target.value.replace(/\D/g, ""))}
+                        onBlur={handleBlur}
+                        className="flex-1 px-4 py-2.5 bg-neutral-800 rounded-xl text-white text-center font-mono focus:outline-none focus:ring-2 focus:ring-white/20"
+                    />
+                    <span className="text-white/50 font-mono text-sm w-8">{unit}</span>
+                </div>
             </div>
-        </div>
-    );
+        );
+    };
 
     return (
-        <div className="p-6 lg:p-8 max-w-5xl">
+        <div className="p-6 lg:p-8">
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
                 <div>
@@ -178,28 +194,30 @@ export default function DesignPage() {
                     <p className="text-white/50">QR menü görünümünü özelleştirin</p>
                 </div>
 
-                <div className="flex items-center gap-3">
-                    {hasChanges && (
-                        <button
-                            onClick={handleReset}
-                            className="flex items-center gap-2 px-4 py-2.5 bg-neutral-800 rounded-xl text-white/60 hover:text-white transition-colors"
-                        >
-                            <RotateCcw className="w-4 h-4" />
-                            Geri Al
-                        </button>
-                    )}
+            </div>
+
+            {/* Fixed Save Buttons */}
+            <div className="fixed bottom-8 right-[50px] z-50 flex items-center gap-3">
+                {hasChanges && (
                     <button
-                        onClick={handleSave}
-                        disabled={!hasChanges}
-                        className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-semibold transition-all ${hasChanges
-                            ? "bg-white text-black hover:bg-neutral-100"
-                            : "bg-neutral-800 text-white/40 cursor-not-allowed"
-                            }`}
+                        onClick={handleReset}
+                        className="flex items-center gap-2 px-[15px] py-[10px] bg-neutral-800 rounded-xl text-white/60 hover:text-white transition-colors shadow-lg"
                     >
-                        <Save className="w-4 h-4" />
-                        Kaydet
+                        <RotateCcw className="w-4 h-4" />
+                        Geri Al
                     </button>
-                </div>
+                )}
+                <button
+                    onClick={handleSave}
+                    disabled={!hasChanges}
+                    className={`flex items-center gap-2 px-[15px] py-[10px] rounded-xl font-semibold shadow-lg transition-all ${hasChanges
+                        ? "bg-white text-black hover:bg-neutral-100"
+                        : "bg-neutral-800 text-white/40 cursor-not-allowed"
+                        }`}
+                >
+                    <Save className="w-4 h-4" />
+                    Kaydet
+                </button>
             </div>
 
             {/* Tabs */}
@@ -228,48 +246,94 @@ export default function DesignPage() {
                 {/* GENEL TAB */}
                 {activeTab === "general" && (
                     <>
-                        {/* Color Presets */}
+                        {/* Üst Menü (Header) Section */}
                         <div className="bg-neutral-900 rounded-2xl p-6 border border-white/5">
-                            <h2 className="text-lg font-bold text-white mb-4">Renk Şablonları</h2>
-                            <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
-                                {colorPresets.map((preset) => (
-                                    <button
-                                        key={preset.name}
-                                        onClick={() => updateLocal({
-                                            primaryColor: preset.primary,
-                                            accentColor: preset.accent,
-                                            cardColor: preset.card,
-                                        })}
-                                        className="group flex flex-col items-center gap-2 p-3 rounded-xl hover:bg-white/5 transition-colors"
-                                    >
-                                        <div
-                                            className="w-12 h-12 rounded-full border-2 border-white/20"
-                                            style={{ background: `linear-gradient(135deg, ${preset.primary} 50%, ${preset.accent} 50%)` }}
-                                        />
-                                        <span className="text-xs text-white/60 group-hover:text-white">{preset.name}</span>
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Background & Accent Colors */}
-                        <div className="bg-neutral-900 rounded-2xl p-6 border border-white/5">
-                            <h2 className="text-lg font-bold text-white mb-4">Genel Renkler</h2>
+                            <h2 className="text-lg font-bold text-white mb-4">Üst Menü</h2>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                 <ColorInput
                                     label="Arka Plan Rengi"
-                                    value={localTheme.primaryColor}
-                                    onChange={(v) => updateLocal({ primaryColor: v })}
+                                    value={localTheme.headerBgColor || "rgba(0,0,0,0.95)"}
+                                    onChange={(v) => updateLocal({ headerBgColor: v } as any)}
                                 />
                                 <ColorInput
-                                    label="Vurgu Rengi"
-                                    value={localTheme.accentColor}
-                                    onChange={(v) => updateLocal({ accentColor: v })}
+                                    label="Başlık / Şirket İsmi Rengi"
+                                    value={localTheme.headerTitleColor || "#ffffff"}
+                                    onChange={(v) => updateLocal({ headerTitleColor: v } as any)}
                                 />
                                 <ColorInput
-                                    label="Metin Rengi"
-                                    value={localTheme.textColor}
-                                    onChange={(v) => updateLocal({ textColor: v })}
+                                    label="Yıldız İkon Rengi"
+                                    value={localTheme.headerStarColor || "#ffffff"}
+                                    onChange={(v) => updateLocal({ headerStarColor: v } as any)}
+                                />
+                                <ColorInput
+                                    label="Yıldız Arka Plan Rengi"
+                                    value={localTheme.headerStarBgColor || "rgba(255,255,255,0.1)"}
+                                    onChange={(v) => updateLocal({ headerStarBgColor: v } as any)}
+                                />
+                            </div>
+                        </div>
+
+                        {/* Kategoriler Section */}
+                        <div className="bg-neutral-900 rounded-2xl p-6 border border-white/5">
+                            <h2 className="text-lg font-bold text-white mb-4">Kategoriler</h2>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                <ColorInput
+                                    label="Arka Plan Rengi"
+                                    value={localTheme.categoryBgColor || localTheme.primaryColor}
+                                    onChange={(v) => updateLocal({ categoryBgColor: v } as any)}
+                                />
+                                <ColorInput
+                                    label="Aktif Kategori Arka Plan"
+                                    value={localTheme.categoryActiveColor || localTheme.buttonColor}
+                                    onChange={(v) => updateLocal({ categoryActiveColor: v } as any)}
+                                />
+                                <ColorInput
+                                    label="Pasif Kategori Arka Plan"
+                                    value={localTheme.categoryInactiveColor || localTheme.cardColor}
+                                    onChange={(v) => updateLocal({ categoryInactiveColor: v } as any)}
+                                />
+                                <ColorInput
+                                    label="Aktif Kategori Yazı Rengi"
+                                    value={localTheme.categoryActiveTextColor || localTheme.buttonTextColor}
+                                    onChange={(v) => updateLocal({ categoryActiveTextColor: v } as any)}
+                                />
+                                <ColorInput
+                                    label="Pasif Kategori Yazı Rengi"
+                                    value={localTheme.categoryInactiveTextColor || "#ffffff"}
+                                    onChange={(v) => updateLocal({ categoryInactiveTextColor: v } as any)}
+                                />
+                                <ColorInput
+                                    label="Kategori İkon Rengi"
+                                    value={localTheme.categoryIconColor || "#ffffff"}
+                                    onChange={(v) => updateLocal({ categoryIconColor: v } as any)}
+                                />
+                                <NumberInput
+                                    label="Kategori Köşe Yuvarlaklığı"
+                                    value={localTheme.categoryButtonRadius || 12}
+                                    onChange={(v) => updateLocal({ categoryButtonRadius: v } as any)}
+                                    max={30}
+                                />
+                            </div>
+                        </div>
+
+                        {/* Alt Menü Section */}
+                        <div className="bg-neutral-900 rounded-2xl p-6 border border-white/5">
+                            <h2 className="text-lg font-bold text-white mb-4">Alt Menü</h2>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                <ColorInput
+                                    label="Arka Plan Rengi"
+                                    value={localTheme.bottomNavBgColor || "rgba(0,0,0,0.95)"}
+                                    onChange={(v) => updateLocal({ bottomNavBgColor: v } as any)}
+                                />
+                                <ColorInput
+                                    label="Aktif İkon Rengi"
+                                    value={localTheme.bottomNavActiveColor || "#ffffff"}
+                                    onChange={(v) => updateLocal({ bottomNavActiveColor: v } as any)}
+                                />
+                                <ColorInput
+                                    label="Pasif İkon Rengi"
+                                    value={localTheme.bottomNavInactiveColor || "rgba(255,255,255,0.5)"}
+                                    onChange={(v) => updateLocal({ bottomNavInactiveColor: v } as any)}
                                 />
                             </div>
                         </div>
@@ -297,414 +361,193 @@ export default function DesignPage() {
                     </>
                 )}
 
-                {/* SLIDER TAB */}
-                {activeTab === "slider" && (
+                {/* MENÜ TAB */}
+                {activeTab === "menu" && (
                     <>
+                        {/* Öne Çıkan Section */}
                         <div className="bg-neutral-900 rounded-2xl p-6 border border-white/5">
-                            <h2 className="text-lg font-bold text-white mb-4">Slider Boyutları</h2>
+                            <h2 className="text-lg font-bold text-white mb-4">Öne Çıkan</h2>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                <NumberInput
-                                    label="Yükseklik"
-                                    value={localTheme.sliderHeight || 300}
-                                    onChange={(v) => updateLocal({ sliderHeight: v } as any)}
-                                    max={500}
+                                <ColorInput
+                                    label="Başlık Rengi"
+                                    value={localTheme.featuredTitleColor || "#ffffff"}
+                                    onChange={(v) => updateLocal({ featuredTitleColor: v } as any)}
+                                />
+                                <ColorInput
+                                    label="Menü Adı Rengi"
+                                    value={localTheme.featuredNameColor || localTheme.textColor}
+                                    onChange={(v) => updateLocal({ featuredNameColor: v } as any)}
+                                />
+                                <ColorInput
+                                    label="Fiyat Rengi"
+                                    value={localTheme.featuredPriceColor || localTheme.accentColor}
+                                    onChange={(v) => updateLocal({ featuredPriceColor: v } as any)}
+                                />
+                                <ColorInput
+                                    label="Kart Arka Plan"
+                                    value={localTheme.featuredCardBgColor || localTheme.cardColor}
+                                    onChange={(v) => updateLocal({ featuredCardBgColor: v } as any)}
                                 />
                                 <NumberInput
-                                    label="Köşe Yuvarlaklığı"
-                                    value={localTheme.sliderRadius || 0}
-                                    onChange={(v) => updateLocal({ sliderRadius: v } as any)}
-                                    max={50}
+                                    label="Kart Köşe Yuvarlaklığı"
+                                    value={localTheme.featuredCardRadius || 16}
+                                    onChange={(v) => updateLocal({ featuredCardRadius: v } as any)}
+                                    max={30}
+                                />
+                                <NumberInput
+                                    label="Menü Köşe Yuvarlaklığı"
+                                    value={localTheme.featuredMenuRadius || 12}
+                                    onChange={(v) => updateLocal({ featuredMenuRadius: v } as any)}
+                                    max={30}
+                                />
+                                <NumberInput
+                                    label="Resim Köşe Yuvarlaklığı"
+                                    value={localTheme.featuredImageRadius || 8}
+                                    onChange={(v) => updateLocal({ featuredImageRadius: v } as any)}
+                                    max={30}
                                 />
                             </div>
                         </div>
 
+                        {/* Kategori Section */}
                         <div className="bg-neutral-900 rounded-2xl p-6 border border-white/5">
-                            <h2 className="text-lg font-bold text-white mb-4">Slider Boşlukları</h2>
-                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
-                                <NumberInput
-                                    label="Üst Boşluk"
-                                    value={localTheme.sliderPaddingTop || 0}
-                                    onChange={(v) => updateLocal({ sliderPaddingTop: v } as any)}
-                                    max={50}
+                            <h2 className="text-lg font-bold text-white mb-4">Kategori</h2>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                <ColorInput
+                                    label="Kategori Başlık Rengi"
+                                    value={localTheme.categoryTitleColor || "#ffffff"}
+                                    onChange={(v) => updateLocal({ categoryTitleColor: v } as any)}
                                 />
-                                <NumberInput
-                                    label="Alt Boşluk"
-                                    value={localTheme.sliderPaddingBottom || 0}
-                                    onChange={(v) => updateLocal({ sliderPaddingBottom: v } as any)}
-                                    max={50}
-                                />
-                                <NumberInput
-                                    label="Sol Boşluk"
-                                    value={localTheme.sliderPaddingLeft || 0}
-                                    onChange={(v) => updateLocal({ sliderPaddingLeft: v } as any)}
-                                    max={50}
-                                />
-                                <NumberInput
-                                    label="Sağ Boşluk"
-                                    value={localTheme.sliderPaddingRight || 0}
-                                    onChange={(v) => updateLocal({ sliderPaddingRight: v } as any)}
-                                    max={50}
+                                <ColorInput
+                                    label="Ürün Adet Rengi"
+                                    value={localTheme.productCountColor || "rgba(255,255,255,0.4)"}
+                                    onChange={(v) => updateLocal({ productCountColor: v } as any)}
                                 />
                             </div>
                         </div>
-                    </>
-                )}
 
-                {/* SEARCH TAB */}
-                {activeTab === "search" && (
-                    <>
-                        <div className="bg-neutral-900 rounded-2xl p-6 border border-white/5 mb-6">
-                            <h2 className="text-lg font-bold text-white mb-4">Arama Ekranı Genel</h2>
-                            <div className="mb-6">
+                        {/* Menü Kart Section */}
+                        <div className="bg-neutral-900 rounded-2xl p-6 border border-white/5">
+                            <h2 className="text-lg font-bold text-white mb-4">Menü Kart</h2>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                <ColorInput
+                                    label="Kart Arka Plan"
+                                    value={localTheme.menuBgColor || localTheme.cardColor}
+                                    onChange={(v) => updateLocal({ menuBgColor: v } as any)}
+                                />
+                                <ColorInput
+                                    label="Başlık Rengi"
+                                    value={localTheme.menuTitleColor || "#ffffff"}
+                                    onChange={(v) => updateLocal({ menuTitleColor: v } as any)}
+                                />
+                                <ColorInput
+                                    label="Açıklama Rengi"
+                                    value={localTheme.menuDescriptionColor || "rgba(255,255,255,0.5)"}
+                                    onChange={(v) => updateLocal({ menuDescriptionColor: v } as any)}
+                                />
+                                <NumberInput
+                                    label="Kart Köşe Yuvarlaklığı"
+                                    value={localTheme.menuCardRadius || 12}
+                                    onChange={(v) => updateLocal({ menuCardRadius: v } as any)}
+                                    max={30}
+                                />
+                                <NumberInput
+                                    label="Resim Köşe Yuvarlaklığı"
+                                    value={localTheme.menuImageRadius || 8}
+                                    onChange={(v) => updateLocal({ menuImageRadius: v } as any)}
+                                    max={30}
+                                />
+                            </div>
+
+                            {/* Gölge Ayarları */}
+                            <h3 className="text-md font-semibold text-white/80 mt-6 mb-4">Gölge Ayarları</h3>
+                            <div className="space-y-4">
                                 <Toggle
-                                    label="Arkaplan Bulanıklığı (Blur)"
-                                    checked={localTheme.searchBlur !== false}
-                                    onChange={(v) => updateLocal({ searchBlur: v } as any)}
+                                    label="Kart Gölgesi"
+                                    checked={localTheme.cardShadowEnabled !== false}
+                                    onChange={(v) => updateLocal({ cardShadowEnabled: v } as any)}
                                 />
-                            </div>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                <ColorInput
-                                    label="Arka Plan Rengi"
-                                    value={localTheme.searchBgColor || localTheme.primaryColor}
-                                    onChange={(v) => updateLocal({ searchBgColor: v } as any)}
-                                />
-                                <ColorInput
-                                    label="Arama Kutusu Rengi"
-                                    value={localTheme.searchInputBgColor || localTheme.cardColor}
-                                    onChange={(v) => updateLocal({ searchInputBgColor: v } as any)}
-                                />
-                                <ColorInput
-                                    label="Yazı Rengi"
-                                    value={localTheme.searchTextColor || localTheme.textColor}
-                                    onChange={(v) => updateLocal({ searchTextColor: v } as any)}
-                                />
-                            </div>
-                        </div>
-
-                        <div className="bg-neutral-900 rounded-2xl p-6 border border-white/5">
-                            <h2 className="text-lg font-bold text-white mb-4">Arama Sonuçları</h2>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                <ColorInput
-                                    label="Sonuç Kartı Rengi"
-                                    value={localTheme.searchResultBgColor || localTheme.cardColor}
-                                    onChange={(v) => updateLocal({ searchResultBgColor: v } as any)}
-                                />
-                                <ColorInput
-                                    label="Sonuç Yazı Rengi"
-                                    value={localTheme.searchResultTextColor || localTheme.textColor}
-                                    onChange={(v) => updateLocal({ searchResultTextColor: v } as any)}
-                                />
-                            </div>
-                        </div>
-                    </>
-                )}
-
-                {/* PRODUCT TAB */}
-                {activeTab === "product" && (
-                    <>
-                        <div className="bg-neutral-900 rounded-2xl p-6 border border-white/5 mb-6">
-                            <h2 className="text-lg font-bold text-white mb-4">Ürün Detay Renkleri</h2>
-                            <div className="mb-6">
+                                {localTheme.cardShadowEnabled !== false && (
+                                    <ColorInput
+                                        label="Kart Gölge Rengi"
+                                        value={localTheme.cardShadowColor || "rgba(0,0,0,0.3)"}
+                                        onChange={(v) => updateLocal({ cardShadowColor: v } as any)}
+                                    />
+                                )}
                                 <Toggle
-                                    label="Arkaplan Bulanıklığı (Blur)"
-                                    checked={localTheme.productBlur !== false}
-                                    onChange={(v) => updateLocal({ productBlur: v } as any)}
+                                    label="Resim Gölgesi"
+                                    checked={localTheme.imageShadowEnabled === true}
+                                    onChange={(v) => updateLocal({ imageShadowEnabled: v } as any)}
                                 />
-                            </div>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                <ColorInput
-                                    label="Arka Plan (Backdrop)"
-                                    value={localTheme.productModalBgColor || "rgba(0,0,0,0.8)"}
-                                    onChange={(v) => updateLocal({ productModalBgColor: v } as any)}
-                                />
-                                <ColorInput
-                                    label="Kart Rengi (İçerik)"
-                                    value={localTheme.productCardBgColor || localTheme.cardColor}
-                                    onChange={(v) => updateLocal({ productCardBgColor: v } as any)}
-                                />
-                                <ColorInput
-                                    label="Yazı Rengi"
-                                    value={localTheme.productTextColor || localTheme.textColor}
-                                    onChange={(v) => updateLocal({ productTextColor: v } as any)}
-                                />
+                                {localTheme.imageShadowEnabled && (
+                                    <ColorInput
+                                        label="Resim Gölge Rengi"
+                                        value={localTheme.imageShadowColor || "rgba(0,0,0,0.3)"}
+                                        onChange={(v) => updateLocal({ imageShadowColor: v } as any)}
+                                    />
+                                )}
                             </div>
                         </div>
 
+                        {/* Menü Detay Section */}
                         <div className="bg-neutral-900 rounded-2xl p-6 border border-white/5">
-                            <h2 className="text-lg font-bold text-white mb-4">Kapatma Butonu</h2>
+                            <h2 className="text-lg font-bold text-white mb-4">Menü Detay</h2>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                 <ColorInput
-                                    label="Buton Arka Planı (Blur)"
+                                    label="Sol İkon Arka Plan (Kapat)"
                                     value={localTheme.productCloseButtonBgColor || "rgba(0,0,0,0.5)"}
                                     onChange={(v) => updateLocal({ productCloseButtonBgColor: v } as any)}
                                 />
                                 <ColorInput
-                                    label="İkon Rengi"
-                                    value={localTheme.productCloseIconColor || "#ffffff"}
-                                    onChange={(v) => updateLocal({ productCloseIconColor: v } as any)}
+                                    label="Sağ İkon Arka Plan (Favori)"
+                                    value={localTheme.productFavButtonBgColor || "rgba(0,0,0,0.5)"}
+                                    onChange={(v) => updateLocal({ productFavButtonBgColor: v } as any)}
                                 />
-                            </div>
-                        </div>
-                    </>
-                )}
-
-                {/* FEEDBACK TAB */}
-                {activeTab === "feedback" && (
-                    <div className="bg-neutral-900 rounded-2xl p-6 border border-white/5">
-                        <h2 className="text-lg font-bold text-white mb-4">Yorum Ekranı Renkleri</h2>
-                        <div className="mb-6">
-                            <Toggle
-                                label="Arkaplan Bulanıklığı (Blur)"
-                                checked={localTheme.feedbackBlur !== false}
-                                onChange={(v) => updateLocal({ feedbackBlur: v } as any)}
-                            />
-                        </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                            <ColorInput
-                                label="Arka Plan (Backdrop)"
-                                value={localTheme.feedbackModalBgColor || "rgba(0,0,0,0.8)"}
-                                onChange={(v) => updateLocal({ feedbackModalBgColor: v } as any)}
-                            />
-                            <ColorInput
-                                label="Pencere Rengi"
-                                value={localTheme.feedbackCardBgColor || localTheme.cardColor}
-                                onChange={(v) => updateLocal({ feedbackCardBgColor: v } as any)}
-                            />
-                            <ColorInput
-                                label="Yazı Rengi"
-                                value={localTheme.feedbackTextColor || localTheme.textColor}
-                                onChange={(v) => updateLocal({ feedbackTextColor: v } as any)}
-                            />
-                        </div>
-                    </div>
-                )}
-
-                {/* CATEGORY (Renamed to Filtreleme in UI) TAB */}
-                {activeTab === "category" && (
-                    <>
-                        <div className="bg-neutral-900 rounded-2xl p-6 border border-white/5">
-                            <h2 className="text-lg font-bold text-white mb-4">Filtreleme Çubuğu Renkleri</h2>
-                            <div className="mb-6">
-                                <Toggle
-                                    label="Arkaplan Bulanıklığı (Blur)"
-                                    checked={localTheme.categoryBlur === true}
-                                    onChange={(v) => updateLocal({ categoryBlur: v } as any)}
-                                />
-                            </div>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                 <ColorInput
                                     label="Arka Plan Rengi"
-                                    value={localTheme.categoryBgColor || localTheme.primaryColor}
-                                    onChange={(v) => updateLocal({ categoryBgColor: v } as any)}
+                                    value={localTheme.productCardBgColor || localTheme.cardColor}
+                                    onChange={(v) => updateLocal({ productCardBgColor: v } as any)}
                                 />
                                 <ColorInput
-                                    label="Aktif Buton Rengi"
-                                    value={localTheme.categoryActiveColor || localTheme.buttonColor}
-                                    onChange={(v) => updateLocal({ categoryActiveColor: v } as any)}
+                                    label="Başlık Rengi"
+                                    value={localTheme.productTitleColor || "#ffffff"}
+                                    onChange={(v) => updateLocal({ productTitleColor: v } as any)}
                                 />
                                 <ColorInput
-                                    label="Pasif Buton Rengi"
-                                    value={localTheme.categoryInactiveColor || localTheme.cardColor}
-                                    onChange={(v) => updateLocal({ categoryInactiveColor: v } as any)}
+                                    label="Açıklama Rengi"
+                                    value={localTheme.productDescriptionColor || "rgba(255,255,255,0.8)"}
+                                    onChange={(v) => updateLocal({ productDescriptionColor: v } as any)}
                                 />
-                                <ColorInput
-                                    label="Aktif Metin Rengi"
-                                    value={localTheme.categoryActiveTextColor || localTheme.buttonTextColor}
-                                    onChange={(v) => updateLocal({ categoryActiveTextColor: v } as any)}
-                                />
-                            </div>
-                        </div>
-
-                        <div className="bg-neutral-900 rounded-2xl p-6 border border-white/5">
-                            <h2 className="text-lg font-bold text-white mb-4">Buton Stili</h2>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                <NumberInput
-                                    label="Buton Köşe Yuvarlaklığı"
-                                    value={localTheme.categoryButtonRadius || 12}
-                                    onChange={(v) => updateLocal({ categoryButtonRadius: v } as any)}
-                                    max={30}
-                                />
-                                <NumberInput
-                                    label="Butonlar Arası Boşluk"
-                                    value={localTheme.categoryGap || 12}
-                                    onChange={(v) => updateLocal({ categoryGap: v } as any)}
-                                    max={30}
-                                />
-                                <NumberInput
-                                    label="Yatay Padding"
-                                    value={localTheme.categoryPaddingX || 16}
-                                    onChange={(v) => updateLocal({ categoryPaddingX: v } as any)}
-                                    max={40}
-                                />
-                                <NumberInput
-                                    label="Dikey Padding"
-                                    value={localTheme.categoryPaddingY || 10}
-                                    onChange={(v) => updateLocal({ categoryPaddingY: v } as any)}
-                                    max={30}
-                                />
-                            </div>
-                        </div>
-                    </>
-                )}
-
-                {/* MENU CARDS TAB */}
-                {activeTab === "menu" && (
-                    <>
-                        <div className="bg-neutral-900 rounded-2xl p-6 border border-white/5">
-                            <h2 className="text-lg font-bold text-white mb-4">Kart Renkleri</h2>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                <ColorInput
-                                    label="Kart Arka Plan"
-                                    value={localTheme.cardColor}
-                                    onChange={(v) => updateLocal({ cardColor: v })}
-                                />
-                                <ColorInput
-                                    label="Kart Border Rengi"
-                                    value={localTheme.cardBorderColor || "rgba(255,255,255,0.05)"}
-                                    onChange={(v) => updateLocal({ cardBorderColor: v } as any)}
-                                />
-                            </div>
-                        </div>
-
-                        <div className="bg-neutral-900 rounded-2xl p-6 border border-white/5">
-                            <h2 className="text-lg font-bold text-white mb-4">Kart Stili</h2>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                <NumberInput
-                                    label="Köşe Yuvarlaklığı"
-                                    value={parseInt(localTheme.cardRadius) || 16}
-                                    onChange={(v) => updateLocal({ cardRadius: `${v}px` })}
-                                    max={40}
-                                />
-                                <NumberInput
-                                    label="Border Kalınlığı"
-                                    value={localTheme.cardBorderWidth || 1}
-                                    onChange={(v) => updateLocal({ cardBorderWidth: v } as any)}
-                                    max={5}
-                                />
-                                <NumberInput
-                                    label="Kartlar Arası Boşluk"
-                                    value={localTheme.cardGap || 16}
-                                    onChange={(v) => updateLocal({ cardGap: v } as any)}
-                                    max={40}
-                                />
-                                <NumberInput
-                                    label="Resim Yüksekliği"
-                                    value={localTheme.cardImageHeight || 160}
-                                    onChange={(v) => updateLocal({ cardImageHeight: v } as any)}
-                                    max={300}
-                                />
-                            </div>
-                        </div>
-
-                        <div className="bg-neutral-900 rounded-2xl p-6 border border-white/5">
-                            <h2 className="text-lg font-bold text-white mb-4">Fiyat Stili</h2>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                 <ColorInput
                                     label="Fiyat Rengi"
-                                    value={localTheme.accentColor}
-                                    onChange={(v) => updateLocal({ accentColor: v })}
+                                    value={localTheme.productPriceColor || localTheme.accentColor}
+                                    onChange={(v) => updateLocal({ productPriceColor: v } as any)}
+                                />
+                                <ColorInput
+                                    label="Bilgi İkonları Rengi"
+                                    value={localTheme.productInfoIconColor || "rgba(255,255,255,0.6)"}
+                                    onChange={(v) => updateLocal({ productInfoIconColor: v } as any)}
+                                />
+                                <ColorInput
+                                    label="Ayraç Çizgisi Rengi"
+                                    value={localTheme.productDividerColor || "rgba(255,255,255,0.1)"}
+                                    onChange={(v) => updateLocal({ productDividerColor: v } as any)}
+                                />
+                                <ColorInput
+                                    label="Etiket Arka Plan"
+                                    value={localTheme.productTagBgColor || localTheme.primaryColor}
+                                    onChange={(v) => updateLocal({ productTagBgColor: v } as any)}
+                                />
+                                <ColorInput
+                                    label="Etiket Yazı Rengi"
+                                    value={localTheme.productTagTextColor || "#ffffff"}
+                                    onChange={(v) => updateLocal({ productTagTextColor: v } as any)}
                                 />
                                 <NumberInput
-                                    label="Fiyat Boyutu"
-                                    value={parseInt(localTheme.priceSize) || 18}
-                                    onChange={(v) => updateLocal({ priceSize: `${v}px` })}
-                                    max={30}
-                                />
-                            </div>
-                        </div>
-                    </>
-                )}
-
-                {/* BOTTOM NAV TAB */}
-                {activeTab === "bottomNav" && (
-                    <>
-                        <div className="bg-neutral-900 rounded-2xl p-6 border border-white/5">
-                            <h2 className="text-lg font-bold text-white mb-4">Alt Menü Renkleri</h2>
-                            <div className="mb-6">
-                                <Toggle
-                                    label="Arkaplan Bulanıklığı (Blur)"
-                                    checked={localTheme.bottomNavBlur !== false}
-                                    onChange={(v) => updateLocal({ bottomNavBlur: v } as any)}
-                                />
-                            </div>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                <ColorInput
-                                    label="Arka Plan Rengi"
-                                    value={localTheme.bottomNavBgColor || "rgba(0,0,0,0.95)"}
-                                    onChange={(v) => updateLocal({ bottomNavBgColor: v } as any)}
-                                />
-                                <ColorInput
-                                    label="Aktif İkon Rengi"
-                                    value={localTheme.bottomNavActiveColor || "#ffffff"}
-                                    onChange={(v) => updateLocal({ bottomNavActiveColor: v } as any)}
-                                />
-                                <ColorInput
-                                    label="Pasif İkon Rengi"
-                                    value={localTheme.bottomNavInactiveColor || "rgba(255,255,255,0.5)"}
-                                    onChange={(v) => updateLocal({ bottomNavInactiveColor: v } as any)}
-                                />
-                                <ColorInput
-                                    label="Border Rengi"
-                                    value={localTheme.bottomNavBorderColor || "rgba(255,255,255,0.1)"}
-                                    onChange={(v) => updateLocal({ bottomNavBorderColor: v } as any)}
-                                />
-                            </div>
-                        </div>
-
-                        <div className="bg-neutral-900 rounded-2xl p-6 border border-white/5">
-                            <h2 className="text-lg font-bold text-white mb-4">Alt Menü Boyutları</h2>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                <NumberInput
-                                    label="İkon Boyutu"
-                                    value={localTheme.bottomNavIconSize || 24}
-                                    onChange={(v) => updateLocal({ bottomNavIconSize: v } as any)}
-                                    max={40}
-                                />
-                                <NumberInput
-                                    label="İkonlar Arası Boşluk"
-                                    value={localTheme.bottomNavGap || 0}
-                                    onChange={(v) => updateLocal({ bottomNavGap: v } as any)}
-                                    max={30}
-                                />
-                                <NumberInput
-                                    label="Dikey Padding"
-                                    value={localTheme.bottomNavPaddingY || 12}
-                                    onChange={(v) => updateLocal({ bottomNavPaddingY: v } as any)}
-                                    max={30}
-                                />
-                            </div>
-                        </div>
-                    </>
-
-                )}
-
-                {/* BUSINESS TAB */}
-                {activeTab === "business" && (
-                    <>
-                        <div className="bg-neutral-900 rounded-2xl p-6 border border-white/5">
-                            <h2 className="text-lg font-bold text-white mb-4">İşletme Profili Renkleri</h2>
-                            <div className="mb-6">
-                                <Toggle
-                                    label="Arkaplan Bulanıklığı (Blur)"
-                                    checked={localTheme.businessBlur !== false}
-                                    onChange={(v) => updateLocal({ businessBlur: v } as any)}
-                                />
-                            </div>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                <ColorInput
-                                    label="Arka Plan (Backdrop)"
-                                    value={localTheme.businessModalBgColor || "rgba(0,0,0,0.8)"}
-                                    onChange={(v) => updateLocal({ businessModalBgColor: v } as any)}
-                                />
-                                <ColorInput
-                                    label="Kart Rengi"
-                                    value={localTheme.businessCardBgColor || "#171717"}
-                                    onChange={(v) => updateLocal({ businessCardBgColor: v } as any)}
-                                />
-                                <ColorInput
-                                    label="Yazı Rengi"
-                                    value={localTheme.businessTextColor || "#ffffff"}
-                                    onChange={(v) => updateLocal({ businessTextColor: v } as any)}
+                                    label="Etiket Köşe Yuvarlaklığı"
+                                    value={localTheme.productTagRadius || 9999}
+                                    onChange={(v) => updateLocal({ productTagRadius: v } as any)}
+                                    max={50}
                                 />
                             </div>
                         </div>
@@ -712,12 +555,6 @@ export default function DesignPage() {
                 )}
             </div>
 
-            {/* Live Preview Hint */}
-            <div className="mt-8 p-4 rounded-xl bg-neutral-900/50 border border-white/5">
-                <p className="text-sm text-white/40 text-center">
-                    💡 Değişiklikler anında önizlenir. Kaydet butonuna basarak kalıcı hale getirin.
-                </p>
-            </div>
         </div >
     );
 }

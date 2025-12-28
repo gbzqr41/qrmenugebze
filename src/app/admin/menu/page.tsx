@@ -28,6 +28,8 @@ import {
     Trash2,
     Video,
     X,
+    Check,
+    Image,
     // Food related icons
     UtensilsCrossed,
     Pizza,
@@ -55,6 +57,7 @@ import {
 } from "lucide-react";
 import { useDataStore } from "@/context/DataStoreContext";
 import type { Category, Product } from "@/context/DataStoreContext";
+import type { SliderItem } from "@/data/mockData";
 
 // Icon options for categories
 const categoryIcons: { id: string; icon: LucideIcon; label: string }[] = [
@@ -121,7 +124,7 @@ function SortableCategoryItem({
     onEdit: () => void;
     onDelete: () => void;
     onAddProduct: () => void;
-    onDeleteProduct: (id: string) => void;
+    onDeleteProduct: (id: string, name: string) => void;
     onEditProduct: (id: string) => void;
     orderedProducts: Product[];
     setOrderedProducts: (products: Product[]) => void;
@@ -191,33 +194,36 @@ function SortableCategoryItem({
                         </div>
 
                         {isExpanded ? (
-                            <ChevronDown className="w-5 h-5 text-white/60" />
+                            <ChevronDown className="w-5 h-5 text-white/60 mr-3" />
                         ) : (
-                            <ChevronRight className="w-5 h-5 text-white/60" />
+                            <ChevronRight className="w-5 h-5 text-white/60 mr-3" />
                         )}
                     </button>
 
                     <div className="flex items-center gap-1">
                         <button
                             onClick={onAddProduct}
-                            className="p-2.5 text-green-400 hover:bg-green-500/20 rounded-xl transition-colors"
+                            className="flex items-center gap-1 px-2 py-1.5 text-green-400 hover:bg-green-500/20 rounded-xl transition-colors text-sm"
                             title="Ürün Ekle"
                         >
-                            <Plus className="w-5 h-5" />
+                            <Plus className="w-4 h-4" />
+                            <span>Ekle</span>
                         </button>
                         <button
                             onClick={onEdit}
-                            className="p-2.5 text-white/60 hover:bg-white/10 rounded-xl transition-colors"
+                            className="flex items-center gap-1 px-2 py-1.5 text-white/60 hover:bg-white/10 rounded-xl transition-colors text-sm"
                             title="Düzenle"
                         >
                             <Pencil className="w-4 h-4" />
+                            <span>Düzenle</span>
                         </button>
                         <button
                             onClick={(e) => { e.stopPropagation(); onDelete(); }}
-                            className="p-2.5 text-red-400 hover:bg-red-500/20 rounded-xl transition-colors"
+                            className="flex items-center gap-1 px-2 py-1.5 text-red-400 hover:bg-red-500/20 rounded-xl transition-colors text-sm"
                             title="Sil"
                         >
                             <Trash2 className="w-4 h-4" />
+                            <span>Sil</span>
                         </button>
                     </div>
                 </div>
@@ -247,7 +253,7 @@ function SortableCategoryItem({
                                                 <SortableProductItem
                                                     key={product.id}
                                                     product={product}
-                                                    onDelete={() => onDeleteProduct(product.id)}
+                                                    onDelete={() => onDeleteProduct(product.id, product.name)}
                                                     onEdit={() => onEditProduct(product.id)}
                                                 />
                                             ))}
@@ -318,7 +324,9 @@ function SortableProductItem({
 
             {/* Product Image */}
             <div className="w-14 h-14 rounded-xl overflow-hidden bg-neutral-800 flex-shrink-0">
-                {isVideoUrl(product.image) ? (
+                {!product.image ? (
+                    <div className="w-full h-full bg-neutral-700" />
+                ) : isVideoUrl(product.image) ? (
                     <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-red-500/20 to-red-600/20">
                         <Video className="w-6 h-6 text-red-400" />
                     </div>
@@ -345,25 +353,27 @@ function SortableProductItem({
 
             <button
                 onClick={onEdit}
-                className="p-2 text-white/60 hover:bg-white/10 rounded-xl transition-colors"
+                className="flex items-center gap-1 px-2 py-1.5 text-white/60 hover:bg-white/10 rounded-xl transition-colors text-sm"
                 title="Düzenle"
             >
                 <Pencil className="w-4 h-4" />
+                <span>Düzenle</span>
             </button>
 
             <button
                 onClick={(e) => { e.stopPropagation(); onDelete(); }}
-                className="p-2 text-red-400 hover:bg-red-500/20 rounded-xl transition-colors"
+                className="flex items-center gap-1 px-2 py-1.5 text-red-400 hover:bg-red-500/20 rounded-xl transition-colors text-sm"
                 title="Ürünü Sil"
             >
                 <Trash2 className="w-4 h-4" />
+                <span>Sil</span>
             </button>
         </div>
     );
 }
 
 export default function MenuManagementPage() {
-    const { categories, products, addCategory, updateCategory, deleteCategory, addProduct, deleteProduct, reorderCategories, reorderProducts, isLoading } = useDataStore();
+    const { categories, products, addCategory, updateCategory, deleteCategory, addProduct, deleteProduct, reorderCategories, reorderProducts, isLoading, clearAllMenuData, business, updateBusiness } = useDataStore();
     const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
     const [orderedCategories, setOrderedCategories] = useState<Category[]>([]);
     const [productsByCategory, setProductsByCategory] = useState<Record<string, Product[]>>({});
@@ -375,6 +385,14 @@ export default function MenuManagementPage() {
         categoryName: ""
     });
 
+    // Slider modal state
+    const [sliderModal, setSliderModal] = useState<{ open: boolean; slider?: SliderItem }>({ open: false });
+    const [sliderItems, setSliderItems] = useState<SliderItem[]>([]);
+    const [sliderTitle, setSliderTitle] = useState("");
+    const [sliderSubtitle, setSliderSubtitle] = useState("");
+    const [sliderImage, setSliderImage] = useState("");
+    const sliderFileRef = useState<HTMLInputElement | null>(null);
+
     // Modal states
     const [modalName, setModalName] = useState("");
     const [modalIcon, setModalIcon] = useState("utensils");
@@ -382,6 +400,19 @@ export default function MenuManagementPage() {
     const [modalPrice, setModalPrice] = useState("");
     const [modalDescription, setModalDescription] = useState("");
     const [isSaving, setIsSaving] = useState(false);
+
+    // Toast notification state
+    const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
+    // Delete confirmation modal state
+    const [deleteModal, setDeleteModal] = useState<{ open: boolean; type: 'category' | 'product' | 'slider'; id: string; name: string }>({
+        open: false, type: 'category', id: '', name: ''
+    });
+
+    const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+        setToast({ message, type });
+        setTimeout(() => setToast(null), 3000);
+    };
 
     // Sync categories
     useEffect(() => {
@@ -420,6 +451,75 @@ export default function MenuManagementPage() {
         }
     }, [productModal]);
 
+    // Slider sync with business
+    useEffect(() => {
+        setSliderItems(business.sliderItems || []);
+    }, [business.sliderItems]);
+
+    // Slider modal reset
+    useEffect(() => {
+        if (sliderModal.open) {
+            if (sliderModal.slider) {
+                setSliderTitle(sliderModal.slider.title);
+                setSliderSubtitle(sliderModal.slider.subtitle || "");
+                setSliderImage(sliderModal.slider.image);
+            } else {
+                setSliderTitle("");
+                setSliderSubtitle("");
+                setSliderImage("");
+            }
+        } else {
+            setIsSaving(false);
+        }
+    }, [sliderModal]);
+
+    // Slider handlers
+    const handleSliderImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        if (file.size > 2 * 1024 * 1024) {
+            showToast("Resim boyutu 2MB'dan küçük olmalıdır", 'error');
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            setSliderImage(event.target?.result as string);
+        };
+        reader.readAsDataURL(file);
+    };
+
+    const handleSaveSlider = () => {
+        if (!sliderTitle.trim() || !sliderImage || isSaving) return;
+        setIsSaving(true);
+
+        const newSlider: SliderItem = {
+            id: sliderModal.slider?.id || `slider_${Date.now()}`,
+            title: sliderTitle.trim(),
+            subtitle: sliderSubtitle.trim() || undefined,
+            image: sliderImage,
+            link: "",
+        };
+
+        let updatedSliders: SliderItem[];
+        if (sliderModal.slider) {
+            updatedSliders = sliderItems.map(s => s.id === sliderModal.slider!.id ? newSlider : s);
+            showToast("Slider güncellendi");
+        } else {
+            updatedSliders = [...sliderItems, newSlider];
+            showToast("Slider eklendi");
+        }
+
+        updateBusiness({ sliderItems: updatedSliders });
+        setSliderModal({ open: false });
+    };
+
+    const handleDeleteSlider = (id: string) => {
+        const updatedSliders = sliderItems.filter(s => s.id !== id);
+        updateBusiness({ sliderItems: updatedSliders });
+        showToast("Slider silindi");
+        setDeleteModal({ open: false, type: 'category', id: '', name: '' });
+    };
+
     // Drag sensors
     const sensors = useSensors(
         useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -441,7 +541,7 @@ export default function MenuManagementPage() {
     // Loading state
     if (isLoading) {
         return (
-            <div className="p-6 lg:p-8 max-w-5xl">
+            <div className="p-6 lg:p-8">
                 <div className="flex items-center justify-center min-h-[400px]">
                     <div className="text-center">
                         <div className="w-16 h-16 border-4 border-white/20 border-t-white rounded-full animate-spin mx-auto mb-4" />
@@ -466,17 +566,16 @@ export default function MenuManagementPage() {
 
         if (categoryModal.category) {
             updateCategory(categoryModal.category.id, { name: modalName.trim(), icon: modalIcon, isFeatured: modalIsFeatured });
+            showToast("Kategori güncellendi");
         } else {
             addCategory({ name: modalName.trim(), icon: modalIcon, isFeatured: modalIsFeatured });
+            showToast("Kategori eklendi");
         }
         setCategoryModal({ open: false }); // Close modal after operation
     };
 
-    const handleDeleteCategory = (categoryId: string) => {
-        if (window.confirm("Bu kategoriyi silmek istediğinize emin misiniz?")) {
-            console.log("Deleting category:", categoryId);
-            deleteCategory(categoryId);
-        }
+    const handleDeleteCategory = (categoryId: string, categoryName: string) => {
+        setDeleteModal({ open: true, type: 'category', id: categoryId, name: categoryName });
     };
 
     const handleSaveProduct = () => {
@@ -488,19 +587,31 @@ export default function MenuManagementPage() {
             name: modalName.trim(),
             description: modalDescription.trim() || "Lezzetli ürün",
             price: Number(modalPrice),
-            image: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&h=300&fit=crop",
+            image: "",
             tags: [],
             isFeatured: false,
             isNew: true,
         });
+        showToast("Ürün eklendi");
         setProductModal({ open: false, categoryId: "", categoryName: "" }); // Close modal after operation
     };
 
-    const handleDeleteProduct = (productId: string) => {
-        if (window.confirm("Bu ürünü silmek istediğinize emin misiniz?")) {
-            console.log("Deleting product:", productId);
-            deleteProduct(productId);
+    const handleDeleteProduct = (productId: string, productName: string) => {
+        setDeleteModal({ open: true, type: 'product', id: productId, name: productName });
+    };
+
+    const confirmDelete = () => {
+        if (deleteModal.type === 'category') {
+            deleteCategory(deleteModal.id);
+            showToast("Kategori silindi");
+        } else if (deleteModal.type === 'product') {
+            deleteProduct(deleteModal.id);
+            showToast("Ürün silindi");
+        } else if (deleteModal.type === 'slider') {
+            handleDeleteSlider(deleteModal.id);
+            return; // handleDeleteSlider already closes modal
         }
+        setDeleteModal({ open: false, type: 'category', id: '', name: '' });
     };
 
     const handleEditProduct = (productId: string) => {
@@ -508,7 +619,70 @@ export default function MenuManagementPage() {
     };
 
     return (
-        <div className="p-6 lg:p-8 max-w-5xl">
+        <div className="p-6 lg:p-8">
+            {/* Toast Notification */}
+            <AnimatePresence>
+                {toast && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 20 }}
+                        className="fixed bottom-8 right-[50px] z-50 flex items-center gap-2 px-4 py-3 rounded-xl bg-white text-black font-medium shadow-lg"
+                    >
+                        <Check className="w-5 h-5 text-black" />
+                        {toast.message}
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Delete Confirmation Modal */}
+            <AnimatePresence>
+                {deleteModal.open && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+                        onClick={() => setDeleteModal({ open: false, type: 'category', id: '', name: '' })}
+                    >
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            onClick={(e) => e.stopPropagation()}
+                            className="bg-neutral-900 rounded-2xl p-6 max-w-md w-full mx-4 border border-white/10"
+                        >
+                            <div className="flex items-center gap-3 mb-4">
+                                <div className="w-12 h-12 rounded-full bg-red-500/20 flex items-center justify-center">
+                                    <Trash2 className="w-6 h-6 text-red-400" />
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-bold text-white">Silmek istediğine emin misin?</h3>
+                                    <p className="text-white/50 text-sm">{deleteModal.name}</p>
+                                </div>
+                            </div>
+                            <p className="text-white/60 mb-6">
+                                Bu {deleteModal.type === 'category' ? 'kategoriyi' : 'ürünü'} silmek üzeresin. Bu işlem geri alınamaz.
+                            </p>
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={() => setDeleteModal({ open: false, type: 'category', id: '', name: '' })}
+                                    className="flex-1 px-4 py-3 rounded-xl bg-white/10 text-white font-medium hover:bg-white/20 transition-colors"
+                                >
+                                    İptal
+                                </button>
+                                <button
+                                    onClick={confirmDelete}
+                                    className="flex-1 px-4 py-3 rounded-xl bg-red-500 text-white font-medium hover:bg-red-600 transition-colors"
+                                >
+                                    Sil
+                                </button>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
             {/* Header */}
             <motion.div
                 initial={{ opacity: 0, y: -20 }}
@@ -519,38 +693,36 @@ export default function MenuManagementPage() {
                     <h1 className="text-2xl font-bold text-white mb-1">Menü Yönetimi</h1>
                     <p className="text-white/50">Kategorileri ve ürünleri sürükleyerek sıralayın</p>
                 </div>
-
-                <button
-                    onClick={() => setCategoryModal({ open: true })}
-                    className="flex items-center gap-2 px-6 py-3 bg-white text-black rounded-xl font-semibold hover:bg-neutral-100 transition-colors shadow-lg"
-                >
-                    <Plus className="w-5 h-5" />
-                    Yeni Kategori
-                </button>
-            </motion.div>
-
-            {/* Stats */}
-            <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.1 }}
-                className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8"
-            >
-                <div className="bg-gradient-to-br from-blue-500/20 to-blue-600/10 rounded-2xl p-5 border border-blue-500/20">
-                    <p className="text-3xl font-bold text-white">{categories.length}</p>
-                    <p className="text-sm text-white/60">Kategori</p>
-                </div>
-                <div className="bg-gradient-to-br from-green-500/20 to-green-600/10 rounded-2xl p-5 border border-green-500/20">
-                    <p className="text-3xl font-bold text-white">{products.length}</p>
-                    <p className="text-sm text-white/60">Ürün</p>
-                </div>
-                <div className="bg-gradient-to-br from-purple-500/20 to-purple-600/10 rounded-2xl p-5 border border-purple-500/20">
-                    <p className="text-3xl font-bold text-white">{products.filter(p => p.isNew).length}</p>
-                    <p className="text-sm text-white/60">Yeni Ürün</p>
-                </div>
-                <div className="bg-gradient-to-br from-amber-500/20 to-amber-600/10 rounded-2xl p-5 border border-amber-500/20">
-                    <p className="text-3xl font-bold text-white">{products.filter(p => p.isFeatured).length}</p>
-                    <p className="text-sm text-white/60">Öne Çıkan</p>
+                <div className="flex gap-2">
+                    <button
+                        onClick={() => {
+                            if (categories.length === 0 && products.length === 0) {
+                                alert("Silinecek kategori veya ürün yok.");
+                                return;
+                            }
+                            if (window.confirm("⚠️ DİKKAT!\n\nTüm kategoriler ve ürünler silinecektir.\n\nBu işlem geri alınamaz. Devam etmek istiyor musunuz?")) {
+                                clearAllMenuData();
+                            }
+                        }}
+                        className="flex items-center gap-2 px-4 py-3 bg-red-500/20 text-red-400 border border-red-500/30 rounded-xl font-semibold hover:bg-red-500/30 transition-colors"
+                    >
+                        <Trash2 className="w-5 h-5" />
+                        Hepsini Sil
+                    </button>
+                    <button
+                        onClick={() => window.location.href = '/admin/slider'}
+                        className="flex items-center gap-2 px-4 py-3 bg-neutral-800 text-white border border-white/10 rounded-xl font-semibold hover:bg-neutral-700 transition-colors"
+                    >
+                        <Plus className="w-5 h-5" />
+                        Slider
+                    </button>
+                    <button
+                        onClick={() => setCategoryModal({ open: true })}
+                        className="flex items-center gap-2 px-6 py-3 bg-white text-black rounded-xl font-semibold hover:bg-neutral-100 transition-colors shadow-lg"
+                    >
+                        <Plus className="w-5 h-5" />
+                        Yeni Kategori
+                    </button>
                 </div>
             </motion.div>
 
@@ -572,7 +744,7 @@ export default function MenuManagementPage() {
                             isExpanded={expandedCategories.includes(category.id)}
                             onToggle={() => toggleCategory(category.id)}
                             onEdit={() => setCategoryModal({ open: true, category })}
-                            onDelete={() => handleDeleteCategory(category.id)}
+                            onDelete={() => handleDeleteCategory(category.id, category.name)}
                             onAddProduct={() => setProductModal({
                                 open: true,
                                 categoryId: category.id,
@@ -813,6 +985,114 @@ export default function MenuManagementPage() {
                     </div>
                 )}
             </AnimatePresence>
+
+            {/* Slider Modal */}
+            <AnimatePresence>
+                {sliderModal.open && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+                            onClick={() => setSliderModal({ open: false })}
+                        />
+                        <motion.div
+                            initial={{ scale: 0.95, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.95, opacity: 0 }}
+                            className="relative bg-neutral-900 rounded-2xl p-6 w-full max-w-md border border-white/10"
+                        >
+                            <div className="flex items-center justify-between mb-6">
+                                <h2 className="text-xl font-bold text-white">
+                                    {sliderModal.slider ? "Slider Düzenle" : "Yeni Slider"}
+                                </h2>
+                                <button
+                                    onClick={() => setSliderModal({ open: false })}
+                                    className="p-2 text-white/60 hover:bg-white/10 rounded-lg"
+                                >
+                                    <X className="w-5 h-5" />
+                                </button>
+                            </div>
+
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="text-sm text-white/60 mb-2 block">Başlık *</label>
+                                    <input
+                                        type="text"
+                                        value={sliderTitle}
+                                        onChange={(e) => setSliderTitle(e.target.value)}
+                                        placeholder="Slider başlığı"
+                                        className="w-full px-4 py-3 bg-neutral-800 rounded-xl text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-white/20"
+                                        autoFocus
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="text-sm text-white/60 mb-2 block">Açıklama</label>
+                                    <input
+                                        type="text"
+                                        value={sliderSubtitle}
+                                        onChange={(e) => setSliderSubtitle(e.target.value)}
+                                        placeholder="Alt başlık (opsiyonel)"
+                                        className="w-full px-4 py-3 bg-neutral-800 rounded-xl text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-white/20"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="text-sm text-white/60 mb-2 block">Görsel *</label>
+                                    <input
+                                        type="file"
+                                        accept="image/*,video/*"
+                                        onChange={handleSliderImageUpload}
+                                        className="hidden"
+                                        id="slider-image-upload"
+                                    />
+                                    {sliderImage ? (
+                                        <div className="relative h-32 rounded-xl overflow-hidden">
+                                            <img src={sliderImage} alt="Preview" className="w-full h-full object-cover" />
+                                            <button
+                                                type="button"
+                                                onClick={() => setSliderImage("")}
+                                                className="absolute top-2 right-2 p-1.5 bg-red-500 rounded-lg text-white"
+                                            >
+                                                <X className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <label
+                                            htmlFor="slider-image-upload"
+                                            className="flex flex-col items-center justify-center h-32 bg-neutral-800 rounded-xl border-2 border-dashed border-white/20 cursor-pointer hover:border-white/40"
+                                        >
+                                            <Image className="w-8 h-8 text-white/40 mb-2" />
+                                            <span className="text-sm text-white/40">Resim yükle (max 2MB)</span>
+                                        </label>
+                                    )}
+                                </div>
+
+                                <div className="flex gap-3 pt-4">
+                                    <button
+                                        type="button"
+                                        onClick={() => setSliderModal({ open: false })}
+                                        className="flex-1 px-4 py-3 bg-white/10 text-white rounded-xl hover:bg-white/20 font-medium"
+                                    >
+                                        İptal
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={handleSaveSlider}
+                                        disabled={isSaving || !sliderTitle.trim() || !sliderImage}
+                                        className="flex-1 px-4 py-3 bg-white text-black rounded-xl font-semibold hover:bg-neutral-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        {isSaving ? "Kaydediliyor..." : (sliderModal.slider ? "Kaydet" : "Ekle")}
+                                    </button>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }
+

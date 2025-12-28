@@ -63,8 +63,18 @@ const ProductFeed = forwardRef<HTMLDivElement, ProductFeedProps>(
                                         <Percent className="w-4 h-4 text-white" />
                                     </div>
                                     <div>
-                                        <h2 className="text-lg font-bold text-white">İndirimli Ürünler</h2>
-                                        <p className="text-xs text-white/40">{discountedProducts.length} ürün</p>
+                                        <h2
+                                            className="text-lg font-bold"
+                                            style={{ color: theme.categoryTitleColor || "#ffffff" }}
+                                        >
+                                            İndirimli Ürünler
+                                        </h2>
+                                        <p
+                                            className="text-xs"
+                                            style={{ color: theme.productCountColor || "rgba(255,255,255,0.4)" }}
+                                        >
+                                            {discountedProducts.length} ürün
+                                        </p>
                                     </div>
                                 </div>
                             </div>
@@ -84,7 +94,7 @@ const ProductFeed = forwardRef<HTMLDivElement, ProductFeedProps>(
 
                                     return (
                                         <div
-                                            key={product.id}
+                                            key={`discount-${product.id}`}
                                             onClick={() => onProductClick(product)}
                                             className="shrink-0 cursor-pointer overflow-hidden"
                                             style={{
@@ -145,59 +155,62 @@ const ProductFeed = forwardRef<HTMLDivElement, ProductFeedProps>(
                         <div key={category.id} className="pt-6 px-5">
                             {/* Main Container Card */}
                             <div
-                                className="rounded-2xl overflow-hidden"
-                                style={{ backgroundColor: theme.cardColor }}
+                                style={{
+                                    backgroundColor: theme.featuredCardBgColor || theme.cardColor,
+                                    borderRadius: `${theme.featuredCardRadius || 16}px`
+                                }}
                             >
                                 {/* Section Title */}
                                 <div className="p-4 pb-0">
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-8 h-8 rounded-full bg-amber-500 flex items-center justify-center">
-                                            <Sparkles className="w-4 h-4 text-white" />
-                                        </div>
-                                        <div>
-                                            <h2 className="text-lg font-bold text-white">{category.name}</h2>
-                                            <p className="text-xs text-white/40">{categoryProducts.length} ürün</p>
-                                        </div>
-                                    </div>
+                                    <h2
+                                        className="text-lg font-bold"
+                                        style={{ color: theme.featuredTitleColor || "#ffffff" }}
+                                    >
+                                        {category.name}
+                                    </h2>
                                 </div>
 
                                 {/* Horizontal Scroll Container */}
                                 <div
-                                    className="flex gap-3 overflow-x-auto p-4 scrollbar-hide"
+                                    className="flex gap-3 overflow-x-auto py-4 px-4 scrollbar-hide"
                                     style={{
-                                        scrollSnapType: "x mandatory",
+                                        scrollSnapType: "x proximity",
                                         WebkitOverflowScrolling: "touch",
+                                        scrollPaddingLeft: "16px",
                                     }}
                                 >
                                     {categoryProducts.map((product) => (
                                         <div
-                                            key={product.id}
+                                            key={`featured-${product.id}`}
                                             onClick={() => onProductClick(product)}
                                             className="shrink-0 cursor-pointer overflow-hidden"
                                             style={{
                                                 width: "150px",
                                                 scrollSnapAlign: "start",
                                                 backgroundColor: "rgba(255,255,255,0.05)",
-                                                borderRadius: "12px",
+                                                borderRadius: `${theme.featuredMenuRadius || 12}px`,
                                             }}
                                         >
                                             {/* Image */}
                                             <div
                                                 className="relative w-full h-24 bg-cover bg-center"
-                                                style={{ backgroundImage: `url(${product.image})` }}
+                                                style={{
+                                                    backgroundImage: `url(${product.image})`,
+                                                    borderRadius: `${theme.featuredImageRadius || 0}px`
+                                                }}
                                             />
 
                                             {/* Content */}
                                             <div className="p-2">
                                                 <h3
                                                     className="font-semibold text-xs mb-1 truncate"
-                                                    style={{ color: theme.textColor }}
+                                                    style={{ color: theme.featuredNameColor || theme.textColor }}
                                                 >
                                                     {product.name}
                                                 </h3>
                                                 <span
                                                     className="font-bold text-xs"
-                                                    style={{ color: theme.accentColor }}
+                                                    style={{ color: theme.featuredPriceColor || theme.accentColor }}
                                                 >
                                                     {product.price} TL
                                                 </span>
@@ -238,8 +251,16 @@ const ProductFeed = forwardRef<HTMLDivElement, ProductFeedProps>(
                                         transition={{ duration: 0.4 }}
                                         className="mb-4"
                                     >
-                                        <h2 className="text-xl font-bold text-white">{category.name}</h2>
-                                        <p className="text-sm text-white/40 mt-1">
+                                        <h2
+                                            className="text-xl font-bold"
+                                            style={{ color: theme.categoryTitleColor || "#ffffff" }}
+                                        >
+                                            {category.name}
+                                        </h2>
+                                        <p
+                                            className="text-sm mt-1"
+                                            style={{ color: theme.productCountColor || "rgba(255,255,255,0.4)" }}
+                                        >
                                             {categoryProducts.length} ürün
                                         </p>
                                     </motion.div>

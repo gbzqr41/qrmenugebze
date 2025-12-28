@@ -10,18 +10,18 @@ import {
     Phone,
     Share2,
     Image,
-    Shield,
-    SlidersHorizontal,
+    Tag,
+    Sparkles,
 } from "lucide-react";
 
 const settingsTabs = [
+    { icon: Sparkles, label: "Hoşgeldin", href: "/admin/settings/welcome" },
     { icon: Building2, label: "İşletme Bilgileri", href: "/admin/settings" },
     { icon: Phone, label: "İletişim", href: "/admin/settings/contact" },
     { icon: Clock, label: "Çalışma Saatleri", href: "/admin/settings/hours" },
     { icon: Share2, label: "Sosyal Medya", href: "/admin/settings/social" },
-    { icon: Image, label: "Görsel ve Logo", href: "/admin/settings/branding" },
-    { icon: SlidersHorizontal, label: "Slider", href: "/admin/settings/slider" },
-    { icon: Shield, label: "Güvenlik", href: "/admin/settings/security" },
+    { icon: Image, label: "Galeri", href: "/admin/settings/gallery" },
+    { icon: Tag, label: "Etiketler", href: "/admin/settings/tags" },
 ];
 
 export default function SettingsLayout({

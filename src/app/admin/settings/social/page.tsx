@@ -1,23 +1,33 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Save, Instagram, Facebook, Twitter, Youtube, Link2 } from "lucide-react";
+import { Save, Instagram, Facebook, Twitter, Youtube, Globe, Music2 } from "lucide-react";
 import { useDataStore } from "@/context/DataStoreContext";
 
 export default function SocialSettingsPage() {
     const { business, updateBusiness } = useDataStore();
+    const [isSaved, setIsSaved] = useState(false);
 
     const [formData, setFormData] = useState({
-        instagram: business.socialMedia?.instagram || "",
-        facebook: business.socialMedia?.facebook || "",
-        twitter: business.socialMedia?.twitter || "",
-        youtube: business.socialMedia?.youtube || "",
-        tiktok: business.socialMedia?.tiktok || "",
-        linkedin: "",
-        pinterest: "",
-        tripadvisor: "",
+        instagram: "",
+        facebook: "",
+        twitter: "",
+        tiktok: "",
+        youtube: "",
+        website: "",
     });
+
+    useEffect(() => {
+        setFormData({
+            instagram: business.socialMedia?.instagram || "",
+            facebook: business.socialMedia?.facebook || "",
+            twitter: business.socialMedia?.twitter || "",
+            tiktok: business.socialMedia?.tiktok || "",
+            youtube: business.socialMedia?.youtube || "",
+            website: business.socialMedia?.website || "",
+        });
+    }, [business.socialMedia]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -26,11 +36,13 @@ export default function SocialSettingsPage() {
                 instagram: formData.instagram,
                 facebook: formData.facebook,
                 twitter: formData.twitter,
-                youtube: formData.youtube,
                 tiktok: formData.tiktok,
+                youtube: formData.youtube,
+                website: formData.website,
             },
         });
-        alert("✓ Sosyal medya bilgileri kaydedildi!");
+        setIsSaved(true);
+        setTimeout(() => setIsSaved(false), 2000);
     };
 
     return (
@@ -45,18 +57,13 @@ export default function SocialSettingsPage() {
                         <Instagram className="w-4 h-4 text-pink-500" />
                         Instagram
                     </label>
-                    <div className="flex">
-                        <span className="px-4 py-3 bg-neutral-700 rounded-l-xl text-white/40">
-                            @
-                        </span>
-                        <input
-                            type="text"
-                            value={formData.instagram}
-                            onChange={(e) => setFormData({ ...formData, instagram: e.target.value })}
-                            placeholder="kullaniciadi"
-                            className="flex-1 px-4 py-3 bg-neutral-800 rounded-r-xl text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-white/20"
-                        />
-                    </div>
+                    <input
+                        type="text"
+                        value={formData.instagram}
+                        onChange={(e) => setFormData({ ...formData, instagram: e.target.value })}
+                        placeholder="instagram.com/kullanici-adi"
+                        className="w-full px-4 py-3 bg-neutral-800 rounded-xl text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-white/20"
+                    />
                 </div>
 
                 {/* Facebook */}
@@ -65,38 +72,43 @@ export default function SocialSettingsPage() {
                         <Facebook className="w-4 h-4 text-blue-500" />
                         Facebook
                     </label>
-                    <div className="flex">
-                        <span className="px-4 py-3 bg-neutral-700 rounded-l-xl text-white/40 text-sm">
-                            facebook.com/
-                        </span>
-                        <input
-                            type="text"
-                            value={formData.facebook}
-                            onChange={(e) => setFormData({ ...formData, facebook: e.target.value })}
-                            placeholder="sayfaadi"
-                            className="flex-1 px-4 py-3 bg-neutral-800 rounded-r-xl text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-white/20"
-                        />
-                    </div>
+                    <input
+                        type="text"
+                        value={formData.facebook}
+                        onChange={(e) => setFormData({ ...formData, facebook: e.target.value })}
+                        placeholder="facebook.com/sayfa-adi"
+                        className="w-full px-4 py-3 bg-neutral-800 rounded-xl text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-white/20"
+                    />
                 </div>
 
-                {/* Twitter/X */}
+                {/* Twitter */}
                 <div>
                     <label className="text-sm text-white/60 mb-2 flex items-center gap-2">
-                        <Twitter className="w-4 h-4 text-sky-500" />
+                        <Twitter className="w-4 h-4 text-sky-400" />
                         Twitter / X
                     </label>
-                    <div className="flex">
-                        <span className="px-4 py-3 bg-neutral-700 rounded-l-xl text-white/40">
-                            @
-                        </span>
-                        <input
-                            type="text"
-                            value={formData.twitter}
-                            onChange={(e) => setFormData({ ...formData, twitter: e.target.value })}
-                            placeholder="kullaniciadi"
-                            className="flex-1 px-4 py-3 bg-neutral-800 rounded-r-xl text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-white/20"
-                        />
-                    </div>
+                    <input
+                        type="text"
+                        value={formData.twitter}
+                        onChange={(e) => setFormData({ ...formData, twitter: e.target.value })}
+                        placeholder="twitter.com/kullanici-adi"
+                        className="w-full px-4 py-3 bg-neutral-800 rounded-xl text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-white/20"
+                    />
+                </div>
+
+                {/* TikTok */}
+                <div>
+                    <label className="text-sm text-white/60 mb-2 flex items-center gap-2">
+                        <Music2 className="w-4 h-4 text-white" />
+                        TikTok
+                    </label>
+                    <input
+                        type="text"
+                        value={formData.tiktok}
+                        onChange={(e) => setFormData({ ...formData, tiktok: e.target.value })}
+                        placeholder="tiktok.com/@kullanici-adi"
+                        className="w-full px-4 py-3 bg-neutral-800 rounded-xl text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-white/20"
+                    />
                 </div>
 
                 {/* YouTube */}
@@ -105,84 +117,43 @@ export default function SocialSettingsPage() {
                         <Youtube className="w-4 h-4 text-red-500" />
                         YouTube
                     </label>
-                    <div className="flex">
-                        <span className="px-4 py-3 bg-neutral-700 rounded-l-xl text-white/40 text-sm">
-                            youtube.com/@
-                        </span>
-                        <input
-                            type="text"
-                            value={formData.youtube}
-                            onChange={(e) => setFormData({ ...formData, youtube: e.target.value })}
-                            placeholder="kanaladi"
-                            className="flex-1 px-4 py-3 bg-neutral-800 rounded-r-xl text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-white/20"
-                        />
-                    </div>
+                    <input
+                        type="text"
+                        value={formData.youtube}
+                        onChange={(e) => setFormData({ ...formData, youtube: e.target.value })}
+                        placeholder="youtube.com/@kanal-adi"
+                        className="w-full px-4 py-3 bg-neutral-800 rounded-xl text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-white/20"
+                    />
                 </div>
 
-                {/* TikTok */}
+                {/* Website */}
                 <div>
                     <label className="text-sm text-white/60 mb-2 flex items-center gap-2">
-                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-5.2 1.74 2.89 2.89 0 012.31-4.64 2.93 2.93 0 01.88.13V9.4a6.84 6.84 0 00-1-.05A6.33 6.33 0 005 20.1a6.34 6.34 0 0010.86-4.43v-7a8.16 8.16 0 004.77 1.52v-3.4a4.85 4.85 0 01-1-.1z" />
-                        </svg>
-                        TikTok
+                        <Globe className="w-4 h-4 text-green-400" />
+                        Website
                     </label>
-                    <div className="flex">
-                        <span className="px-4 py-3 bg-neutral-700 rounded-l-xl text-white/40 text-sm">
-                            tiktok.com/@
-                        </span>
-                        <input
-                            type="text"
-                            value={formData.tiktok}
-                            onChange={(e) => setFormData({ ...formData, tiktok: e.target.value })}
-                            placeholder="kullaniciadi"
-                            className="flex-1 px-4 py-3 bg-neutral-800 rounded-r-xl text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-white/20"
-                        />
-                    </div>
-                </div>
-            </div>
-
-            {/* Other Platforms */}
-            <div className="bg-neutral-900 rounded-2xl p-6 border border-white/5 space-y-5">
-                <div className="flex items-center gap-2 mb-2">
-                    <Link2 className="w-5 h-5 text-white" />
-                    <h2 className="text-lg font-bold text-white">Diğer Platformlar</h2>
-                </div>
-
-                {/* LinkedIn */}
-                <div>
-                    <label className="text-sm text-white/60 mb-2 block">LinkedIn</label>
                     <input
-                        type="url"
-                        value={formData.linkedin}
-                        onChange={(e) => setFormData({ ...formData, linkedin: e.target.value })}
-                        placeholder="https://linkedin.com/company/..."
-                        className="w-full px-4 py-3 bg-neutral-800 rounded-xl text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-white/20"
-                    />
-                </div>
-
-                {/* TripAdvisor */}
-                <div>
-                    <label className="text-sm text-white/60 mb-2 block">TripAdvisor</label>
-                    <input
-                        type="url"
-                        value={formData.tripadvisor}
-                        onChange={(e) => setFormData({ ...formData, tripadvisor: e.target.value })}
-                        placeholder="https://tripadvisor.com/Restaurant-..."
+                        type="text"
+                        value={formData.website}
+                        onChange={(e) => setFormData({ ...formData, website: e.target.value })}
+                        placeholder="www.siteniz.com"
                         className="w-full px-4 py-3 bg-neutral-800 rounded-xl text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-white/20"
                     />
                 </div>
             </div>
 
-            {/* Submit */}
-            <motion.button
-                whileTap={{ scale: 0.98 }}
+            {/* Fixed Save Button */}
+            <button
                 type="submit"
-                className="w-full flex items-center justify-center gap-2 py-4 bg-white text-black rounded-xl font-semibold hover:bg-neutral-100 transition-colors"
+                className={`fixed bottom-8 right-[50px] z-50 flex items-center gap-2 px-[15px] py-[10px] rounded-xl font-semibold shadow-lg transition-all active:scale-95 ${isSaved
+                    ? "bg-green-500 text-white"
+                    : "bg-white text-black hover:bg-neutral-100"
+                    }`}
             >
                 <Save className="w-5 h-5" />
-                Kaydet
-            </motion.button>
+                {isSaved ? "Kaydedildi" : "Kaydet"}
+            </button>
         </form>
     );
 }
+

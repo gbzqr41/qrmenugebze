@@ -101,7 +101,7 @@ export default function ProductDetailModal({
                     <button
                         onClick={toggleFavorite}
                         className="absolute top-4 right-4 z-60 w-10 h-10 rounded-full flex items-center justify-center backdrop-blur-md transition-colors"
-                        style={{ backgroundColor: theme.productCloseButtonBgColor || 'rgba(0,0,0,0.5)' }}
+                        style={{ backgroundColor: theme.productFavButtonBgColor || theme.productCloseButtonBgColor || 'rgba(0,0,0,0.5)' }}
                     >
                         <Heart
                             className="w-6 h-6"
@@ -134,38 +134,47 @@ export default function ProductDetailModal({
 
                 {/* Content - Black div with top radius, full height */}
                 <div
-                    className="rounded-t-3xl -mt-6 relative z-10 min-h-[calc(100vh-18rem)] px-5 py-6 space-y-5 transition-colors duration-300"
+                    className="rounded-t-3xl -mt-6 relative z-10 min-h-[calc(100vh-18rem)] px-5 py-6 space-y-5 transition-colors duration-300 overflow-hidden"
                     style={{
                         backgroundColor: theme.productCardBgColor || theme.cardColor,
                         color: theme.productTextColor || theme.textColor
                     }}
                 >
-                    {/* Title & Price Row */}
-                    <div className="flex items-start justify-between gap-4">
-                        <h1 className="text-2xl font-bold flex-1" style={{ color: theme.productTextColor || theme.textColor }}>
-                            {product.name}
-                        </h1>
-                        <span className="text-2xl font-bold whitespace-nowrap" style={{ color: theme.accentColor }}>
-                            {product.price} TL
-                        </span>
-                    </div>
+                    {/* Title */}
+                    <h1
+                        className="text-2xl font-bold break-words"
+                        style={{ color: theme.productTitleColor || theme.productTextColor || theme.textColor }}
+                    >
+                        {product.name}
+                    </h1>
 
                     {/* Description */}
-                    <p className="opacity-80 leading-relaxed">
+                    <p
+                        className="leading-relaxed break-words overflow-hidden"
+                        style={{ color: theme.productDescriptionColor || 'rgba(255,255,255,0.8)' }}
+                    >
                         {product.description}
                     </p>
 
+                    {/* Price */}
+                    <span
+                        className="text-2xl font-bold block"
+                        style={{ color: theme.productPriceColor || theme.accentColor }}
+                    >
+                        {product.price} TL
+                    </span>
+
                     {/* Tags */}
-                    {product.tags.length > 0 && (
+                    {product.tags && product.tags.length > 0 && (
                         <div className="flex flex-wrap gap-2">
                             {product.tags.map((tag, index) => (
                                 <span
                                     key={index}
-                                    className="px-3 py-1 text-xs font-medium rounded-full opacity-80"
+                                    className="px-3 py-1 text-xs font-medium"
                                     style={{
-                                        backgroundColor: theme.primaryColor,
-                                        color: theme.textColor,
-                                        border: `1px solid ${theme.cardBorderColor || 'rgba(255,255,255,0.1)'}`
+                                        backgroundColor: theme.productTagBgColor || theme.primaryColor,
+                                        color: theme.productTagTextColor || theme.textColor,
+                                        borderRadius: `${theme.productTagRadius ?? 9999}px`
                                     }}
                                 >
                                     {tag}
@@ -175,15 +184,18 @@ export default function ProductDetailModal({
                     )}
 
                     {/* Info Row - Full width lines */}
-                    <div className="flex items-center gap-4 py-4 border-y -mx-5 px-5" style={{ borderColor: theme.cardBorderColor || 'rgba(255,255,255,0.1)' }}>
+                    <div
+                        className="flex items-center gap-4 py-4 border-y -mx-5 px-5"
+                        style={{ borderColor: theme.productDividerColor || theme.cardBorderColor || 'rgba(255,255,255,0.1)' }}
+                    >
                         {product.preparationTime && (
-                            <div className="flex items-center gap-2 opacity-60">
+                            <div className="flex items-center gap-2" style={{ color: theme.productInfoIconColor || 'rgba(255,255,255,0.6)' }}>
                                 <Clock className="w-4 h-4" />
                                 <span className="text-sm">{product.preparationTime}</span>
                             </div>
                         )}
                         {product.calories && (
-                            <div className="flex items-center gap-2 text-white/60">
+                            <div className="flex items-center gap-2" style={{ color: theme.productInfoIconColor || 'rgba(255,255,255,0.6)' }}>
                                 <Flame className="w-4 h-4" />
                                 <span className="text-sm">{product.calories} kcal</span>
                             </div>

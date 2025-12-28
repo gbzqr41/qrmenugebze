@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Check } from "lucide-react";
+import { X, Check, Filter } from "lucide-react";
 import { useDataStore } from "@/context/DataStoreContext";
 
 interface FilterModalProps {
@@ -107,7 +107,10 @@ export default function FilterModal({
                     >
                         {/* Header */}
                         <div className="flex items-center justify-between p-4 border-b border-white/10">
-                            <h2 className="text-lg font-bold text-white">Filtrele</h2>
+                            <div className="flex items-center gap-2">
+                                <Filter className="w-5 h-5 text-white" />
+                                <h2 className="text-lg font-bold text-white">Filtrele</h2>
+                            </div>
                             <div className="flex items-center gap-3">
                                 {hasActiveFilters && (
                                     <button

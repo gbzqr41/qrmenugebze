@@ -123,91 +123,17 @@ export default function HoursSettingsPage() {
                 </div>
             </div>
 
-            {/* Special Hours */}
-            <div className="bg-neutral-900 rounded-2xl p-6 border border-white/5 space-y-4">
-                <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                        <Clock className="w-5 h-5 text-amber-400" />
-                        <h2 className="text-lg font-bold text-white">Özel Günler</h2>
-                    </div>
-                    <button
-                        type="button"
-                        onClick={addSpecialHour}
-                        className="flex items-center gap-2 px-3 py-2 bg-white/10 rounded-lg text-white/80 text-sm hover:bg-white/20"
-                    >
-                        <Plus className="w-4 h-4" />
-                        Ekle
-                    </button>
-                </div>
-
-                <p className="text-sm text-white/40 mb-4">
-                    Tatil günleri, özel etkinlikler için farklı saatler belirleyin
-                </p>
-
-                <div className="space-y-3">
-                    {specialHours.map((sh, index) => (
-                        <div
-                            key={index}
-                            className="flex items-center gap-3 p-4 bg-neutral-800 rounded-xl"
-                        >
-                            <input
-                                type="date"
-                                value={sh.date}
-                                onChange={(e) => {
-                                    const updated = [...specialHours];
-                                    updated[index].date = e.target.value;
-                                    setSpecialHours(updated);
-                                }}
-                                className="px-3 py-2 bg-neutral-700 rounded-lg text-white focus:outline-none"
-                            />
-                            <input
-                                type="text"
-                                value={sh.label}
-                                onChange={(e) => {
-                                    const updated = [...specialHours];
-                                    updated[index].label = e.target.value;
-                                    setSpecialHours(updated);
-                                }}
-                                placeholder="Etiket (örn: Yılbaşı)"
-                                className="flex-1 px-3 py-2 bg-neutral-700 rounded-lg text-white placeholder:text-white/30 focus:outline-none"
-                            />
-                            <label className="flex items-center gap-2">
-                                <input
-                                    type="checkbox"
-                                    checked={sh.isClosed}
-                                    onChange={(e) => {
-                                        const updated = [...specialHours];
-                                        updated[index].isClosed = e.target.checked;
-                                        setSpecialHours(updated);
-                                    }}
-                                    className="w-4 h-4 accent-white"
-                                />
-                                <span className="text-sm text-white/60">Kapalı</span>
-                            </label>
-                            <button
-                                type="button"
-                                onClick={() => removeSpecialHour(index)}
-                                className="p-2 text-red-400 hover:bg-red-500/20 rounded-lg"
-                            >
-                                <Trash2 className="w-4 h-4" />
-                            </button>
-                        </div>
-                    ))}
-                </div>
-            </div>
-
-            {/* Submit */}
-            <motion.button
-                whileTap={{ scale: 0.98 }}
+            {/* Fixed Save Button */}
+            <button
                 type="submit"
-                className={`w-full flex items-center justify-center gap-2 py-4 rounded-xl font-semibold transition-colors ${isSaved
+                className={`fixed bottom-8 right-[50px] z-50 flex items-center gap-2 px-[15px] py-[10px] rounded-xl font-semibold shadow-lg transition-all active:scale-95 ${isSaved
                     ? "bg-green-500 text-white"
                     : "bg-white text-black hover:bg-neutral-100"
                     }`}
             >
                 <Save className="w-5 h-5" />
-                {isSaved ? "✓ Kaydedildi" : "Kaydet"}
-            </motion.button>
+                {isSaved ? "Kaydedildi" : "Kaydet"}
+            </button>
         </form>
     );
 }

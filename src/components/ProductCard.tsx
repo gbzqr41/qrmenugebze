@@ -48,10 +48,12 @@ export default function ProductCard({ product, onClick }: ProductCardProps) {
             onClick={onClick}
             className="w-full flex cursor-pointer overflow-hidden"
             style={{
-                backgroundColor: theme.cardColor,
+                backgroundColor: theme.menuBgColor || theme.cardColor,
                 fontFamily: theme.fontFamily,
-                borderRadius: "12px",
-                boxShadow: theme.cardShadow,
+                borderRadius: `${theme.menuCardRadius || 12}px`,
+                boxShadow: theme.cardShadowEnabled !== false
+                    ? `0 10px 15px -3px ${theme.cardShadowColor || "rgba(0,0,0,0.3)"}`
+                    : "none",
                 border: theme.cardBorder,
                 minHeight: "100px",
             }}
@@ -63,7 +65,7 @@ export default function ProductCard({ product, onClick }: ProductCardProps) {
                     <h3
                         className="font-semibold"
                         style={{
-                            color: theme.textColor,
+                            color: theme.menuTitleColor || theme.textColor,
                             fontSize: "15px",
                             marginBottom: "4px",
                         }}
@@ -73,9 +75,8 @@ export default function ProductCard({ product, onClick }: ProductCardProps) {
 
                     {/* Description - Fixed 2 line height */}
                     <p
-                        className="opacity-50"
                         style={{
-                            color: theme.textColor,
+                            color: theme.menuDescriptionColor || "rgba(255,255,255,0.5)",
                             fontSize: "12px",
                             marginBottom: "8px",
                             lineHeight: "1.4",
@@ -139,10 +140,18 @@ export default function ProductCard({ product, onClick }: ProductCardProps) {
                     height: "calc(100% - 10px)",
                     margin: "5px",
                     marginLeft: "0",
-                    borderRadius: "8px",
+                    borderRadius: `${theme.menuImageRadius || 8}px`,
+                    boxShadow: theme.imageShadowEnabled
+                        ? `0 4px 8px ${theme.imageShadowColor || "rgba(0,0,0,0.3)"}`
+                        : "none",
                 }}
             >
-                {isVideo ? (
+                {!product.image ? (
+                    <div
+                        className="absolute inset-0"
+                        style={{ backgroundColor: theme.cardColor || '#404040' }}
+                    />
+                ) : isVideo ? (
                     <video
                         src={product.image}
                         className="absolute inset-0 w-full h-full object-cover"

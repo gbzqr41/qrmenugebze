@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useDataStore } from "@/context/DataStoreContext";
 import { useTheme } from "@/context/ThemeContext";
 import Link from "next/link";
@@ -16,9 +17,9 @@ export default function Slider() {
         setCurrentIndex((prev) => (prev + 1) % sliderItems.length);
     }, [sliderItems.length]);
 
-    // Auto-play
+    // Auto-play - 5 seconds
     useEffect(() => {
-        if (sliderItems.length === 0) return;
+        if (sliderItems.length <= 1) return;
         const interval = setInterval(nextSlide, 5000);
         return () => clearInterval(interval);
     }, [nextSlide, sliderItems.length]);
@@ -63,39 +64,56 @@ export default function Slider() {
                 borderRadius: `${radius}px`,
             }}
         >
-            {/* Background Image - Full width */}
-            <div
-                className="absolute inset-0 bg-cover bg-center"
-                style={{ backgroundImage: `url(${currentSlide.image})` }}
-            />
-            <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-black/20 to-transparent" />
-
-            {/* Content */}
-            <div className="relative h-full flex flex-col justify-end px-4 overflow-hidden" style={{ paddingBottom: "20px" }}>
-                <h2
-                    className="font-bold text-white mb-1"
-                    style={{ fontSize: "16px" }}
+            {/* Animated Background Image */}
+            <AnimatePresence mode="wait">
+                <motion.div
+                    key={currentIndex}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.5, ease: "easeInOut" }}
+                    className="absolute inset-0"
                 >
-                    {currentSlide.title}
-                </h2>
-                {currentSlide.subtitle && (
-                    <p
-                        className="text-white/70"
-                        style={{
-                            fontSize: "15px",
-                            lineHeight: "1.4",
-                            display: "-webkit-box",
-                            WebkitLineClamp: 2,
-                            WebkitBoxOrient: "vertical",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            wordBreak: "break-word",
-                        }}
-                    >
-                        {currentSlide.subtitle}
-                    </p>
-                )}
-            </div>
+                    <div
+                        className="absolute inset-0 bg-cover bg-center"
+                        style={{ backgroundImage: `url(${currentSlide.image})` }}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-black/20 to-transparent" />
+
+                    {/* Content */}
+                    <div className="relative h-full flex flex-col justify-end px-4 overflow-hidden" style={{ paddingBottom: "20px" }}>
+                        <motion.h2
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.4, delay: 0.2 }}
+                            className="font-bold text-white mb-1"
+                            style={{ fontSize: "16px" }}
+                        >
+                            {currentSlide.title}
+                        </motion.h2>
+                        {currentSlide.subtitle && (
+                            <motion.p
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.4, delay: 0.3 }}
+                                className="text-white/70"
+                                style={{
+                                    fontSize: "15px",
+                                    lineHeight: "1.4",
+                                    display: "-webkit-box",
+                                    WebkitLineClamp: 2,
+                                    WebkitBoxOrient: "vertical",
+                                    overflow: "hidden",
+                                    textOverflow: "ellipsis",
+                                    wordBreak: "break-word",
+                                }}
+                            >
+                                {currentSlide.subtitle}
+                            </motion.p>
+                        )}
+                    </div>
+                </motion.div>
+            </AnimatePresence>
 
             {/* Click area - goes to linked product/category if set */}
             {currentSlide.link && (
@@ -112,7 +130,7 @@ export default function Slider() {
                         <button
                             key={index}
                             onClick={() => setCurrentIndex(index)}
-                            className={`h-1.5 rounded-full ${index === currentIndex
+                            className={`h-1.5 rounded-full transition-all duration-300 ${index === currentIndex
                                 ? "w-6 bg-white"
                                 : "w-1.5 bg-white/40"
                                 }`}
@@ -123,3 +141,4 @@ export default function Slider() {
         </div>
     );
 }
+

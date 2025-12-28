@@ -94,20 +94,13 @@ export default function InboxPage() {
                                         >
                                             {/* Customer */}
                                             <td className="p-4 align-top">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-white/20 to-white/5 flex items-center justify-center shrink-0">
-                                                        <span className="font-medium text-white">
-                                                            {feedback.author.charAt(0).toUpperCase()}
-                                                        </span>
-                                                    </div>
-                                                    <div>
-                                                        <p className={`font-medium ${!feedback.isRead ? 'text-white' : 'text-white/70'}`}>
-                                                            {feedback.author}
-                                                        </p>
-                                                        {feedback.phone && (
-                                                            <p className="text-xs text-white/40">{feedback.phone}</p>
-                                                        )}
-                                                    </div>
+                                                <div>
+                                                    <p className={`font-medium ${!feedback.isRead ? 'text-white' : 'text-white/70'}`}>
+                                                        {feedback.author}
+                                                    </p>
+                                                    {feedback.phone && (
+                                                        <p className="text-xs text-white/40">{feedback.phone}</p>
+                                                    )}
                                                 </div>
                                             </td>
 

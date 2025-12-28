@@ -154,15 +154,14 @@ export default function ContactSettingsPage() {
                 </div>
             </div>
 
-            {/* Submit */}
-            <motion.button
-                whileTap={{ scale: 0.98 }}
+            {/* Fixed Save Button */}
+            <button
                 type="submit"
-                className="w-full flex items-center justify-center gap-2 py-4 bg-white text-black rounded-xl font-semibold hover:bg-neutral-100 transition-colors"
+                className="fixed bottom-8 right-[50px] z-50 flex items-center gap-2 px-[15px] py-[10px] rounded-xl font-semibold shadow-lg transition-all active:scale-95 bg-white text-black hover:bg-neutral-100"
             >
                 <Save className="w-5 h-5" />
                 Kaydet
-            </motion.button>
+            </button>
         </form>
     );
 }

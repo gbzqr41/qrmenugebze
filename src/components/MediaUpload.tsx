@@ -297,11 +297,11 @@ export default function MediaUpload({
 
             {/* Media Grid - Shows when we have items */}
             {mediaItems.length > 0 && (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-3">
                     {mediaItems.map((media, index) => (
                         <div
                             key={media.id}
-                            className="relative aspect-square bg-neutral-800 rounded-xl overflow-hidden group"
+                            className="relative aspect-square bg-neutral-800 rounded-lg overflow-hidden group"
                         >
                             {media.type === "image" ? (
                                 <img

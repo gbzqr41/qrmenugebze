@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Send, Smile, Utensils, Clock, Sparkles, ThumbsUp } from "lucide-react";
+import { X, Star, ArrowRight } from "lucide-react";
 import StarRating from "./StarRating";
 
 interface FeedbackModalProps {
@@ -15,7 +15,6 @@ interface FeedbackModalProps {
 interface RatingCategory {
     id: string;
     label: string;
-    icon: React.ReactNode;
     rating: number;
 }
 
@@ -31,11 +30,11 @@ export default function FeedbackModal({
     const [isSubmitted, setIsSubmitted] = useState(false);
 
     const [ratings, setRatings] = useState<RatingCategory[]>([
-        { id: "taste", label: "Lezzet", icon: <Utensils className="w-5 h-5" />, rating: 0 },
-        { id: "service", label: "Hizmet", icon: <Smile className="w-5 h-5" />, rating: 0 },
-        { id: "speed", label: "Hız", icon: <Clock className="w-5 h-5" />, rating: 0 },
-        { id: "presentation", label: "Sunum", icon: <Sparkles className="w-5 h-5" />, rating: 0 },
-        { id: "value", label: "Fiyat/Performans", icon: <ThumbsUp className="w-5 h-5" />, rating: 0 },
+        { id: "taste", label: "Lezzet", rating: 0 },
+        { id: "service", label: "Hizmet", rating: 0 },
+        { id: "speed", label: "Hız", rating: 0 },
+        { id: "presentation", label: "Sunum", rating: 0 },
+        { id: "value", label: "Fiyat/Performans", rating: 0 },
     ]);
 
     const updateRating = (id: string, newRating: number) => {
@@ -103,7 +102,10 @@ export default function FeedbackModal({
                     >
                         {/* Header */}
                         <div className="flex items-center justify-between p-4 border-b border-white/10">
-                            <h2 className="text-lg font-bold text-white">Değerlendirin</h2>
+                            <div className="flex items-center gap-2">
+                                <Star className="w-5 h-5 text-white" />
+                                <h2 className="text-lg font-bold text-white">Değerlendirin</h2>
+                            </div>
                             <button
                                 onClick={onClose}
                                 className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors"
@@ -171,11 +173,8 @@ export default function FeedbackModal({
                                         {ratings.map((category) => (
                                             <div key={category.id} className="bg-neutral-900 rounded-xl p-4">
                                                 <div className="text-center mb-3">
-                                                    <div className="flex items-center justify-center gap-2 mb-2">
-                                                        <span className="text-white/60">{category.icon}</span>
-                                                        <span className="text-white font-medium">{category.label}</span>
-                                                    </div>
-                                                    <div className="flex justify-center">
+                                                    <span className="text-white font-medium">{category.label}</span>
+                                                    <div className="flex justify-center mt-2">
                                                         <StarRating
                                                             rating={category.rating}
                                                             onRatingChange={(rating) => updateRating(category.id, rating)}
@@ -214,8 +213,8 @@ export default function FeedbackModal({
                                             <div className="w-5 h-5 border-2 border-black/20 border-t-black rounded-full animate-spin" />
                                         ) : (
                                             <>
-                                                <Send className="w-5 h-5" />
                                                 Gönder
+                                                <ArrowRight className="w-5 h-5" />
                                             </>
                                         )}
                                     </motion.button>
