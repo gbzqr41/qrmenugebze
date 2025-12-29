@@ -11,11 +11,9 @@ import {
     Share2,
     Image,
     Tag,
-    Sparkles,
 } from "lucide-react";
 
 const settingsTabs = [
-    { icon: Sparkles, label: "Hoşgeldin", href: "/admin/settings/welcome" },
     { icon: Building2, label: "İşletme Bilgileri", href: "/admin/settings" },
     { icon: Phone, label: "İletişim", href: "/admin/settings/contact" },
     { icon: Clock, label: "Çalışma Saatleri", href: "/admin/settings/hours" },
@@ -73,12 +71,12 @@ export default function SettingsLayout({
                 </div>
             </motion.div>
 
-            {/* Content */}
+            {/* Content - no transform animation to prevent fixed button jumping */}
             <motion.div
                 key={pathname}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.2 }}
             >
                 {children}
             </motion.div>

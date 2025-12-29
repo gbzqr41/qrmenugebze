@@ -4,9 +4,11 @@ import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { Save, Building2, FileText, Image, Plus, X, Link as LinkIcon } from "lucide-react";
 import { useDataStore } from "@/context/DataStoreContext";
+import { useTheme } from "@/context/ThemeContext";
 
 export default function BusinessSettingsPage() {
     const { business, updateBusiness } = useDataStore();
+    const { showToast } = useTheme();
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const [formData, setFormData] = useState({
@@ -43,7 +45,7 @@ export default function BusinessSettingsPage() {
 
         // Check file size (max 2MB)
         if (file.size > 2 * 1024 * 1024) {
-            alert("Resim boyutu 2MB'dan küçük olmalıdır");
+            showToast("Resim boyutu 2MB'dan küçük olmalıdır", "warning");
             return;
         }
 
@@ -93,7 +95,7 @@ export default function BusinessSettingsPage() {
         });
         setIsSaved(true);
         setTimeout(() => setIsSaved(false), 2000);
-        alert("✓ İşletme bilgileri kaydedildi!\n\nMenünüz şu adreste görüntülenebilir:\ngbzqr.com/" + formData.slug);
+        showToast("✓ İşletme bilgileri kaydedildi!", "success");
     };
 
     return (

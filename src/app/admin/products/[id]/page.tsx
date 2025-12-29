@@ -5,6 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import { ArrowLeft, Save, Plus, Trash2 } from "lucide-react";
 import { type Product, type ProductVariation, type ProductExtra } from "@/data/mockData";
 import { useDataStore } from "@/context/DataStoreContext";
+import { useTheme } from "@/context/ThemeContext";
 import MediaUpload from "@/components/MediaUpload";
 import { Tag, X } from "lucide-react";
 
@@ -13,6 +14,7 @@ export default function EditProductPage() {
     const params = useParams();
     const productId = params.id as string;
     const { categories, getProduct, updateProduct, deleteProduct, tags: availableTags } = useDataStore();
+    const { theme } = useTheme();
 
 
     const [isLoading, setIsLoading] = useState(true);
@@ -36,6 +38,11 @@ export default function EditProductPage() {
     const [variations, setVariations] = useState<ProductVariation[]>([]);
     const [extras, setExtras] = useState<ProductExtra[]>([]);
 
+    // Detail toggles
+    const [showPrepTime, setShowPrepTime] = useState(false);
+    const [showCalories, setShowCalories] = useState(false);
+    const [showAllergens, setShowAllergens] = useState(false);
+
     // Load product data
     useEffect(() => {
         const foundProduct = getProduct(productId);
@@ -47,10 +54,13 @@ export default function EditProductPage() {
             setPrice(foundProduct.price.toString());
             setOriginalPrice(foundProduct.originalPrice?.toString() || "");
 
-            // Combine main image and gallery into mediaFiles
-            const allMedia = [foundProduct.image];
+            // Combine main image and gallery into mediaFiles (filter out empty strings)
+            const allMedia: string[] = [];
+            if (foundProduct.image && foundProduct.image.trim()) {
+                allMedia.push(foundProduct.image);
+            }
             if (foundProduct.gallery) {
-                allMedia.push(...foundProduct.gallery);
+                allMedia.push(...foundProduct.gallery.filter(g => g && g.trim()));
             }
             setMediaFiles(allMedia);
 
@@ -62,6 +72,11 @@ export default function EditProductPage() {
             setIsNew(foundProduct.isNew);
             setVariations(foundProduct.variations || []);
             setExtras(foundProduct.extras || []);
+
+            // Initialize toggles based on existing values
+            setShowPrepTime(!!foundProduct.preparationTime);
+            setShowCalories(!!foundProduct.calories);
+            setShowAllergens(!!(foundProduct.allergens && foundProduct.allergens.length > 0));
         }
         setIsLoading(false);
     }, [productId, getProduct]);
@@ -111,9 +126,10 @@ export default function EditProductPage() {
 
         setIsSubmitting(true);
 
-        // Get main image and gallery from mediaFiles
-        const mainImage = mediaFiles[0] || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&h=600&fit=crop";
-        const gallery = mediaFiles.slice(1);
+        // Get main image and gallery from mediaFiles (filter out empty strings)
+        const validMedia = mediaFiles.filter(m => m && m.trim());
+        const mainImage = validMedia[0] || "";
+        const gallery = validMedia.slice(1);
 
         // Update product in store
         updateProduct(productId, {
@@ -214,43 +230,44 @@ export default function EditProductPage() {
                             />
                         </div>
 
-                        <div>
-                            <label className="text-sm text-white/60 mb-2 block">Kategori *</label>
-                            <select
-                                value={categoryId}
-                                onChange={(e) => setCategoryId(e.target.value)}
-                                className="w-full px-4 py-3 bg-neutral-800 rounded-xl text-white focus:outline-none"
-                            >
-                                {categories.map((cat) => (
-                                    <option key={cat.id} value={cat.id}>
-                                        {cat.name}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="text-sm text-white/60 mb-2 block">Fiyat (TL) *</label>
+                                <input
+                                    type="number"
+                                    value={price}
+                                    onChange={(e) => setPrice(e.target.value)}
+                                    min="0"
+                                    step="0.01"
+                                    placeholder="Satış fiyatı"
+                                    className="w-full px-4 py-3 bg-neutral-800 rounded-xl text-white placeholder:text-white/30 focus:outline-none"
+                                />
+                            </div>
 
-                        <div>
-                            <label className="text-sm text-white/60 mb-2 block">Fiyat (TL) *</label>
-                            <input
-                                type="number"
-                                value={price}
-                                onChange={(e) => setPrice(e.target.value)}
-                                min="0"
-                                step="0.01"
-                                className="w-full px-4 py-3 bg-neutral-800 rounded-xl text-white placeholder:text-white/30 focus:outline-none"
-                            />
-                        </div>
-
-                        <div>
-                            <label className="text-sm text-white/60 mb-2 block">Eski Fiyat (TL)</label>
-                            <input
-                                type="number"
-                                value={originalPrice}
-                                onChange={(e) => setOriginalPrice(e.target.value)}
-                                min="0"
-                                step="0.01"
-                                className="w-full px-4 py-3 bg-neutral-800 rounded-xl text-white placeholder:text-white/30 focus:outline-none"
-                            />
+                            <div>
+                                <label className="text-sm text-white/60 mb-2 block">Eski Fiyat (TL)</label>
+                                <div className="flex gap-2">
+                                    <input
+                                        type="number"
+                                        value={originalPrice}
+                                        onChange={(e) => setOriginalPrice(e.target.value)}
+                                        min="0"
+                                        step="0.01"
+                                        placeholder="İndirim öncesi fiyat"
+                                        className="flex-1 min-w-0 px-4 py-3 bg-neutral-800 rounded-xl text-white placeholder:text-white/30 focus:outline-none"
+                                    />
+                                    {originalPrice && (
+                                        <button
+                                            type="button"
+                                            onClick={() => setOriginalPrice("")}
+                                            className="px-3 py-3 bg-red-500/20 text-red-400 hover:bg-red-500/30 rounded-xl shrink-0"
+                                            title="Eski fiyatı kaldır"
+                                        >
+                                            <X className="w-5 h-5" />
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -261,94 +278,99 @@ export default function EditProductPage() {
                     <MediaUpload
                         value={mediaFiles}
                         onChange={setMediaFiles}
-                        maxFiles={10}
+                        maxFiles={2}
                         acceptVideo={true}
-                        label="Ürün görselleri ve videoları (ilk görsel ana görsel olarak kullanılır)"
+                        label="Ana görsel ve detay görseli/videosu (maksimum 2 adet)"
                     />
                 </div>
 
-                {/* Details */}
-                <div className="bg-neutral-900 rounded-2xl p-6">
-                    <h2 className="text-lg font-bold text-white mb-4">Detaylar</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div>
-                            <label className="text-sm text-white/60 mb-2 block">Hazırlık Süresi</label>
-                            <input
-                                type="text"
-                                value={preparationTime}
-                                onChange={(e) => setPreparationTime(e.target.value)}
-                                placeholder="Örn: 15-20 dk"
-                                className="w-full px-4 py-3 bg-neutral-800 rounded-xl text-white placeholder:text-white/30 focus:outline-none"
-                            />
-                        </div>
-
-                        <div>
-                            <label className="text-sm text-white/60 mb-2 block">Kalori (kcal)</label>
-                            <input
-                                type="number"
-                                value={calories}
-                                onChange={(e) => setCalories(e.target.value)}
-                                min="0"
-                                className="w-full px-4 py-3 bg-neutral-800 rounded-xl text-white placeholder:text-white/30 focus:outline-none"
-                            />
-                        </div>
-
-                        <div>
-                            <label className="text-sm text-white/60 mb-2 block">Alerjenler</label>
-                            <div className="flex gap-2">
+                {/* Details - only show when detailsEnabled in theme */}
+                {theme.detailsEnabled !== false && (
+                    <div className="bg-neutral-900 rounded-2xl p-6">
+                        <h2 className="text-lg font-bold text-white mb-4">Detaylar</h2>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label className="text-sm text-white/60 mb-2 block">Hazırlık Süresi</label>
                                 <input
                                     type="text"
-                                    value={allergenInput}
-                                    onChange={(e) => setAllergenInput(e.target.value)}
-                                    onKeyDown={(e) => {
-                                        if (e.key === 'Enter' && allergenInput.trim()) {
-                                            e.preventDefault();
-                                            if (!allergenList.includes(allergenInput.trim())) {
-                                                setAllergenList(prev => [...prev, allergenInput.trim()]);
-                                            }
-                                            setAllergenInput("");
-                                        }
-                                    }}
-                                    placeholder="Yazıp Enter'a basın"
-                                    className="flex-1 px-4 py-3 bg-neutral-800 rounded-xl text-white placeholder:text-white/30 focus:outline-none"
+                                    value={preparationTime}
+                                    onChange={(e) => setPreparationTime(e.target.value)}
+                                    placeholder="Örn: 15-20 dk"
+                                    className="w-full px-4 py-3 bg-neutral-800 rounded-xl text-white placeholder:text-white/30 focus:outline-none"
                                 />
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        if (allergenInput.trim() && !allergenList.includes(allergenInput.trim())) {
-                                            setAllergenList(prev => [...prev, allergenInput.trim()]);
-                                            setAllergenInput("");
-                                        }
-                                    }}
-                                    className="px-4 py-3 bg-white/10 rounded-xl text-white hover:bg-white/20"
-                                >
-                                    <Plus className="w-5 h-5" />
-                                </button>
                             </div>
-                            {allergenList.length > 0 && (
-                                <div className="flex flex-wrap gap-2 mt-3">
-                                    {allergenList.map((allergen, idx) => (
-                                        <div
-                                            key={idx}
-                                            className="flex items-center gap-2 px-3 py-1.5 bg-neutral-800 rounded-lg text-white text-sm"
-                                        >
-                                            <span>{allergen}</span>
-                                            <button
-                                                type="button"
-                                                onClick={() => setAllergenList(prev => prev.filter((_, i) => i !== idx))}
-                                                className="text-red-400 hover:text-red-300"
-                                            >
-                                                <Trash2 className="w-4 h-4" />
-                                            </button>
-                                        </div>
-                                    ))}
+
+                            <div>
+                                <label className="text-sm text-white/60 mb-2 block">Kalori (kcal)</label>
+                                <input
+                                    type="number"
+                                    value={calories}
+                                    onChange={(e) => setCalories(e.target.value)}
+                                    min="0"
+                                    placeholder="Örn: 250"
+                                    className="w-full px-4 py-3 bg-neutral-800 rounded-xl text-white placeholder:text-white/30 focus:outline-none"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="text-sm text-white/60 mb-2 block">Alerjenler</label>
+                                <div className="flex gap-2">
+                                    <input
+                                        type="text"
+                                        value={allergenInput}
+                                        onChange={(e) => setAllergenInput(e.target.value)}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter' && allergenInput.trim()) {
+                                                e.preventDefault();
+                                                if (!allergenList.includes(allergenInput.trim())) {
+                                                    setAllergenList(prev => [...prev, allergenInput.trim()]);
+                                                }
+                                                setAllergenInput("");
+                                            }
+                                        }}
+                                        placeholder="Yazıp Enter'a basın"
+                                        className="flex-1 min-w-0 px-4 py-3 bg-neutral-800 rounded-xl text-white placeholder:text-white/30 focus:outline-none"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            if (allergenInput.trim() && !allergenList.includes(allergenInput.trim())) {
+                                                setAllergenList(prev => [...prev, allergenInput.trim()]);
+                                                setAllergenInput("");
+                                            }
+                                        }}
+                                        className="px-4 py-3 bg-white/10 rounded-xl text-white hover:bg-white/20 shrink-0"
+                                    >
+                                        <Plus className="w-5 h-5" />
+                                    </button>
                                 </div>
-                            )}
+                                {allergenList.length > 0 && (
+                                    <div className="flex flex-wrap gap-2 mt-3">
+                                        {allergenList.map((allergen, idx) => (
+                                            <div
+                                                key={idx}
+                                                className="flex items-center gap-2 px-3 py-1.5 bg-neutral-800 rounded-lg text-white text-sm"
+                                            >
+                                                <span>{allergen}</span>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setAllergenList(prev => prev.filter((_, i) => i !== idx))}
+                                                    className="text-red-400 hover:text-red-300"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
+                )}
 
-                    {/* Tags Selection */}
-                    <div className="mt-6">
+                {/* Tags Selection */}
+                <div className="bg-neutral-900 rounded-2xl p-6">
+                    <div>
                         <label className="text-sm text-white/60 mb-3 block flex items-center gap-2">
                             <Tag className="w-4 h-4" />
                             Etiketler

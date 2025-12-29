@@ -52,7 +52,7 @@ export default function ProductCard({ product, onClick }: ProductCardProps) {
                 fontFamily: theme.fontFamily,
                 borderRadius: `${theme.menuCardRadius || 12}px`,
                 boxShadow: theme.cardShadowEnabled !== false
-                    ? `0 10px 15px -3px ${theme.cardShadowColor || "rgba(0,0,0,0.3)"}`
+                    ? `${theme.cardShadowX ?? 0}px ${theme.cardShadowY ?? 4}px ${theme.cardShadowBlur ?? 15}px ${theme.cardShadowSpread ?? 0}px ${theme.cardShadowColor || "rgba(0,0,0,0.3)"}`
                     : "none",
                 border: theme.cardBorder,
                 minHeight: "100px",
@@ -142,7 +142,7 @@ export default function ProductCard({ product, onClick }: ProductCardProps) {
                     marginLeft: "0",
                     borderRadius: `${theme.menuImageRadius || 8}px`,
                     boxShadow: theme.imageShadowEnabled
-                        ? `0 4px 8px ${theme.imageShadowColor || "rgba(0,0,0,0.3)"}`
+                        ? `${theme.imageShadowX ?? 0}px ${theme.imageShadowY ?? 4}px ${theme.imageShadowBlur ?? 10}px ${theme.imageShadowSpread ?? 0}px ${theme.imageShadowColor || "rgba(0,0,0,0.3)"}`
                         : "none",
                 }}
             >

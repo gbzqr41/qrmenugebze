@@ -118,14 +118,19 @@ export function DataStoreProvider({ children }: { children: ReactNode }) {
         setCategories(storedCategories);
         setBusiness(storedBusiness);
 
-        // Load tags (if empty, extract from existing products or use defaults)
-        const storedTags = loadFromStorage<string[]>(STORAGE_KEYS.TAGS, []);
-        if (storedTags.length === 0) {
-            // Default tags
+        // Load tags - check if key exists in localStorage, not just if array is empty
+        const tagsJson = localStorage.getItem(STORAGE_KEYS.TAGS);
+        if (tagsJson !== null) {
+            // Key exists, use stored value (even if empty array)
+            try {
+                setTags(JSON.parse(tagsJson));
+            } catch {
+                setTags([]);
+            }
+        } else {
+            // Key doesn't exist, use defaults
             const defaults = ["Yeni", "İndirimli", "Vegan", "Acılı", "Şefin Spesiyali", "Glutensiz", "Popüler", "Çocuk Menüsü", "Organik", "Ev Yapımı", "Hafif"];
             setTags(defaults);
-        } else {
-            setTags(storedTags);
         }
 
         setIsInitialized(true);

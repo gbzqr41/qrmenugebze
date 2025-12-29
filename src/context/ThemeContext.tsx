@@ -28,8 +28,16 @@ export interface ThemeSettings {
     cardImageHeight?: number;
     cardShadowEnabled?: boolean;
     cardShadowColor?: string;
+    cardShadowX?: number;
+    cardShadowY?: number;
+    cardShadowBlur?: number;
+    cardShadowSpread?: number;
     imageShadowEnabled?: boolean;
     imageShadowColor?: string;
+    imageShadowX?: number;
+    imageShadowY?: number;
+    imageShadowBlur?: number;
+    imageShadowSpread?: number;
 
     // Typography
     titleSize: string;
@@ -46,12 +54,20 @@ export interface ThemeSettings {
     sliderPaddingBottom?: number;
     sliderPaddingLeft?: number;
     sliderPaddingRight?: number;
+    sliderTitleColor?: string;
+    sliderSubtitleColor?: string;
+    sliderEnabled?: boolean;
+
+    // Visibility toggles
+    detailsEnabled?: boolean;
+    feedbackEnabled?: boolean;
 
     // Header (Üst Menü)
     headerBgColor?: string;
     headerTitleColor?: string;
     headerStarColor?: string;
     headerStarBgColor?: string;
+    headerRatingEnabled?: boolean;
 
     // Category Bar
     categoryBgColor?: string;
@@ -153,8 +169,16 @@ const defaultTheme: ThemeSettings = {
     cardImageHeight: 160,
     cardShadowEnabled: true,
     cardShadowColor: "rgba(0,0,0,0.3)",
+    cardShadowX: 0,
+    cardShadowY: 4,
+    cardShadowBlur: 15,
+    cardShadowSpread: 0,
     imageShadowEnabled: false,
     imageShadowColor: "rgba(0,0,0,0.3)",
+    imageShadowX: 0,
+    imageShadowY: 4,
+    imageShadowBlur: 10,
+    imageShadowSpread: 0,
     titleSize: "16px",
     descriptionSize: "14px",
     priceSize: "18px",
@@ -171,6 +195,7 @@ const defaultTheme: ThemeSettings = {
     headerTitleColor: "#ffffff",
     headerStarColor: "#ffffff",
     headerStarBgColor: "rgba(255,255,255,0.1)",
+    headerRatingEnabled: true,
     // Category defaults
     categoryBgColor: "#000000",
     categoryActiveColor: "#ffffff",
@@ -210,6 +235,7 @@ const defaultTheme: ThemeSettings = {
     productCloseButtonBgColor: "rgba(0,0,0,0.5)",
     productCloseIconColor: "#ffffff",
     // Feedback defaults
+    feedbackEnabled: true,
     feedbackModalBgColor: "#171717",
     feedbackCardBgColor: "#171717",
     feedbackTextColor: "#ffffff",

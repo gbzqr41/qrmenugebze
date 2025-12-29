@@ -2,7 +2,6 @@
 
 import { forwardRef } from "react";
 import { motion } from "framer-motion";
-import { Percent, Sparkles } from "lucide-react";
 import { type Product } from "@/data/mockData";
 import { useDataStore } from "@/context/DataStoreContext";
 import { useTheme } from "@/context/ThemeContext";
@@ -20,16 +19,6 @@ const ProductFeed = forwardRef<HTMLDivElement, ProductFeedProps>(
         const { theme } = useTheme();
         const cardGap = theme.cardGap || 16;
 
-        // Get discounted products
-        const discountedProducts = products.filter(
-            (p) => p.originalPrice && p.originalPrice > p.price
-        );
-
-        // Get featured categories and their products
-        const featuredCategories = categories.filter((cat) => cat.isFeatured);
-        const getFeaturedProducts = (categoryId: string) =>
-            products.filter((p) => p.categoryId === categoryId);
-
         // If filtered products provided, group them by category
         const getProducts = (categoryId: string): Product[] => {
             if (filteredProducts) {
@@ -38,190 +27,15 @@ const ProductFeed = forwardRef<HTMLDivElement, ProductFeedProps>(
             return products.filter((p) => p.categoryId === categoryId);
         };
 
-        // Determine which categories to show (exclude featured ones from main list)
+        // Determine which categories to show
         const categoriesToShow = filteredProducts
             ? categories.filter((cat) =>
                 filteredProducts.some((p) => p.categoryId === cat.id)
             )
-            : categories.filter((cat) => !cat.isFeatured);
+            : categories;
 
         return (
             <div ref={ref} className="pb-20" style={{ backgroundColor: theme.primaryColor }}>
-
-                {/* Discounted Products Section - Horizontal Scroll */}
-                {!filteredProducts && discountedProducts.length > 0 && (
-                    <div className="pt-6 px-5">
-                        {/* Main Container Card */}
-                        <div
-                            className="rounded-2xl overflow-hidden"
-                            style={{ backgroundColor: theme.cardColor }}
-                        >
-                            {/* Section Title */}
-                            <div className="p-4 pb-0">
-                                <div className="flex items-center gap-2">
-                                    <div className="w-8 h-8 rounded-full bg-red-500 flex items-center justify-center">
-                                        <Percent className="w-4 h-4 text-white" />
-                                    </div>
-                                    <div>
-                                        <h2
-                                            className="text-lg font-bold"
-                                            style={{ color: theme.categoryTitleColor || "#ffffff" }}
-                                        >
-                                            İndirimli Ürünler
-                                        </h2>
-                                        <p
-                                            className="text-xs"
-                                            style={{ color: theme.productCountColor || "rgba(255,255,255,0.4)" }}
-                                        >
-                                            {discountedProducts.length} ürün
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Horizontal Scroll Container */}
-                            <div
-                                className="flex gap-3 overflow-x-auto p-4 scrollbar-hide"
-                                style={{
-                                    scrollSnapType: "x mandatory",
-                                    WebkitOverflowScrolling: "touch",
-                                }}
-                            >
-                                {discountedProducts.map((product) => {
-                                    const discountPercentage = Math.round(
-                                        ((product.originalPrice! - product.price) / product.originalPrice!) * 100
-                                    );
-
-                                    return (
-                                        <div
-                                            key={`discount-${product.id}`}
-                                            onClick={() => onProductClick(product)}
-                                            className="shrink-0 cursor-pointer overflow-hidden"
-                                            style={{
-                                                width: "150px",
-                                                scrollSnapAlign: "start",
-                                                backgroundColor: "rgba(255,255,255,0.05)",
-                                                borderRadius: "12px",
-                                            }}
-                                        >
-                                            {/* Image */}
-                                            <div
-                                                className="relative w-full h-24 bg-cover bg-center"
-                                                style={{ backgroundImage: `url(${product.image})` }}
-                                            >
-                                                {/* Discount Badge */}
-                                                <div className="absolute top-2 right-2 px-1.5 py-0.5 bg-red-500 text-white text-[10px] font-bold rounded">
-                                                    %{discountPercentage}
-                                                </div>
-                                            </div>
-
-                                            {/* Content */}
-                                            <div className="p-2">
-                                                <h3
-                                                    className="font-semibold text-xs mb-1 truncate"
-                                                    style={{ color: theme.textColor }}
-                                                >
-                                                    {product.name}
-                                                </h3>
-                                                <div className="flex items-center gap-1">
-                                                    <span
-                                                        className="font-bold text-xs"
-                                                        style={{ color: theme.accentColor }}
-                                                    >
-                                                        {product.price} TL
-                                                    </span>
-                                                    <span
-                                                        className="text-[10px] line-through opacity-50"
-                                                        style={{ color: theme.textColor }}
-                                                    >
-                                                        {product.originalPrice} TL
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {/* Featured Categories Sections - Horizontal Scroll */}
-                {!filteredProducts && featuredCategories.map((category) => {
-                    const categoryProducts = getFeaturedProducts(category.id);
-                    if (categoryProducts.length === 0) return null;
-
-                    return (
-                        <div key={category.id} className="pt-6 px-5">
-                            {/* Main Container Card */}
-                            <div
-                                style={{
-                                    backgroundColor: theme.featuredCardBgColor || theme.cardColor,
-                                    borderRadius: `${theme.featuredCardRadius || 16}px`
-                                }}
-                            >
-                                {/* Section Title */}
-                                <div className="p-4 pb-0">
-                                    <h2
-                                        className="text-lg font-bold"
-                                        style={{ color: theme.featuredTitleColor || "#ffffff" }}
-                                    >
-                                        {category.name}
-                                    </h2>
-                                </div>
-
-                                {/* Horizontal Scroll Container */}
-                                <div
-                                    className="flex gap-3 overflow-x-auto py-4 px-4 scrollbar-hide"
-                                    style={{
-                                        scrollSnapType: "x proximity",
-                                        WebkitOverflowScrolling: "touch",
-                                        scrollPaddingLeft: "16px",
-                                    }}
-                                >
-                                    {categoryProducts.map((product) => (
-                                        <div
-                                            key={`featured-${product.id}`}
-                                            onClick={() => onProductClick(product)}
-                                            className="shrink-0 cursor-pointer overflow-hidden"
-                                            style={{
-                                                width: "150px",
-                                                scrollSnapAlign: "start",
-                                                backgroundColor: "rgba(255,255,255,0.05)",
-                                                borderRadius: `${theme.featuredMenuRadius || 12}px`,
-                                            }}
-                                        >
-                                            {/* Image */}
-                                            <div
-                                                className="relative w-full h-24 bg-cover bg-center"
-                                                style={{
-                                                    backgroundImage: `url(${product.image})`,
-                                                    borderRadius: `${theme.featuredImageRadius || 0}px`
-                                                }}
-                                            />
-
-                                            {/* Content */}
-                                            <div className="p-2">
-                                                <h3
-                                                    className="font-semibold text-xs mb-1 truncate"
-                                                    style={{ color: theme.featuredNameColor || theme.textColor }}
-                                                >
-                                                    {product.name}
-                                                </h3>
-                                                <span
-                                                    className="font-bold text-xs"
-                                                    style={{ color: theme.featuredPriceColor || theme.accentColor }}
-                                                >
-                                                    {product.price} TL
-                                                </span>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                    );
-                })}
 
                 {/* Regular Categories */}
                 <div className="px-5">

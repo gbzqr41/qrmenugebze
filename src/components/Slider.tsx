@@ -86,8 +86,8 @@ export default function Slider() {
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.4, delay: 0.2 }}
-                            className="font-bold text-white mb-1"
-                            style={{ fontSize: "16px" }}
+                            className="font-bold mb-1"
+                            style={{ fontSize: "16px", color: theme.sliderTitleColor || "#ffffff" }}
                         >
                             {currentSlide.title}
                         </motion.h2>
@@ -96,7 +96,6 @@ export default function Slider() {
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.4, delay: 0.3 }}
-                                className="text-white/70"
                                 style={{
                                     fontSize: "15px",
                                     lineHeight: "1.4",
@@ -106,6 +105,7 @@ export default function Slider() {
                                     overflow: "hidden",
                                     textOverflow: "ellipsis",
                                     wordBreak: "break-word",
+                                    color: theme.sliderSubtitleColor || "rgba(255,255,255,0.7)",
                                 }}
                             >
                                 {currentSlide.subtitle}

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Save, Clock, Plus, Trash2 } from "lucide-react";
 import { useDataStore } from "@/context/DataStoreContext";
+import { useTheme } from "@/context/ThemeContext";
 
 interface WorkingHour {
     day: string;
@@ -32,6 +33,7 @@ const defaultWorkingHours: WorkingHour[] = [
 
 export default function HoursSettingsPage() {
     const { business, updateBusiness } = useDataStore();
+    const { showToast } = useTheme();
 
     const [workingHours, setWorkingHours] = useState<WorkingHour[]>(defaultWorkingHours);
     const [specialHours, setSpecialHours] = useState<SpecialHour[]>([]);
@@ -71,7 +73,7 @@ export default function HoursSettingsPage() {
         updateBusiness({ workingHours });
         setIsSaved(true);
         setTimeout(() => setIsSaved(false), 2000);
-        alert("✓ Çalışma saatleri kaydedildi!");
+        showToast("✓ Çalışma saatleri kaydedildi!", "success");
     };
 
     return (

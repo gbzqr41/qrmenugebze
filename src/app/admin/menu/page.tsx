@@ -432,7 +432,7 @@ export default function MenuManagementPage() {
     useEffect(() => {
         if (categoryModal.open) {
             setModalName(categoryModal.category?.name || "");
-            setModalIcon(categoryModal.category?.icon || "utensils");
+            setModalIcon(categoryModal.category?.icon || NO_ICON_ID);
             setModalIsFeatured(categoryModal.category?.isFeatured || false);
         } else {
             // Reset saving state when modal closes
@@ -492,25 +492,31 @@ export default function MenuManagementPage() {
         if (!sliderTitle.trim() || !sliderImage || isSaving) return;
         setIsSaving(true);
 
-        const newSlider: SliderItem = {
-            id: sliderModal.slider?.id || `slider_${Date.now()}`,
-            title: sliderTitle.trim(),
-            subtitle: sliderSubtitle.trim() || undefined,
-            image: sliderImage,
-            link: "",
-        };
+        try {
+            const newSlider: SliderItem = {
+                id: sliderModal.slider?.id || `slider_${Date.now()}`,
+                title: sliderTitle.trim(),
+                subtitle: sliderSubtitle.trim() || undefined,
+                image: sliderImage,
+                link: "",
+            };
 
-        let updatedSliders: SliderItem[];
-        if (sliderModal.slider) {
-            updatedSliders = sliderItems.map(s => s.id === sliderModal.slider!.id ? newSlider : s);
-            showToast("Slider güncellendi");
-        } else {
-            updatedSliders = [...sliderItems, newSlider];
-            showToast("Slider eklendi");
+            let updatedSliders: SliderItem[];
+            if (sliderModal.slider) {
+                updatedSliders = sliderItems.map(s => s.id === sliderModal.slider!.id ? newSlider : s);
+                showToast("Slider güncellendi");
+            } else {
+                updatedSliders = [...sliderItems, newSlider];
+                showToast("Slider eklendi");
+            }
+            updateBusiness({ sliderItems: updatedSliders });
+            setSliderModal({ open: false });
+        } catch (error) {
+            console.error(error);
+            showToast("Slider kaydedilirken hata oluştu", "error");
+        } finally {
+            setIsSaving(false);
         }
-
-        updateBusiness({ sliderItems: updatedSliders });
-        setSliderModal({ open: false });
     };
 
     const handleDeleteSlider = (id: string) => {
@@ -564,14 +570,21 @@ export default function MenuManagementPage() {
         if (!modalName.trim() || isSaving) return;
         setIsSaving(true);
 
-        if (categoryModal.category) {
-            updateCategory(categoryModal.category.id, { name: modalName.trim(), icon: modalIcon, isFeatured: modalIsFeatured });
-            showToast("Kategori güncellendi");
-        } else {
-            addCategory({ name: modalName.trim(), icon: modalIcon, isFeatured: modalIsFeatured });
-            showToast("Kategori eklendi");
+        try {
+            if (categoryModal.category) {
+                updateCategory(categoryModal.category.id, { name: modalName.trim(), icon: modalIcon, isFeatured: modalIsFeatured });
+                showToast("Kategori güncellendi");
+            } else {
+                addCategory({ name: modalName.trim(), icon: modalIcon, isFeatured: modalIsFeatured });
+                showToast("Kategori eklendi");
+            }
+            setCategoryModal({ open: false });
+        } catch (error) {
+            console.error(error);
+            showToast("Kategori kaydedilirken hata oluştu", "error");
+        } finally {
+            setIsSaving(false);
         }
-        setCategoryModal({ open: false }); // Close modal after operation
     };
 
     const handleDeleteCategory = (categoryId: string, categoryName: string) => {
@@ -582,18 +595,25 @@ export default function MenuManagementPage() {
         if (!modalName.trim() || !modalPrice || isSaving) return;
         setIsSaving(true);
 
-        addProduct({
-            categoryId: productModal.categoryId,
-            name: modalName.trim(),
-            description: modalDescription.trim() || "Lezzetli ürün",
-            price: Number(modalPrice),
-            image: "",
-            tags: [],
-            isFeatured: false,
-            isNew: true,
-        });
-        showToast("Ürün eklendi");
-        setProductModal({ open: false, categoryId: "", categoryName: "" }); // Close modal after operation
+        try {
+            addProduct({
+                categoryId: productModal.categoryId,
+                name: modalName.trim(),
+                description: modalDescription.trim() || "Lezzetli ürün",
+                price: Number(modalPrice),
+                image: "",
+                tags: [],
+                isFeatured: false,
+                isNew: false,
+            });
+            showToast("Ürün eklendi");
+            setProductModal({ open: false, categoryId: "", categoryName: "" });
+        } catch (error) {
+            console.error(error);
+            showToast("Ürün eklenirken hata oluştu", "error");
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     const handleDeleteProduct = (productId: string, productName: string) => {

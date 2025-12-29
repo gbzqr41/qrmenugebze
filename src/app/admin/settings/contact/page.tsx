@@ -4,9 +4,11 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Save, Phone, Mail, MapPin, Globe, ExternalLink } from "lucide-react";
 import { useDataStore } from "@/context/DataStoreContext";
+import { useTheme } from "@/context/ThemeContext";
 
 export default function ContactSettingsPage() {
     const { business, updateBusiness } = useDataStore();
+    const { showToast } = useTheme();
 
     const [formData, setFormData] = useState({
         address: business.address,
@@ -26,7 +28,7 @@ export default function ContactSettingsPage() {
             email: formData.email,
             website: formData.website,
         });
-        alert("✓ İletişim bilgileri kaydedildi!");
+        showToast("✓ İletişim bilgileri kaydedildi!", "success");
     };
 
     return (
@@ -126,7 +128,7 @@ export default function ContactSettingsPage() {
                         Google Maps Linki
                     </label>
                     <input
-                        type="url"
+                        type="text"
                         value={formData.googleMapsUrl}
                         onChange={(e) => setFormData({ ...formData, googleMapsUrl: e.target.value })}
                         placeholder="https://maps.google.com/..."
@@ -145,7 +147,7 @@ export default function ContactSettingsPage() {
                 <div>
                     <label className="text-sm text-white/60 mb-2 block">Website URL</label>
                     <input
-                        type="url"
+                        type="text"
                         value={formData.website}
                         onChange={(e) => setFormData({ ...formData, website: e.target.value })}
                         placeholder="https://www.isletme.com"

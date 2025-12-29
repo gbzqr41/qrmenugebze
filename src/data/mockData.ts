@@ -41,13 +41,7 @@ export interface Business {
     gallery: string[];
     workingHours: WorkingHours[];
     sliderItems?: SliderItem[];
-    welcomeSettings?: {
-        logoText: string;
-        description: string;
-        backgroundImage?: string;
-        backgroundVideo?: string;
-        showWelcome: boolean;
-    };
+
 }
 
 export interface Category {

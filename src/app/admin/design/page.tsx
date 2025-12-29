@@ -167,7 +167,7 @@ export default function DesignPage() {
         };
 
         return (
-            <div>
+            <div className="min-w-0">
                 <label className="text-sm text-white/60 mb-2 block">{label}</label>
                 <div className="flex items-center gap-2">
                     <input
@@ -177,9 +177,9 @@ export default function DesignPage() {
                         value={inputValue}
                         onChange={(e) => setInputValue(e.target.value.replace(/\D/g, ""))}
                         onBlur={handleBlur}
-                        className="flex-1 px-4 py-2.5 bg-neutral-800 rounded-xl text-white text-center font-mono focus:outline-none focus:ring-2 focus:ring-white/20"
+                        className="w-full min-w-0 px-3 py-2.5 bg-neutral-800 rounded-xl text-white text-center font-mono focus:outline-none focus:ring-2 focus:ring-white/20"
                     />
-                    <span className="text-white/50 font-mono text-sm w-8">{unit}</span>
+                    <span className="text-white/50 font-mono text-sm shrink-0">{unit}</span>
                 </div>
             </div>
         );
@@ -246,6 +246,46 @@ export default function DesignPage() {
                 {/* GENEL TAB */}
                 {activeTab === "general" && (
                     <>
+                        {/* Aç/Kapat (Visibility) Section */}
+                        <div className="bg-neutral-900 rounded-2xl p-6 border border-white/5">
+                            <h2 className="text-lg font-bold text-white mb-4">Aç / Kapat</h2>
+                            <p className="text-white/40 text-sm mb-4">Menü sayfasında hangi bölümlerin görüneceğini ayarlayın</p>
+                            <div className="space-y-3">
+                                <Toggle
+                                    label="Üst Menü (Header)"
+                                    checked={localTheme.headerRatingEnabled !== false}
+                                    onChange={(v) => updateLocal({ headerRatingEnabled: v } as any)}
+                                />
+                                <Toggle
+                                    label="Slider"
+                                    checked={localTheme.sliderEnabled !== false}
+                                    onChange={(v) => updateLocal({ sliderEnabled: v } as any)}
+                                />
+                                <Toggle
+                                    label="Detaylar (Ürün detay modalı)"
+                                    checked={localTheme.detailsEnabled !== false}
+                                    onChange={(v) => updateLocal({ detailsEnabled: v } as any)}
+                                />
+                                <Toggle
+                                    label="Değerlendirme"
+                                    checked={localTheme.feedbackEnabled !== false}
+                                    onChange={(v) => updateLocal({ feedbackEnabled: v })}
+                                />
+                            </div>
+                        </div>
+
+                        {/* Ana Arka Plan Section */}
+                        <div className="bg-neutral-900 rounded-2xl p-6 border border-white/5">
+                            <h2 className="text-lg font-bold text-white mb-4">Ana Arka Plan</h2>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                <ColorInput
+                                    label="Sayfa Arka Plan Rengi"
+                                    value={localTheme.primaryColor || "#000000"}
+                                    onChange={(v) => updateLocal({ primaryColor: v })}
+                                />
+                            </div>
+                        </div>
+
                         {/* Üst Menü (Header) Section */}
                         <div className="bg-neutral-900 rounded-2xl p-6 border border-white/5">
                             <h2 className="text-lg font-bold text-white mb-4">Üst Menü</h2>
@@ -269,6 +309,32 @@ export default function DesignPage() {
                                     label="Yıldız Arka Plan Rengi"
                                     value={localTheme.headerStarBgColor || "rgba(255,255,255,0.1)"}
                                     onChange={(v) => updateLocal({ headerStarBgColor: v } as any)}
+                                />
+                            </div>
+                            {/* Rating Toggle */}
+                            <div className="mt-4">
+                                <Toggle
+                                    label="Değerlendirme Butonu"
+                                    checked={localTheme.headerRatingEnabled !== false}
+                                    onChange={(v) => updateLocal({ headerRatingEnabled: v } as any)}
+                                />
+                                <p className="text-white/30 text-xs mt-2">Üst menüdeki yıldız değerlendirme butonunu göster/gizle</p>
+                            </div>
+                        </div>
+
+                        {/* Slider Section */}
+                        <div className="bg-neutral-900 rounded-2xl p-6 border border-white/5">
+                            <h2 className="text-lg font-bold text-white mb-4">Slider</h2>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                <ColorInput
+                                    label="Başlık Rengi"
+                                    value={localTheme.sliderTitleColor || "#ffffff"}
+                                    onChange={(v) => updateLocal({ sliderTitleColor: v } as any)}
+                                />
+                                <ColorInput
+                                    label="Açıklama Rengi"
+                                    value={localTheme.sliderSubtitleColor || "rgba(255,255,255,0.7)"}
+                                    onChange={(v) => updateLocal({ sliderSubtitleColor: v } as any)}
                                 />
                             </div>
                         </div>
@@ -468,11 +534,43 @@ export default function DesignPage() {
                                     onChange={(v) => updateLocal({ cardShadowEnabled: v } as any)}
                                 />
                                 {localTheme.cardShadowEnabled !== false && (
-                                    <ColorInput
-                                        label="Kart Gölge Rengi"
-                                        value={localTheme.cardShadowColor || "rgba(0,0,0,0.3)"}
-                                        onChange={(v) => updateLocal({ cardShadowColor: v } as any)}
-                                    />
+                                    <>
+                                        <ColorInput
+                                            label="Kart Gölge Rengi"
+                                            value={localTheme.cardShadowColor || "rgba(0,0,0,0.3)"}
+                                            onChange={(v) => updateLocal({ cardShadowColor: v } as any)}
+                                        />
+                                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                                            <NumberInput
+                                                label="X (Yatay)"
+                                                value={localTheme.cardShadowX ?? 0}
+                                                onChange={(v) => updateLocal({ cardShadowX: v } as any)}
+                                                min={-50}
+                                                max={50}
+                                            />
+                                            <NumberInput
+                                                label="Y (Dikey)"
+                                                value={localTheme.cardShadowY ?? 4}
+                                                onChange={(v) => updateLocal({ cardShadowY: v } as any)}
+                                                min={-50}
+                                                max={50}
+                                            />
+                                            <NumberInput
+                                                label="Blur"
+                                                value={localTheme.cardShadowBlur ?? 15}
+                                                onChange={(v) => updateLocal({ cardShadowBlur: v } as any)}
+                                                min={0}
+                                                max={100}
+                                            />
+                                            <NumberInput
+                                                label="Spread"
+                                                value={localTheme.cardShadowSpread ?? 0}
+                                                onChange={(v) => updateLocal({ cardShadowSpread: v } as any)}
+                                                min={-50}
+                                                max={50}
+                                            />
+                                        </div>
+                                    </>
                                 )}
                                 <Toggle
                                     label="Resim Gölgesi"
@@ -480,11 +578,43 @@ export default function DesignPage() {
                                     onChange={(v) => updateLocal({ imageShadowEnabled: v } as any)}
                                 />
                                 {localTheme.imageShadowEnabled && (
-                                    <ColorInput
-                                        label="Resim Gölge Rengi"
-                                        value={localTheme.imageShadowColor || "rgba(0,0,0,0.3)"}
-                                        onChange={(v) => updateLocal({ imageShadowColor: v } as any)}
-                                    />
+                                    <>
+                                        <ColorInput
+                                            label="Resim Gölge Rengi"
+                                            value={localTheme.imageShadowColor || "rgba(0,0,0,0.3)"}
+                                            onChange={(v) => updateLocal({ imageShadowColor: v } as any)}
+                                        />
+                                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                                            <NumberInput
+                                                label="X (Yatay)"
+                                                value={localTheme.imageShadowX ?? 0}
+                                                onChange={(v) => updateLocal({ imageShadowX: v } as any)}
+                                                min={-50}
+                                                max={50}
+                                            />
+                                            <NumberInput
+                                                label="Y (Dikey)"
+                                                value={localTheme.imageShadowY ?? 4}
+                                                onChange={(v) => updateLocal({ imageShadowY: v } as any)}
+                                                min={-50}
+                                                max={50}
+                                            />
+                                            <NumberInput
+                                                label="Blur"
+                                                value={localTheme.imageShadowBlur ?? 10}
+                                                onChange={(v) => updateLocal({ imageShadowBlur: v } as any)}
+                                                min={0}
+                                                max={100}
+                                            />
+                                            <NumberInput
+                                                label="Spread"
+                                                value={localTheme.imageShadowSpread ?? 0}
+                                                onChange={(v) => updateLocal({ imageShadowSpread: v } as any)}
+                                                min={-50}
+                                                max={50}
+                                            />
+                                        </div>
+                                    </>
                                 )}
                             </div>
                         </div>

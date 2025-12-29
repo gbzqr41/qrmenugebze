@@ -13,7 +13,7 @@ import SearchModal from "@/components/SearchModal";
 import FilterModal, { type FilterState } from "@/components/FilterModal";
 import BusinessInfoModal from "@/components/BusinessInfoModal";
 import FavoritesModal from "@/components/FavoritesModal";
-import WelcomePage from "@/components/WelcomePage";
+
 import { type Product } from "@/data/mockData";
 import { useDataStore } from "@/context/DataStoreContext";
 import { useTheme } from "@/context/ThemeContext";
@@ -33,7 +33,7 @@ export default function BusinessMenuPage() {
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [isBusinessInfoOpen, setIsBusinessInfoOpen] = useState(false);
     const [isFavoritesOpen, setIsFavoritesOpen] = useState(false);
-    const [showWelcome, setShowWelcome] = useState(true);
+
     const [filters, setFilters] = useState<FilterState>({
         categories: [],
         priceRange: { min: 0, max: 1000 },
@@ -156,12 +156,7 @@ export default function BusinessMenuPage() {
 
     return (
         <>
-            {/* Welcome Page */}
-            <AnimatePresence>
-                {showWelcome && business?.welcomeSettings?.showWelcome !== false && (
-                    <WelcomePage onEnter={() => setShowWelcome(false)} />
-                )}
-            </AnimatePresence>
+
 
             <main className="min-h-screen pb-[20px]" style={{ backgroundColor: theme.primaryColor }}>
                 {/* Header */}
@@ -173,27 +168,29 @@ export default function BusinessMenuPage() {
                         className="font-bold text-lg"
                         style={{ color: theme.headerTitleColor || "#ffffff" }}
                     >
-                        RESITAL LOUNGE
+                        {business?.name || "RESITAL LOUNGE"}
                     </span>
 
                     {/* Right side buttons */}
                     <div className="flex items-center gap-[10px]">
-                        {/* Star Icon Button */}
-                        <button
-                            onClick={() => openFeedbackModal()}
-                            className="w-[42px] h-[42px] rounded-full flex items-center justify-center hover:opacity-80 transition-opacity"
-                            style={{ backgroundColor: theme.headerStarBgColor || "rgba(255,255,255,0.1)" }}
-                        >
-                            <Star
-                                className="w-5 h-5"
-                                style={{ color: theme.headerStarColor || "#ffffff" }}
-                            />
-                        </button>
+                        {/* Star Icon Button - conditionally rendered */}
+                        {theme.feedbackEnabled !== false && (
+                            <button
+                                onClick={() => openFeedbackModal()}
+                                className="w-[42px] h-[42px] rounded-full flex items-center justify-center hover:opacity-80 transition-opacity"
+                                style={{ backgroundColor: theme.headerStarBgColor || "rgba(255,255,255,0.1)" }}
+                            >
+                                <Star
+                                    className="w-5 h-5"
+                                    style={{ color: theme.headerStarColor || "#ffffff" }}
+                                />
+                            </button>
+                        )}
                     </div>
                 </div>
 
-                {/* Slider Section */}
-                <Slider />
+                {/* Slider Section - conditionally rendered */}
+                {theme.sliderEnabled !== false && <Slider />}
 
                 {/* Category Navigation */}
                 <CategoryBar

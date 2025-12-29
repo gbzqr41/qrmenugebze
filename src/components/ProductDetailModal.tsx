@@ -183,30 +183,32 @@ export default function ProductDetailModal({
                         </div>
                     )}
 
-                    {/* Info Row - Full width lines */}
-                    <div
-                        className="flex items-center gap-4 py-4 border-y -mx-5 px-5"
-                        style={{ borderColor: theme.productDividerColor || theme.cardBorderColor || 'rgba(255,255,255,0.1)' }}
-                    >
-                        {product.preparationTime && (
-                            <div className="flex items-center gap-2" style={{ color: theme.productInfoIconColor || 'rgba(255,255,255,0.6)' }}>
-                                <Clock className="w-4 h-4" />
-                                <span className="text-sm">{product.preparationTime}</span>
-                            </div>
-                        )}
-                        {product.calories && (
-                            <div className="flex items-center gap-2" style={{ color: theme.productInfoIconColor || 'rgba(255,255,255,0.6)' }}>
-                                <Flame className="w-4 h-4" />
-                                <span className="text-sm">{product.calories} kcal</span>
-                            </div>
-                        )}
-                        {product.allergens && product.allergens.length > 0 && (
-                            <div className="flex items-center gap-2 text-amber-500/80">
-                                <AlertTriangle className="w-4 h-4" />
-                                <span className="text-sm">{product.allergens.join(", ")}</span>
-                            </div>
-                        )}
-                    </div>
+                    {/* Info Row - Only show when detailsEnabled, with border lines */}
+                    {theme.detailsEnabled !== false && (product.preparationTime || product.calories || (product.allergens && product.allergens.length > 0)) && (
+                        <div
+                            className="flex items-center gap-4 py-4 border-t border-b"
+                            style={{ borderColor: 'rgba(255,255,255,0.1)' }}
+                        >
+                            {product.preparationTime && (
+                                <div className="flex items-center gap-2" style={{ color: theme.productInfoIconColor || 'rgba(255,255,255,0.6)' }}>
+                                    <Clock className="w-4 h-4" />
+                                    <span className="text-sm">{product.preparationTime}</span>
+                                </div>
+                            )}
+                            {product.calories && (
+                                <div className="flex items-center gap-2" style={{ color: theme.productInfoIconColor || 'rgba(255,255,255,0.6)' }}>
+                                    <Flame className="w-4 h-4" />
+                                    <span className="text-sm">{product.calories} kcal</span>
+                                </div>
+                            )}
+                            {product.allergens && product.allergens.length > 0 && (
+                                <div className="flex items-center gap-2 text-amber-500/80">
+                                    <AlertTriangle className="w-4 h-4" />
+                                    <span className="text-sm">{product.allergens.join(", ")}</span>
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
             </div>
         </>
