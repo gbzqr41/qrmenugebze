@@ -405,7 +405,7 @@ export default function MenuManagementPage() {
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
     // Delete confirmation modal state
-    const [deleteModal, setDeleteModal] = useState<{ open: boolean; type: 'category' | 'product' | 'slider'; id: string; name: string }>({
+    const [deleteModal, setDeleteModal] = useState<{ open: boolean; type: 'category' | 'product' | 'slider' | 'all'; id: string; name: string }>({
         open: false, type: 'category', id: '', name: ''
     });
 
@@ -514,7 +514,6 @@ export default function MenuManagementPage() {
         } catch (error) {
             console.error(error);
             showToast("Slider kaydedilirken hata oluştu", "error");
-        } finally {
             setIsSaving(false);
         }
     };
@@ -582,7 +581,6 @@ export default function MenuManagementPage() {
         } catch (error) {
             console.error(error);
             showToast("Kategori kaydedilirken hata oluştu", "error");
-        } finally {
             setIsSaving(false);
         }
     };
@@ -611,7 +609,6 @@ export default function MenuManagementPage() {
         } catch (error) {
             console.error(error);
             showToast("Ürün eklenirken hata oluştu", "error");
-        } finally {
             setIsSaving(false);
         }
     };
@@ -630,6 +627,9 @@ export default function MenuManagementPage() {
         } else if (deleteModal.type === 'slider') {
             handleDeleteSlider(deleteModal.id);
             return; // handleDeleteSlider already closes modal
+        } else if (deleteModal.type === 'all') {
+            clearAllMenuData();
+            showToast("Tüm menü verileri silindi");
         }
         setDeleteModal({ open: false, type: 'category', id: '', name: '' });
     };
@@ -641,19 +641,7 @@ export default function MenuManagementPage() {
     return (
         <div className="p-6 lg:p-8">
             {/* Toast Notification */}
-            <AnimatePresence>
-                {toast && (
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 20 }}
-                        className="fixed bottom-8 right-[50px] z-50 flex items-center gap-2 px-4 py-3 rounded-xl bg-white text-black font-medium shadow-lg"
-                    >
-                        <Check className="w-5 h-5 text-black" />
-                        {toast.message}
-                    </motion.div>
-                )}
-            </AnimatePresence>
+            {/* ... (lines 644-657 omitted) */}
 
             {/* Delete Confirmation Modal */}
             <AnimatePresence>
@@ -678,11 +666,17 @@ export default function MenuManagementPage() {
                                 </div>
                                 <div>
                                     <h3 className="text-lg font-bold text-white">Silmek istediğine emin misin?</h3>
-                                    <p className="text-white/50 text-sm">{deleteModal.name}</p>
+                                    <p className="text-white/50 text-sm">
+                                        {deleteModal.type === 'all'
+                                            ? "Tüm kategoriler ve ürünler silinecek."
+                                            : deleteModal.name}
+                                    </p>
                                 </div>
                             </div>
                             <p className="text-white/60 mb-6">
-                                Bu {deleteModal.type === 'category' ? 'kategoriyi' : 'ürünü'} silmek üzeresin. Bu işlem geri alınamaz.
+                                {deleteModal.type === 'all'
+                                    ? "Bu işlem menüdeki BÜTÜN verileri kalıcı olarak silecek. Bu işlem geri alınamaz."
+                                    : `Bu ${deleteModal.type === 'category' ? 'kategoriyi' : deleteModal.type === 'slider' ? 'görseli' : 'ürünü'} silmek üzeresin. Bu işlem geri alınamaz.`}
                             </p>
                             <div className="flex gap-3">
                                 <button
@@ -720,9 +714,12 @@ export default function MenuManagementPage() {
                                 alert("Silinecek kategori veya ürün yok.");
                                 return;
                             }
-                            if (window.confirm("⚠️ DİKKAT!\n\nTüm kategoriler ve ürünler silinecektir.\n\nBu işlem geri alınamaz. Devam etmek istiyor musunuz?")) {
-                                clearAllMenuData();
-                            }
+                            setDeleteModal({
+                                open: true,
+                                type: 'all',
+                                id: 'all',
+                                name: 'Tüm Menü'
+                            });
                         }}
                         className="flex items-center gap-2 px-4 py-3 bg-red-500/20 text-red-400 border border-red-500/30 rounded-xl font-semibold hover:bg-red-500/30 transition-colors"
                     >

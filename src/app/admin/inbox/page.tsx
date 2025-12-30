@@ -6,7 +6,7 @@ import { Star, Trash2, Check, Mail, MailOpen, MessageSquare, TrendingUp, Users, 
 import { useFeedback } from "@/context/FeedbackContext";
 
 export default function InboxPage() {
-    const { feedbacks, markAsRead, deleteFeedback } = useFeedback();
+    const { feedbacks, markAsRead, deleteFeedback, deleteAllFeedbacks } = useFeedback();
     const [searchTerm, setSearchTerm] = useState("");
     const [expandedIds, setExpandedIds] = useState<string[]>([]);
 
@@ -17,11 +17,23 @@ export default function InboxPage() {
         );
     }, [feedbacks, searchTerm]);
 
+    // Delete modal state
+    const [deleteModal, setDeleteModal] = useState<{ open: boolean; type: 'single' | 'all'; id: string; name: string }>({
+        open: false, type: 'single', id: '', name: ''
+    });
+
     const handleDelete = (id: string, e: React.MouseEvent) => {
         e.stopPropagation();
-        if (confirm("Bu yorumu silmek istediğinize emin misiniz?")) {
-            deleteFeedback(id);
+        setDeleteModal({ open: true, type: 'single', id, name: 'Bu yorum' });
+    };
+
+    const confirmDelete = () => {
+        if (deleteModal.type === 'single') {
+            deleteFeedback(deleteModal.id);
+        } else if (deleteModal.type === 'all') {
+            deleteAllFeedbacks();
         }
+        setDeleteModal({ open: false, type: 'single', id: '', name: '' });
     };
 
     const toggleExpand = (id: string) => {
@@ -43,10 +55,75 @@ export default function InboxPage() {
 
     return (
         <div className="p-6 lg:p-8 min-h-screen pb-20">
+            {/* Delete Confirmation Modal */}
+            <AnimatePresence>
+                {deleteModal.open && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+                        onClick={() => setDeleteModal({ open: false, type: 'single', id: '', name: '' })}
+                    >
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            onClick={(e) => e.stopPropagation()}
+                            className="bg-neutral-900 rounded-2xl p-6 max-w-md w-full mx-4 border border-white/10"
+                        >
+                            <div className="flex items-center gap-3 mb-4">
+                                <div className="w-12 h-12 rounded-full bg-red-500/20 flex items-center justify-center">
+                                    <Trash2 className="w-6 h-6 text-red-400" />
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-bold text-white">Silmek istediğine emin misin?</h3>
+                                    <p className="text-white/50 text-sm">
+                                        {deleteModal.type === 'all'
+                                            ? "Tüm geri bildirimler silinecek."
+                                            : "Bu yorum kalıcı olarak silinecek."}
+                                    </p>
+                                </div>
+                            </div>
+                            <p className="text-white/60 mb-6">
+                                {deleteModal.type === 'all'
+                                    ? "Gelen kutusundaki BÜTÜN mesajları silmek üzeresin. Bu işlem geri alınamaz."
+                                    : "Bu mesajı silmek üzeresin. Bu işlem geri alınamaz."}
+                            </p>
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={() => setDeleteModal({ open: false, type: 'single', id: '', name: '' })}
+                                    className="flex-1 px-4 py-3 rounded-xl bg-white/10 text-white font-medium hover:bg-white/20 transition-colors"
+                                >
+                                    İptal
+                                </button>
+                                <button
+                                    onClick={confirmDelete}
+                                    className="flex-1 px-4 py-3 rounded-xl bg-red-500 text-white font-medium hover:bg-red-600 transition-colors"
+                                >
+                                    Sil
+                                </button>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
             {/* Header */}
-            <div className="mb-8">
-                <h1 className="text-2xl font-bold text-white mb-2">Gelen Kutusu</h1>
-                <p className="text-white/50">Müşteri geri bildirimleri</p>
+            <div className="mb-8 flex items-center justify-between">
+                <div>
+                    <h1 className="text-2xl font-bold text-white mb-2">Gelen Kutusu</h1>
+                    <p className="text-white/50">Müşteri geri bildirimleri</p>
+                </div>
+                {feedbacks.length > 0 && (
+                    <button
+                        onClick={() => setDeleteModal({ open: true, type: 'all', id: '', name: '' })}
+                        className="px-4 py-2 bg-red-500/10 text-red-500 hover:bg-red-500/20 rounded-lg transition-colors flex items-center gap-2 font-medium"
+                    >
+                        <Trash2 className="w-4 h-4" />
+                        <span>Tümünü Sil</span>
+                    </button>
+                )}
             </div>
 
             {/* Table Search */}

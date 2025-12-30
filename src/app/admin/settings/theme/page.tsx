@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Save, Palette, Check, Type, Square, Sparkles, Sun, Moon, Radius, TextCursor } from "lucide-react";
+import { Save, Palette, Check, Type, Square, Sparkles, Sun, Moon, Radius, TextCursor, Star as StartIcon } from "lucide-react";
 import { useTheme } from "@/context/ThemeContext";
 
 // Color presets
@@ -491,6 +491,42 @@ export default function ThemeSettingsPage() {
                                 />
                                 <p className="text-xs text-white/40 text-center mt-2">{option.name}</p>
                                 {cardBorder === option.value && (
+                                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
+                                        <Check className="w-2.5 h-2.5 text-white" />
+                                    </div>
+                                )}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            </div>
+
+            {/* Featured Card Shadow */}
+            <div className="bg-neutral-900 rounded-2xl p-6 border border-white/5 mb-6">
+                <div className="flex items-center gap-2 mb-4">
+                    <StartIcon className="w-5 h-5 text-white" />
+                    <h2 className="text-lg font-bold text-white">Öne Çıkan Kart Gölgesi</h2>
+                </div>
+
+                <div className="mb-6">
+                    <p className="text-sm text-white/60 mb-3">Gölge Yoğunluğu</p>
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                        {cardShadowOptions.map((option, index) => (
+                            <button
+                                key={index}
+                                type="button"
+                                onClick={() => updateTheme({ featuredCardShadow: option.value })}
+                                className={`relative p-3 rounded-xl border-2 transition-all ${theme.featuredCardShadow === option.value
+                                    ? "border-white"
+                                    : "border-white/10 hover:border-white/30"
+                                    }`}
+                            >
+                                <div
+                                    className="w-full h-10 bg-neutral-700 rounded-lg"
+                                    style={{ boxShadow: option.value }}
+                                />
+                                <p className="text-xs text-white/40 text-center mt-2">{option.name}</p>
+                                {theme.featuredCardShadow === option.value && (
                                     <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
                                         <Check className="w-2.5 h-2.5 text-white" />
                                     </div>

@@ -20,6 +20,7 @@ interface FeedbackContextType {
     addFeedback: (feedback: Omit<Feedback, "id" | "createdAt" | "isRead">) => void;
     markAsRead: (id: string) => void;
     deleteFeedback: (id: string) => void;
+    deleteAllFeedbacks: () => void;
     unreadCount: number;
     isFeedbackModalOpen: boolean;
     openFeedbackModal: () => void;
@@ -82,6 +83,10 @@ export function FeedbackProvider({ children }: { children: ReactNode }) {
         setFeedbacks(prev => prev.filter(f => f.id !== id));
     }, []);
 
+    const deleteAllFeedbacks = useCallback(() => {
+        setFeedbacks([]);
+    }, []);
+
     const unreadCount = feedbacks.filter(f => !f.isRead).length;
 
     const openFeedbackModal = useCallback(() => setIsFeedbackModalOpen(true), []);
@@ -93,6 +98,7 @@ export function FeedbackProvider({ children }: { children: ReactNode }) {
             addFeedback,
             markAsRead,
             deleteFeedback,
+            deleteAllFeedbacks,
             unreadCount,
             isFeedbackModalOpen,
             openFeedbackModal,

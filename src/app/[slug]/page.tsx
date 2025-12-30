@@ -121,7 +121,7 @@ export default function BusinessMenuPage() {
         const element = categoryRefs.current[categoryId];
         if (element) {
             isScrollingRef.current = true;
-            const yOffset = -70;
+            const yOffset = -130; // Header (60px) + CategoryBar (~60px) + Padding
             const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
             window.scrollTo({ top: y, behavior: "smooth" });
 

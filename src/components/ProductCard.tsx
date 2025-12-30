@@ -8,6 +8,8 @@ interface ProductCardProps {
     product: Product;
     index: number;
     onClick: () => void;
+    hideDescription?: boolean;
+    isFeaturedSection?: boolean;
 }
 
 // Helper to detect if URL is video
@@ -34,7 +36,7 @@ function isVideoUrl(url: string): boolean {
  * - Kartlar arası boşluk: ProductFeed'de cardGap (16px)
  */
 
-export default function ProductCard({ product, onClick }: ProductCardProps) {
+export default function ProductCard({ product, onClick, hideDescription, isFeaturedSection }: ProductCardProps) {
     const { theme } = useTheme();
     const hasDiscount = product.originalPrice && product.originalPrice > product.price;
     const discountPercentage = hasDiscount
@@ -43,54 +45,70 @@ export default function ProductCard({ product, onClick }: ProductCardProps) {
 
     const isVideo = isVideoUrl(product.image);
 
+    // Dynamic styles based on section
+    const cardBg = isFeaturedSection ? (theme.featuredCardBgColor || theme.cardColor) : (theme.menuBgColor || theme.cardColor);
+    const titleColor = isFeaturedSection ? (theme.featuredNameColor || theme.menuTitleColor || theme.textColor) : (theme.menuTitleColor || theme.textColor);
+    const priceColor = isFeaturedSection ? (theme.featuredPriceColor || theme.accentColor) : (theme.accentColor);
+    const cardRadius = isFeaturedSection ? (theme.featuredCardRadius || theme.cardRadius) : (theme.menuCardRadius || 12);
+    const imageRadius = isFeaturedSection ? (theme.featuredImageRadius || 8) : (theme.menuImageRadius || 8);
+
     return (
         <div
             onClick={onClick}
             className="w-full flex cursor-pointer overflow-hidden"
             style={{
-                backgroundColor: theme.menuBgColor || theme.cardColor,
+                backgroundColor: cardBg,
                 fontFamily: theme.fontFamily,
-                borderRadius: `${theme.menuCardRadius || 12}px`,
-                boxShadow: theme.cardShadowEnabled !== false
-                    ? `${theme.cardShadowX ?? 0}px ${theme.cardShadowY ?? 4}px ${theme.cardShadowBlur ?? 15}px ${theme.cardShadowSpread ?? 0}px ${theme.cardShadowColor || "rgba(0,0,0,0.3)"}`
-                    : "none",
+                borderRadius: `${cardRadius}px`,
+                boxShadow: isFeaturedSection
+                    ? (theme.featuredCardShadowEnabled !== false
+                        ? `${theme.featuredCardShadowX ?? 0}px ${theme.featuredCardShadowY ?? 10}px ${theme.featuredCardShadowBlur ?? 15}px ${theme.featuredCardShadowSpread ?? -3}px ${theme.featuredCardShadowColor || "rgba(0,0,0,0.3)"}`
+                        : "none")
+                    : (theme.cardShadowEnabled !== false
+                        ? `${theme.cardShadowX ?? 0}px ${theme.cardShadowY ?? 4}px ${theme.cardShadowBlur ?? 15}px ${theme.cardShadowSpread ?? 0}px ${theme.cardShadowColor || "rgba(0,0,0,0.3)"}`
+                        : "none"),
                 border: theme.cardBorder,
                 minHeight: "100px",
             }}
         >
             {/* Left Content - Name, Description, Price */}
-            <div className="flex-1 flex flex-col justify-between" style={{ padding: "12px" }}>
+            <div className="flex-1 flex flex-col justify-between min-w-0" style={{ padding: "12px" }}>
                 {/* Name */}
                 <div>
                     <h3
                         className="font-semibold"
                         style={{
-                            color: theme.menuTitleColor || theme.textColor,
+                            color: titleColor,
                             fontSize: "15px",
                             marginBottom: "4px",
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
                         }}
                     >
                         {product.name}
                     </h3>
 
-                    {/* Description - Fixed 2 line height */}
-                    <p
-                        style={{
-                            color: theme.menuDescriptionColor || "rgba(255,255,255,0.5)",
-                            fontSize: "12px",
-                            marginBottom: "8px",
-                            lineHeight: "1.4",
-                            height: "33.6px",
-                            display: "-webkit-box",
-                            WebkitLineClamp: 2,
-                            WebkitBoxOrient: "vertical" as const,
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            wordBreak: "break-word",
-                        }}
-                    >
-                        {product.description}
-                    </p>
+                    {/* Description - Conditional Rendering */}
+                    {!hideDescription && (
+                        <p
+                            style={{
+                                color: theme.menuDescriptionColor || "rgba(255,255,255,0.5)",
+                                fontSize: "12px",
+                                marginBottom: "8px",
+                                lineHeight: "1.4",
+                                height: "33.6px",
+                                display: "-webkit-box",
+                                WebkitLineClamp: 2,
+                                WebkitBoxOrient: "vertical" as const,
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                                wordBreak: "break-word",
+                            }}
+                        >
+                            {product.description}
+                        </p>
+                    )}
                 </div>
 
                 {/* Price and Discount */}
@@ -98,7 +116,7 @@ export default function ProductCard({ product, onClick }: ProductCardProps) {
                     <span
                         className="font-bold"
                         style={{
-                            color: theme.accentColor,
+                            color: priceColor,
                             fontSize: "16px",
                         }}
                     >
@@ -108,7 +126,7 @@ export default function ProductCard({ product, onClick }: ProductCardProps) {
                         <span
                             className="line-through opacity-40"
                             style={{
-                                color: theme.textColor,
+                                color: isFeaturedSection ? (theme.featuredNameColor || theme.textColor) : theme.textColor,
                                 fontSize: "12px",
                             }}
                         >
@@ -140,7 +158,8 @@ export default function ProductCard({ product, onClick }: ProductCardProps) {
                     height: "calc(100% - 10px)",
                     margin: "5px",
                     marginLeft: "0",
-                    borderRadius: `${theme.menuImageRadius || 8}px`,
+                    borderRadius: `${imageRadius}px`,
+
                     boxShadow: theme.imageShadowEnabled
                         ? `${theme.imageShadowX ?? 0}px ${theme.imageShadowY ?? 4}px ${theme.imageShadowBlur ?? 10}px ${theme.imageShadowSpread ?? 0}px ${theme.imageShadowColor || "rgba(0,0,0,0.3)"}`
                         : "none",

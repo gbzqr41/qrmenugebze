@@ -1,10 +1,21 @@
 "use client";
 
-import { forwardRef } from "react";
+import { forwardRef, useMemo } from "react";
 import { motion } from "framer-motion";
+import {
+    Salad,
+    UtensilsCrossed,
+    Pizza,
+    Beef,
+    Soup,
+    Cake,
+    Coffee,
+    type LucideIcon,
+} from "lucide-react";
 import { type Product } from "@/data/mockData";
 import { useDataStore } from "@/context/DataStoreContext";
 import { useTheme } from "@/context/ThemeContext";
+
 import ProductCard from "./ProductCard";
 
 interface ProductFeedProps {
@@ -12,6 +23,17 @@ interface ProductFeedProps {
     onProductClick: (product: Product) => void;
     filteredProducts?: Product[];
 }
+
+// İkon mapping
+const iconMap: Record<string, LucideIcon> = {
+    Salad,
+    UtensilsCrossed,
+    Pizza,
+    Beef,
+    Soup,
+    Cake,
+    Coffee,
+};
 
 const ProductFeed = forwardRef<HTMLDivElement, ProductFeedProps>(
     ({ categoryRefs, onProductClick, filteredProducts }, ref) => {
@@ -32,10 +54,60 @@ const ProductFeed = forwardRef<HTMLDivElement, ProductFeedProps>(
             ? categories.filter((cat) =>
                 filteredProducts.some((p) => p.categoryId === cat.id)
             )
-            : categories;
+            : categories.filter((cat) => !cat.isFeatured);
+
+        // Featured Categories Sections Logic
+        const featuredCategorySections = useMemo(() => {
+            // If filtering is enabled, skip featured sections
+            if (filteredProducts) return [];
+
+            // Get featured categories
+            const featured = categories.filter((c) => c.isFeatured);
+
+            // Create sections mapping loop
+            return featured.map(cat => ({
+                category: cat,
+                products: products.filter(p => p.categoryId === cat.id)
+            })).filter(section => section.products.length > 0);
+        }, [products, categories, filteredProducts]);
 
         return (
             <div ref={ref} className="pb-20" style={{ backgroundColor: theme.primaryColor }}>
+
+                {/* Featured Sections (Horizontal Scroll per Featured Category) */}
+                {featuredCategorySections.map((section) => (
+                    <div key={`featured-section-${section.category.id}`} className="pt-6 px-5 mb-2">
+                        <div className="flex items-center gap-2 mb-4">
+                            <h2
+                                className="text-xl font-bold"
+                                style={{ color: theme.featuredTitleColor || "#ffffff" }}
+                            >
+                                {section.category.name}
+                            </h2>
+                        </div>
+
+                        {/* Horizontal Scroll Container */}
+                        <div
+                            className="flex overflow-x-auto pb-8 -mx-5 px-5 scrollbar-hide"
+                            style={{ gap: `${cardGap}px` }}
+                        >
+                            {section.products.map((product, index) => (
+                                <div
+                                    key={`featured-${product.id}`}
+                                    className="shrink-0 w-[200px]" // Fixed width
+                                >
+                                    <ProductCard
+                                        product={product}
+                                        index={index}
+                                        onClick={() => onProductClick(product)}
+                                        hideDescription={true} // Hide description as requested
+                                        isFeaturedSection={true}
+                                    />
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                ))}
 
                 {/* Regular Categories */}
                 <div className="px-5">
@@ -55,7 +127,7 @@ const ProductFeed = forwardRef<HTMLDivElement, ProductFeedProps>(
                                     ref={(el) => {
                                         categoryRefs.current[category.id] = el;
                                     }}
-                                    className="pt-6"
+                                    className="pt-3"
                                 >
                                     {/* Category Title */}
                                     <motion.div

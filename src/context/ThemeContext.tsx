@@ -107,6 +107,13 @@ export interface ThemeSettings {
     featuredCardRadius?: number;
     featuredMenuRadius?: number;
     featuredImageRadius?: number;
+    featuredCardShadowEnabled?: boolean;
+    featuredCardShadow?: string;
+    featuredCardShadowColor?: string;
+    featuredCardShadowX?: number;
+    featuredCardShadowY?: number;
+    featuredCardShadowBlur?: number;
+    featuredCardShadowSpread?: number;
 
     // Search Modal
     searchBgColor?: string;
@@ -222,6 +229,14 @@ const defaultTheme: ThemeSettings = {
     menuTitleColor: "#ffffff",
     menuDescriptionColor: "rgba(255,255,255,0.5)",
     menuImageRadius: 8,
+    // Featured defaults
+    featuredCardShadowEnabled: true,
+    featuredCardShadow: "0 10px 15px -3px rgba(0,0,0,0.3)",
+    featuredCardShadowColor: "rgba(0,0,0,0.3)",
+    featuredCardShadowX: 0,
+    featuredCardShadowY: 10,
+    featuredCardShadowBlur: 15,
+    featuredCardShadowSpread: -3,
     // Search defaults
     searchBgColor: "#000000",
     searchInputBgColor: "#171717",
