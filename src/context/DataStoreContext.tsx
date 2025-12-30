@@ -98,6 +98,7 @@ function dbBusinessToBusiness(db: DbBusiness): Business {
         gallery: db.gallery,
         workingHours: db.working_hours,
         sliderItems: db.slider_items,
+        themeSettings: db.theme_settings || {},
     };
 }
 

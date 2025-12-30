@@ -41,6 +41,7 @@ export interface Business {
     gallery: string[];
     workingHours: WorkingHours[];
     sliderItems?: SliderItem[];
+    themeSettings?: Record<string, unknown>; // Theme configuration for customer menu
 
 }
 

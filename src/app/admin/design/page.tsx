@@ -118,8 +118,31 @@ export default function DesignPage() {
         setLocalTheme(prev => ({ ...prev, ...updates }));
     };
 
-    const handleSave = () => {
+    const handleSave = async () => {
         updateTheme(localTheme);
+
+        // Also save theme to database so mobile visitors can see it
+        try {
+            const { updateBusiness } = await import("@/context/DataStoreContext").then(m => {
+                // We need to get updateBusiness from context, but since we're in admin layout
+                // which has DataStoreProvider, we can use the hook approach differently
+                return { updateBusiness: null };
+            });
+
+            // Direct Supabase update for theme settings
+            const { supabase } = await import("@/lib/supabase");
+            const businessId = localStorage.getItem("currentBusinessId");
+
+            if (businessId) {
+                await supabase
+                    .from("businesses")
+                    .update({ theme_settings: localTheme })
+                    .eq("id", businessId);
+            }
+        } catch (error) {
+            console.error("Failed to save theme to database:", error);
+        }
+
         showToast("✓ Tasarım ayarları kaydedildi!", "success");
         setHasChanges(false);
     };
