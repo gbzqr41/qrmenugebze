@@ -2,8 +2,9 @@
 
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Download, Copy, Check, Palette, RefreshCw, ChevronRight, X } from "lucide-react";
+import { Download, Copy, Check, Palette, ChevronRight, X } from "lucide-react";
 import QRCode from "qrcode";
+import { useDataStore } from "@/context/DataStoreContext";
 
 const colorPresets = [
     { name: "Klasik", fg: "#000000", bg: "#FFFFFF" },
@@ -15,9 +16,9 @@ const colorPresets = [
 ];
 
 export default function QRCodePage() {
+    const { business } = useDataStore();
     const [qrDataUrl, setQrDataUrl] = useState<string>("");
     const [menuUrl, setMenuUrl] = useState<string>("");
-    const [businessName, setBusinessName] = useState<string>("");
     const [selectedPreset, setSelectedPreset] = useState(0);
     const [copied, setCopied] = useState(false);
     const [showColorModal, setShowColorModal] = useState(false);
@@ -26,19 +27,16 @@ export default function QRCodePage() {
     const [useCustomColors, setUseCustomColors] = useState(false);
     const canvasRef = useRef<HTMLCanvasElement>(null);
 
-    // Get the menu URL with business slug
+    // Get the menu URL with business slug from DataStore (always up to date)
     useEffect(() => {
-        if (typeof window !== "undefined") {
-            const slug = localStorage.getItem("currentBusinessSlug") || "";
-            const name = localStorage.getItem("currentBusinessName") || "";
+        if (typeof window !== "undefined" && business?.slug) {
             // Use gbzqr.com in production, localhost in dev
             const baseUrl = window.location.hostname === "localhost"
                 ? window.location.origin
                 : "https://gbzqr.com";
-            setMenuUrl(`${baseUrl}/${slug}`);
-            setBusinessName(name);
+            setMenuUrl(`${baseUrl}/${business.slug}`);
         }
-    }, []);
+    }, [business?.slug]);
 
     // Generate QR Code
     useEffect(() => {
@@ -76,12 +74,12 @@ export default function QRCodePage() {
         }
     };
 
-    const handleDownload = (format: "png" | "svg") => {
+    const handleDownload = () => {
         if (!qrDataUrl) return;
 
         const link = document.createElement("a");
-        const safeName = businessName.toLowerCase().replace(/[^a-z0-9]+/g, "-") || "menu";
-        link.download = `${safeName}-qr.${format}`;
+        const safeName = (business?.name || "menu").toLowerCase().replace(/[^a-z0-9]+/g, "-");
+        link.download = `${safeName}-qr.png`;
         link.href = qrDataUrl;
         link.click();
     };
@@ -172,15 +170,15 @@ export default function QRCodePage() {
                         </a>
                     </div>
 
-                    {/* Download Buttons */}
+                    {/* Download Button */}
                     <div className="flex gap-3 mt-6">
                         <motion.button
                             whileTap={{ scale: 0.95 }}
-                            onClick={() => handleDownload("png")}
-                            className="flex items-center gap-2 px-6 py-3 bg-white text-black rounded-xl font-medium hover:bg-neutral-100 transition-colors"
+                            onClick={handleDownload}
+                            className="flex items-center gap-2 px-8 py-3 bg-white text-black rounded-xl font-medium hover:bg-neutral-100 transition-colors"
                         >
                             <Download className="w-5 h-5" />
-                            PNG İndir
+                            İndir
                         </motion.button>
                     </div>
                 </motion.div>
@@ -246,15 +244,6 @@ export default function QRCodePage() {
                             </li>
                         </ul>
                     </div>
-
-                    {/* Regenerate Button */}
-                    <button
-                        onClick={() => setSelectedPreset((prev) => prev)}
-                        className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-neutral-900 text-white rounded-xl font-medium hover:bg-neutral-800 transition-colors border border-white/5"
-                    >
-                        <RefreshCw className="w-5 h-5" />
-                        Yeniden Oluştur
-                    </button>
                 </motion.div>
             </div>
 

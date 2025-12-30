@@ -427,6 +427,17 @@ export function DataStoreProvider({ children, initialSlug }: { children: ReactNo
 
         if (error) throw error;
 
+        // Update localStorage if name or slug changed (keeps session in sync)
+        if (typeof window !== "undefined") {
+            if (updates.name !== undefined) {
+                localStorage.setItem("currentBusinessName", updates.name);
+            }
+            if (updates.slug !== undefined) {
+                localStorage.setItem("currentBusinessSlug", updates.slug);
+                setBusinessSlug(updates.slug);
+            }
+        }
+
         setBusiness(prev => ({ ...prev, ...updates }));
     }, [businessId]);
 
