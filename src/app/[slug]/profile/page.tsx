@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useParams } from "next/navigation";
 import {
     Navigation,
     Phone,
@@ -22,6 +23,8 @@ import GallerySlider from "@/components/GallerySlider";
 
 
 export default function ProfilePage() {
+    const params = useParams();
+    const slug = params.slug as string;
     const { business } = useDataStore();
     const { theme } = useTheme();
     const [isGalleryOpen, setIsGalleryOpen] = useState(false);
@@ -51,12 +54,13 @@ export default function ProfilePage() {
 
                 {/* Back Button */}
                 <Link
-                    href="/"
+                    href={`/${slug}`}
                     className="absolute top-4 left-4 z-10 w-10 h-10 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center"
                 >
                     <ArrowLeft className="w-5 h-5 text-white" />
                 </Link>
             </div>
+
 
             {/* Profile Content */}
             <div className="relative px-5 -mt-20">

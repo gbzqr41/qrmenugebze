@@ -20,17 +20,22 @@ interface BottomNavProps {
     onBusinessClick?: () => void;
 }
 
-const navItems: NavItem[] = [
-    { icon: Home, label: "Anasayfa", href: "/" },
-    { icon: Search, label: "Ara", action: "search" },
-    { icon: Filter, label: "Filtre", action: "filter" },
-    { icon: Heart, label: "Favori", action: "favorites" },
-    { icon: Info, label: "Profil", action: "business" },
-];
-
 export default function BottomNav({ onSearchClick, onFilterClick, onFeedbackClick, onFavoritesClick, onBusinessClick }: BottomNavProps) {
     const pathname = usePathname();
     const { theme } = useTheme();
+
+    // Extract slug from pathname (e.g., /test-cafe/profile -> test-cafe)
+    const pathParts = pathname.split("/").filter(Boolean);
+    const slug = pathParts[0] || "";
+    const baseHref = slug ? `/${slug}` : "/";
+
+    const navItems: NavItem[] = [
+        { icon: Home, label: "Anasayfa", href: baseHref },
+        { icon: Search, label: "Ara", action: "search" },
+        { icon: Filter, label: "Filtre", action: "filter" },
+        { icon: Heart, label: "Favori", action: "favorites" },
+        { icon: Info, label: "Profil", action: "business" },
+    ];
 
     // Theme values
     const bgColor = theme.bottomNavBgColor || "rgba(0,0,0,0.95)";
