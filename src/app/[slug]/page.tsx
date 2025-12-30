@@ -2,8 +2,7 @@
 
 import { useRef, useState, useEffect, useCallback, useMemo } from "react";
 import { Star } from "lucide-react";
-import { useParams, notFound } from "next/navigation";
-import { AnimatePresence } from "framer-motion";
+import { useParams } from "next/navigation";
 import Slider from "@/components/Slider";
 import CategoryBar from "@/components/CategoryBar";
 import ProductFeed from "@/components/ProductFeed";
@@ -23,10 +22,11 @@ export default function BusinessMenuPage() {
     const params = useParams();
     const slug = params.slug as string;
 
-    const { products, categories, business } = useDataStore();
+    const { products, categories, business, isLoading, businessNotFound } = useDataStore();
     const { theme } = useTheme();
     const { openFeedbackModal, isFeedbackModalOpen } = useFeedback();
-    const [activeCategory, setActiveCategory] = useState(categories[0]?.id || "1");
+
+    const [activeCategory, setActiveCategory] = useState("");
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -44,38 +44,31 @@ export default function BusinessMenuPage() {
     const feedRef = useRef<HTMLDivElement>(null);
     const isScrollingRef = useRef(false);
 
-    // Check if the slug matches the business slug
-    // For now, we'll accept any slug since we're using localStorage
-    // In production, this would verify against the database
-    const businessSlug = business?.slug || "";
+    // ALL HOOKS MUST BE BEFORE ANY CONDITIONAL RETURNS
 
-    // If business has a slug set and it doesn't match, show 404
-    // For now, we allow any slug to work for testing
+    // Update active category when categories load
     useEffect(() => {
-        console.log("Business slug:", businessSlug, "URL slug:", slug);
-    }, [businessSlug, slug]);
+        if (categories.length > 0 && !activeCategory) {
+            setActiveCategory(categories[0].id);
+        }
+    }, [categories, activeCategory]);
 
     // Filtered products
     const filteredProducts = useMemo(() => {
         let result = products;
 
-        // Filter by categories
         if (filters.categories.length > 0) {
             result = result.filter((p) => filters.categories.includes(p.categoryId));
         }
 
-        // Filter by price range
         result = result.filter(
             (p) => p.price >= filters.priceRange.min && p.price <= filters.priceRange.max
         );
 
-        // Filter by tags
         if (filters.tags.length > 0) {
             result = result.filter((p) => {
-                // Check for special tags
                 if (filters.tags.includes("Yeni") && p.isNew) return true;
                 if (filters.tags.includes("İndirimli") && p.originalPrice) return true;
-                // Check product tags
                 return p.tags.some((tag) => filters.tags.includes(tag));
             });
         }
@@ -84,11 +77,12 @@ export default function BusinessMenuPage() {
     }, [products, filters]);
 
     // Check if filters are active
-    const hasActiveFilters =
+    const hasActiveFilters = useMemo(() =>
         filters.categories.length > 0 ||
         filters.tags.length > 0 ||
         filters.priceRange.min > 0 ||
-        filters.priceRange.max < 1000;
+        filters.priceRange.max < 1000
+        , [filters]);
 
     // Ürün tıklama - modal açma
     const handleProductClick = useCallback((product: Product) => {
@@ -121,7 +115,7 @@ export default function BusinessMenuPage() {
         const element = categoryRefs.current[categoryId];
         if (element) {
             isScrollingRef.current = true;
-            const yOffset = -130; // Header (60px) + CategoryBar (~60px) + Padding
+            const yOffset = -130;
             const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
             window.scrollTo({ top: y, behavior: "smooth" });
 
@@ -154,10 +148,41 @@ export default function BusinessMenuPage() {
         return () => window.removeEventListener("scroll", handleScroll);
     }, [categories]);
 
+    // CONDITIONAL RETURNS AFTER ALL HOOKS
+
+    // Loading state
+    if (isLoading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-black">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white mx-auto mb-4"></div>
+                    <p className="text-white/60">Menü yükleniyor...</p>
+                </div>
+            </div>
+        );
+    }
+
+    // 404 state
+    if (businessNotFound) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-black">
+                <div className="text-center">
+                    <h1 className="text-6xl font-bold text-white mb-4">404</h1>
+                    <p className="text-white/60 mb-6">İşletme bulunamadı</p>
+                    <p className="text-white/40 text-sm mb-8">"{slug}" adında bir işletme mevcut değil.</p>
+                    <a
+                        href="/login"
+                        className="px-6 py-3 bg-white text-black rounded-xl font-medium hover:bg-white/90 transition-colors"
+                    >
+                        Ana Sayfaya Dön
+                    </a>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <>
-
-
             <main className="min-h-screen pb-[20px]" style={{ backgroundColor: theme.primaryColor }}>
                 {/* Header */}
                 <div
@@ -168,12 +193,11 @@ export default function BusinessMenuPage() {
                         className="font-bold text-lg"
                         style={{ color: theme.headerTitleColor || "#ffffff" }}
                     >
-                        {business?.name || "RESITAL LOUNGE"}
+                        {business?.name || "QR Menü"}
                     </span>
 
                     {/* Right side buttons */}
                     <div className="flex items-center gap-[10px]">
-                        {/* Star Icon Button - conditionally rendered */}
                         {theme.feedbackEnabled !== false && (
                             <button
                                 onClick={() => openFeedbackModal()}
@@ -189,7 +213,7 @@ export default function BusinessMenuPage() {
                     </div>
                 </div>
 
-                {/* Slider Section - conditionally rendered */}
+                {/* Slider Section */}
                 {theme.sliderEnabled !== false && <Slider />}
 
                 {/* Category Navigation */}
@@ -199,29 +223,27 @@ export default function BusinessMenuPage() {
                 />
 
                 {/* Active Filters Indicator */}
-                {
-                    hasActiveFilters && (
-                        <div className="px-5 py-2 bg-neutral-900">
-                            <div className="flex items-center justify-between">
-                                <span className="text-sm text-white/60">
-                                    {filteredProducts.length} ürün bulundu
-                                </span>
-                                <button
-                                    onClick={() =>
-                                        setFilters({
-                                            categories: [],
-                                            priceRange: { min: 0, max: 1000 },
-                                            tags: [],
-                                        })
-                                    }
-                                    className="text-sm text-white/60 hover:text-white transition-colors"
-                                >
-                                    Filtreleri Temizle
-                                </button>
-                            </div>
+                {hasActiveFilters && (
+                    <div className="px-5 py-2 bg-neutral-900">
+                        <div className="flex items-center justify-between">
+                            <span className="text-sm text-white/60">
+                                {filteredProducts.length} ürün bulundu
+                            </span>
+                            <button
+                                onClick={() =>
+                                    setFilters({
+                                        categories: [],
+                                        priceRange: { min: 0, max: 1000 },
+                                        tags: [],
+                                    })
+                                }
+                                className="text-sm text-white/60 hover:text-white transition-colors"
+                            >
+                                Filtreleri Temizle
+                            </button>
                         </div>
-                    )
-                }
+                    </div>
+                )}
 
                 {/* Product Feed */}
                 <ProductFeed
@@ -231,38 +253,36 @@ export default function BusinessMenuPage() {
                     filteredProducts={hasActiveFilters ? filteredProducts : undefined}
                 />
 
-                {/* Bottom Navigation - hide when modals are open */}
-                {
-                    !isFilterOpen && !isSearchOpen && !isBusinessInfoOpen && !isFeedbackModalOpen && !isFavoritesOpen && (
-                        <BottomNav
-                            onSearchClick={() => {
-                                setIsSearchOpen(true);
-                                setIsBusinessInfoOpen(false);
-                                setIsFilterOpen(false);
-                            }}
-                            onFilterClick={() => {
-                                setIsFilterOpen(true);
-                                setIsBusinessInfoOpen(false);
-                                setIsSearchOpen(false);
-                            }}
-                            onFeedbackClick={() => {
-                                openFeedbackModal();
-                                setIsBusinessInfoOpen(false);
-                            }}
-                            onFavoritesClick={() => {
-                                setIsFavoritesOpen(true);
-                                setIsSearchOpen(false);
-                                setIsFilterOpen(false);
-                                setIsBusinessInfoOpen(false);
-                            }}
-                            onBusinessClick={() => {
-                                setIsBusinessInfoOpen(true);
-                                setIsSearchOpen(false);
-                                setIsFilterOpen(false);
-                            }}
-                        />
-                    )
-                }
+                {/* Bottom Navigation */}
+                {!isFilterOpen && !isSearchOpen && !isBusinessInfoOpen && !isFeedbackModalOpen && !isFavoritesOpen && (
+                    <BottomNav
+                        onSearchClick={() => {
+                            setIsSearchOpen(true);
+                            setIsBusinessInfoOpen(false);
+                            setIsFilterOpen(false);
+                        }}
+                        onFilterClick={() => {
+                            setIsFilterOpen(true);
+                            setIsBusinessInfoOpen(false);
+                            setIsSearchOpen(false);
+                        }}
+                        onFeedbackClick={() => {
+                            openFeedbackModal();
+                            setIsBusinessInfoOpen(false);
+                        }}
+                        onFavoritesClick={() => {
+                            setIsFavoritesOpen(true);
+                            setIsSearchOpen(false);
+                            setIsFilterOpen(false);
+                            setIsBusinessInfoOpen(false);
+                        }}
+                        onBusinessClick={() => {
+                            setIsBusinessInfoOpen(true);
+                            setIsSearchOpen(false);
+                            setIsFilterOpen(false);
+                        }}
+                    />
+                )}
 
                 {/* Product Detail Modal */}
                 <ProductDetailModal

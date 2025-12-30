@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { Lock, Phone, Eye, EyeOff, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { supabase } from "@/lib/supabase";
 
 type ViewMode = "login" | "forgot" | "otp" | "newPassword" | "register";
 
@@ -19,30 +20,63 @@ export default function LoginPage() {
 
     // Forgot password states
     const [forgotPhone, setForgotPhone] = useState("");
+    const VALID_OTP = "111111";
     const [otp, setOtp] = useState("");
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [showNewPassword, setShowNewPassword] = useState(false);
-
-    // Valid credentials
-    const VALID_PHONE = "5551111111";
-    const VALID_PASSWORD = "80148014a";
-    const VALID_OTP = "111111";
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         setError("");
         setIsLoading(true);
 
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        try {
+            // 1. Check if super admin
+            const { data: adminData } = await supabase
+                .from("admins")
+                .select("id, phone")
+                .eq("phone", phone)
+                .eq("password", password)
+                .single();
 
-        if (phone === VALID_PHONE && password === VALID_PASSWORD) {
-            localStorage.setItem("isAdminLoggedIn", "true");
-            router.push("/admin");
-        } else {
+            if (adminData) {
+                // Super admin login
+                localStorage.setItem("isAdminLoggedIn", "true");
+                localStorage.setItem("isSuperAdmin", "true");
+                localStorage.setItem("adminPhone", phone);
+                router.push("/super-admin");
+                return;
+            }
+
+            // 2. Check if business customer
+            const { data: businessData } = await supabase
+                .from("businesses")
+                .select("id, slug, name, phone")
+                .eq("phone", phone)
+                .eq("password", password)
+                .single();
+
+            if (businessData) {
+                // Customer login
+                localStorage.setItem("isAdminLoggedIn", "true");
+                localStorage.setItem("isSuperAdmin", "false");
+                localStorage.setItem("currentBusinessSlug", businessData.slug);
+                localStorage.setItem("currentBusinessId", businessData.id);
+                localStorage.setItem("currentBusinessName", businessData.name);
+                localStorage.setItem("adminPhone", phone);
+                router.push("/admin/menu");
+                return;
+            }
+
+            // No match found
             setError("Telefon veya şifre hatalı");
-            setIsLoading(false);
+        } catch (err) {
+            console.error("Login error:", err);
+            setError("Giriş sırasında bir hata oluştu");
         }
+
+        setIsLoading(false);
     };
 
     const handleForgotSubmit = async (e: React.FormEvent) => {
@@ -50,9 +84,20 @@ export default function LoginPage() {
         setError("");
         setIsLoading(true);
 
-        await new Promise((resolve) => setTimeout(resolve, 800));
+        // Check if phone exists in admins or businesses
+        const { data: adminData } = await supabase
+            .from("admins")
+            .select("id")
+            .eq("phone", forgotPhone)
+            .single();
 
-        if (forgotPhone === VALID_PHONE) {
+        const { data: businessData } = await supabase
+            .from("businesses")
+            .select("id")
+            .eq("phone", forgotPhone)
+            .single();
+
+        if (adminData || businessData) {
             setViewMode("otp");
         } else {
             setError("Bu telefon numarası kayıtlı değil");
@@ -95,7 +140,23 @@ export default function LoginPage() {
         }
 
         setIsLoading(true);
-        await new Promise((resolve) => setTimeout(resolve, 800));
+
+        // Update password in database
+        const { error: adminError } = await supabase
+            .from("admins")
+            .update({ password: newPassword })
+            .eq("phone", forgotPhone);
+
+        const { error: businessError } = await supabase
+            .from("businesses")
+            .update({ password: newPassword })
+            .eq("phone", forgotPhone);
+
+        if (adminError && businessError) {
+            setError("Şifre güncellenirken bir hata oluştu");
+            setIsLoading(false);
+            return;
+        }
 
         // Reset successful
         setViewMode("login");
@@ -131,7 +192,7 @@ export default function LoginPage() {
                 href="/"
                 className="absolute top-6 left-6 text-[22px] font-bold text-white hover:opacity-80 transition-opacity"
             >
-                GEBZEM
+                GBZQR
             </Link>
 
             <motion.div
@@ -227,12 +288,6 @@ export default function LoginPage() {
                                 >
                                     Şifremi Unuttum
                                 </button>
-                                <button
-                                    onClick={() => { setViewMode("register"); setError(""); }}
-                                    className="text-sm text-white/60 hover:text-white transition-colors"
-                                >
-                                    Kayıt Ol
-                                </button>
                             </div>
                         </motion.div>
                     )}
@@ -316,7 +371,7 @@ export default function LoginPage() {
                         >
                             <div className="text-center mb-8">
                                 <h1 className="text-2xl font-bold text-white">Doğrulama Kodu</h1>
-                                <p className="text-white/40 mt-2">6 haneli kodu girin</p>
+                                <p className="text-white/40 mt-2">6 haneli kodu girin (Test: 111111)</p>
                             </div>
 
                             <form onSubmit={handleOtpSubmit} className="space-y-4">
@@ -454,29 +509,6 @@ export default function LoginPage() {
                                 ))}
                             </div>
                             <p className="text-center text-xs text-white/40 mt-2">Adım 3/3 - Şifre Yenileme</p>
-                        </motion.div>
-                    )}
-
-                    {/* REGISTER VIEW */}
-                    {viewMode === "register" && (
-                        <motion.div
-                            key="register"
-                            initial={{ opacity: 0, x: 20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: -20 }}
-                        >
-                            <div className="text-center mb-8">
-                                <h1 className="text-2xl font-bold text-white">Kayıt Ol</h1>
-                                <p className="text-white/40 mt-2">Yeni hesap oluşturun</p>
-                            </div>
-
-                            <div className="p-6 bg-neutral-900 rounded-xl border border-white/5 text-center">
-                                <p className="text-white/60">Kayıt sistemi yakında aktif olacak.</p>
-                            </div>
-
-                            <button onClick={resetToLogin} className="mt-6 text-sm text-white/60 hover:text-white transition-colors w-full text-center">
-                                Giriş sayfasına dön
-                            </button>
                         </motion.div>
                     )}
                 </AnimatePresence>

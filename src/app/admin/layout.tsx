@@ -4,20 +4,21 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { useFeedback } from "@/context/FeedbackContext";
+import { DataStoreProvider } from "@/context/DataStoreContext";
+import { ThemeProvider } from "@/context/ThemeContext";
+import { FeedbackProvider, useFeedback } from "@/context/FeedbackContext";
+import GlobalUI from "@/components/GlobalUI";
 import {
     QrCode,
     Settings,
     Menu,
     X,
-    ChevronLeft,
     ChevronRight,
     ArrowRight,
-    LogOut,
-    User,
     Palette,
     Inbox,
-    Search,
+    LogOut,
+    ExternalLink,
 } from "lucide-react";
 
 interface NavItem {
@@ -31,34 +32,66 @@ const navItems: NavItem[] = [
     { icon: Inbox, label: "Gelen Kutusu", href: "/admin/inbox" },
     { icon: Palette, label: "Tasarım", href: "/admin/design" },
     { icon: QrCode, label: "QR Kod", href: "/admin/qr" },
-    { icon: User, label: "Hesabım", href: "/admin/account" },
     { icon: Settings, label: "Ayarlar", href: "/admin/settings" },
 ];
 
-export default function AdminLayout({
-    children,
-}: {
-    children: React.ReactNode;
-}) {
+interface CurrentBusiness {
+    id: string;
+    name: string;
+    slug: string;
+}
+
+function AdminLayoutContent({ children }: { children: React.ReactNode }) {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+    const [currentBusiness, setCurrentBusiness] = useState<CurrentBusiness | null>(null);
+    const [isSuperAdmin, setIsSuperAdmin] = useState(false);
     const pathname = usePathname();
     const router = useRouter();
-    const { unreadCount } = useFeedback();
 
-    // Check authentication on mount
+    let unreadCount = 0;
+    try {
+        const feedbackContext = useFeedback();
+        unreadCount = feedbackContext?.unreadCount || 0;
+    } catch {
+        // Context not available
+    }
+
+    // Check authentication and load business on mount
     useEffect(() => {
         const isLoggedIn = localStorage.getItem("isAdminLoggedIn") === "true";
-        setIsAuthenticated(isLoggedIn);
+        const superAdmin = localStorage.getItem("isSuperAdmin") === "true";
 
         if (!isLoggedIn) {
             router.push("/login");
+            return;
+        }
+
+        setIsAuthenticated(true);
+        setIsSuperAdmin(superAdmin);
+
+        // Get current business from localStorage (set during login)
+        const businessSlug = localStorage.getItem("currentBusinessSlug");
+        const businessId = localStorage.getItem("currentBusinessId");
+        const businessName = localStorage.getItem("currentBusinessName");
+
+        if (businessSlug && businessId && businessName) {
+            setCurrentBusiness({
+                id: businessId,
+                slug: businessSlug,
+                name: businessName,
+            });
         }
     }, [router]);
 
     // Handle logout
     const handleLogout = () => {
         localStorage.removeItem("isAdminLoggedIn");
+        localStorage.removeItem("isSuperAdmin");
+        localStorage.removeItem("currentBusinessSlug");
+        localStorage.removeItem("currentBusinessId");
+        localStorage.removeItem("currentBusinessName");
+        localStorage.removeItem("adminPhone");
         router.push("/login");
     };
 
@@ -76,6 +109,18 @@ export default function AdminLayout({
         return null;
     }
 
+    // Show loading while waiting for business to load
+    if (!currentBusiness) {
+        return (
+            <div className="min-h-screen bg-neutral-950 flex items-center justify-center">
+                <div className="text-center">
+                    <div className="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin mx-auto mb-4" />
+                    <p className="text-white/40 text-sm">İşletme yükleniyor...</p>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="min-h-screen bg-neutral-950">
             {/* Mobile Header */}
@@ -87,13 +132,17 @@ export default function AdminLayout({
                     >
                         <Menu className="w-5 h-5 text-white" />
                     </button>
-                    <span className="text-lg font-bold text-white">Admin Panel</span>
-                    <Link
-                        href="/"
+                    <span className="text-lg font-bold text-white truncate max-w-[200px]">
+                        {currentBusiness.name}
+                    </span>
+                    <a
+                        href={`/${currentBusiness.slug}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
                         className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center"
                     >
-                        <ChevronLeft className="w-5 h-5 text-white" />
-                    </Link>
+                        <ExternalLink className="w-5 h-5 text-white" />
+                    </a>
                 </div>
             </header>
 
@@ -116,15 +165,8 @@ export default function AdminLayout({
                             className="fixed top-0 left-0 bottom-0 w-80 bg-neutral-950 z-50 lg:hidden flex flex-col"
                         >
                             <div className="p-6 border-b border-white/10">
-                                <span className="text-[26px] font-bold text-white block">GEBZEM</span>
-                                <div className="mt-3 relative">
-                                    <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-white/40" />
-                                    <input
-                                        type="text"
-                                        placeholder="Ara..."
-                                        className="w-full pl-10 pr-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-sm text-white placeholder:text-white/40 outline-none focus:border-white/20 focus:bg-white/10 transition-colors"
-                                    />
-                                </div>
+                                <span className="text-[26px] font-bold text-white block">GBZQR</span>
+                                <p className="text-white/40 text-sm mt-1 truncate">{currentBusiness.name}</p>
                                 <button
                                     onClick={() => setIsSidebarOpen(false)}
                                     className="absolute top-4 right-4 w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center"
@@ -154,7 +196,7 @@ export default function AdminLayout({
                                                 <span className="font-medium">{item.label}</span>
                                             </div>
                                             {isInbox && unreadCount > 0 && (
-                                                <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold bg-white text-black`}>
+                                                <span className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold bg-white text-black">
                                                     {unreadCount}
                                                 </span>
                                             )}
@@ -164,21 +206,30 @@ export default function AdminLayout({
                             </nav>
 
                             <div className="p-4 mt-auto border-t border-white/10">
+                                {isSuperAdmin && (
+                                    <Link
+                                        href="/super-admin"
+                                        className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-purple-400 hover:bg-purple-500/10 transition-all font-medium"
+                                    >
+                                        <ChevronRight className="w-5 h-5" />
+                                        Süper Admin
+                                    </Link>
+                                )}
                                 <a
-                                    href="/"
+                                    href={`/${currentBusiness.slug}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-white/60 hover:bg-white/10 hover:text-white transition-all font-medium"
                                 >
-                                    <ChevronRight className="w-5 h-5" />
-                                    Siteye Git
+                                    <ExternalLink className="w-5 h-5" />
+                                    Menüyü Gör
                                 </a>
                                 <button
                                     onClick={handleLogout}
                                     className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-400 hover:bg-red-500/10 transition-all font-medium"
                                 >
+                                    <LogOut className="w-5 h-5" />
                                     Çıkış Yap
-                                    <ArrowRight className="w-5 h-5" />
                                 </button>
                             </div>
                         </motion.aside>
@@ -189,20 +240,13 @@ export default function AdminLayout({
             {/* Sidebar Desktop */}
             <aside className="fixed top-0 left-0 bottom-0 w-72 bg-black border-r border-white/10 hidden lg:flex flex-col">
                 <div className="p-6">
-                    <span className="text-[26px] font-bold text-white block">GEBZEM</span>
-                    <div className="mt-3 relative">
-                        <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-white/40" />
-                        <input
-                            type="text"
-                            placeholder="Ara..."
-                            className="w-full pl-10 pr-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-sm text-white placeholder:text-white/40 outline-none focus:border-white/20 focus:bg-white/10 transition-colors"
-                        />
-                    </div>
+                    <span className="text-[26px] font-bold text-white block">GBZQR</span>
+                    <p className="text-white/40 text-sm mt-1 truncate">{currentBusiness.name}</p>
                 </div>
 
                 <div className="border-t border-white/10" />
 
-                <nav className="p-4 space-y-2 overflow-y-auto">
+                <nav className="p-4 space-y-2 overflow-y-auto flex-1">
                     {navItems.map((item) => {
                         const Icon = item.icon;
                         const isActive = pathname === item.href;
@@ -222,7 +266,7 @@ export default function AdminLayout({
                                     <span className="font-medium">{item.label}</span>
                                 </div>
                                 {isInbox && unreadCount > 0 && (
-                                    <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${isActive ? "bg-white text-black" : "bg-white text-black"}`}>
+                                    <span className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold bg-white text-black">
                                         {unreadCount}
                                     </span>
                                 )}
@@ -232,21 +276,30 @@ export default function AdminLayout({
                 </nav>
 
                 <div className="mt-auto p-4 border-t border-white/10">
+                    {isSuperAdmin && (
+                        <Link
+                            href="/super-admin"
+                            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-purple-400 hover:bg-purple-500/10 transition-all font-medium"
+                        >
+                            <ChevronRight className="w-5 h-5" />
+                            Süper Admin
+                        </Link>
+                    )}
                     <a
-                        href="/"
+                        href={`/${currentBusiness.slug}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-white/60 hover:bg-white/10 hover:text-white transition-all font-medium"
                     >
-                        <ChevronRight className="w-5 h-5" />
-                        Siteye Git
+                        <ExternalLink className="w-5 h-5" />
+                        Menüyü Gör
                     </a>
                     <button
                         onClick={handleLogout}
                         className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-400 hover:bg-red-500/10 transition-all font-medium"
                     >
+                        <LogOut className="w-5 h-5" />
                         Çıkış Yap
-                        <ArrowRight className="w-5 h-5" />
                     </button>
                 </div>
             </aside>
@@ -254,9 +307,24 @@ export default function AdminLayout({
             {/* Main Content */}
             <main className="lg:pl-72 pt-16 lg:pt-0 min-h-screen">
                 <div className="max-w-[1100px] mx-auto">
-                    {children}
+                    <ThemeProvider>
+                        <DataStoreProvider initialSlug={currentBusiness.slug}>
+                            <FeedbackProvider>
+                                {children}
+                                <GlobalUI />
+                            </FeedbackProvider>
+                        </DataStoreProvider>
+                    </ThemeProvider>
                 </div>
             </main>
         </div>
     );
+}
+
+export default function AdminLayout({
+    children,
+}: {
+    children: React.ReactNode;
+}) {
+    return <AdminLayoutContent>{children}</AdminLayoutContent>;
 }

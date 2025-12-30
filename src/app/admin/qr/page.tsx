@@ -17,6 +17,7 @@ const colorPresets = [
 export default function QRCodePage() {
     const [qrDataUrl, setQrDataUrl] = useState<string>("");
     const [menuUrl, setMenuUrl] = useState<string>("");
+    const [businessName, setBusinessName] = useState<string>("");
     const [selectedPreset, setSelectedPreset] = useState(0);
     const [copied, setCopied] = useState(false);
     const [showColorModal, setShowColorModal] = useState(false);
@@ -25,10 +26,17 @@ export default function QRCodePage() {
     const [useCustomColors, setUseCustomColors] = useState(false);
     const canvasRef = useRef<HTMLCanvasElement>(null);
 
-    // Get the menu URL
+    // Get the menu URL with business slug
     useEffect(() => {
         if (typeof window !== "undefined") {
-            setMenuUrl(window.location.origin);
+            const slug = localStorage.getItem("currentBusinessSlug") || "";
+            const name = localStorage.getItem("currentBusinessName") || "";
+            // Use gbzqr.com in production, localhost in dev
+            const baseUrl = window.location.hostname === "localhost"
+                ? window.location.origin
+                : "https://gbzqr.com";
+            setMenuUrl(`${baseUrl}/${slug}`);
+            setBusinessName(name);
         }
     }, []);
 
@@ -72,7 +80,8 @@ export default function QRCodePage() {
         if (!qrDataUrl) return;
 
         const link = document.createElement("a");
-        link.download = `antigravity-qr.${format}`;
+        const safeName = businessName.toLowerCase().replace(/[^a-z0-9]+/g, "-") || "menu";
+        link.download = `${safeName}-qr.${format}`;
         link.href = qrDataUrl;
         link.click();
     };

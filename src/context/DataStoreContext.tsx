@@ -3,9 +3,6 @@
 import { createContext, useContext, useState, useCallback, useEffect, ReactNode } from "react";
 import { supabase, type DbBusiness, type DbCategory, type DbProduct, type DbTag } from "@/lib/supabase";
 import {
-    products as initialProducts,
-    categories as initialCategories,
-    business as initialBusiness,
     type Product,
     type Category,
     type Business,
@@ -29,7 +26,7 @@ function categoryToDbCategory(cat: Omit<Category, "id" | "productCount">, busine
     return {
         business_id: businessId,
         name: cat.name,
-        icon: cat.icon,
+        icon: cat.icon || "UtensilsCrossed",
         is_featured: cat.isFeatured || false,
         sort_order: sortOrder,
     };
@@ -147,123 +144,73 @@ interface DataStoreContextType {
     // Business ID
     businessId: string | null;
 
+    // Business not found
+    businessNotFound: boolean;
+
     // Refresh data
     refreshData: () => Promise<void>;
+
+    // Set business by slug
+    setBusinessSlug: (slug: string) => void;
 }
 
 const DataStoreContext = createContext<DataStoreContextType | null>(null);
 
-// Default business ID - in production this would come from auth
-const DEFAULT_BUSINESS_SLUG = "antigravity-kitchen";
+// Default empty business
+const emptyBusiness: Business = {
+    id: "",
+    name: "",
+    slug: "",
+    slogan: "",
+    logo: "",
+    coverImage: "",
+    cuisineTypes: [],
+    rating: 5,
+    reviewCount: 0,
+    address: "",
+    phone: "",
+    email: "",
+    website: "",
+    description: "",
+    socialMedia: {},
+    gallery: [],
+    workingHours: [],
+    sliderItems: [],
+};
 
-export function DataStoreProvider({ children }: { children: ReactNode }) {
+export function DataStoreProvider({ children, initialSlug }: { children: ReactNode; initialSlug?: string }) {
     const [isLoading, setIsLoading] = useState(true);
+    const [businessNotFound, setBusinessNotFound] = useState(false);
+    const [businessSlug, setBusinessSlug] = useState<string>(initialSlug || "");
     const [businessId, setBusinessId] = useState<string | null>(null);
     const [products, setProducts] = useState<Product[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
-    const [business, setBusiness] = useState<Business>(initialBusiness);
+    const [business, setBusiness] = useState<Business>(emptyBusiness);
     const [tags, setTags] = useState<string[]>([]);
 
-    // Fetch all data from Supabase
+    // Fetch data for specific business slug
     const fetchData = useCallback(async () => {
+        if (!businessSlug) {
+            setIsLoading(false);
+            return;
+        }
+
         setIsLoading(true);
+        setBusinessNotFound(false);
+
         try {
-            // 1. Get or create business
-            let { data: businessData } = await supabase
+            // 1. Get business by slug
+            const { data: businessData, error: businessError } = await supabase
                 .from("businesses")
                 .select("*")
-                .eq("slug", DEFAULT_BUSINESS_SLUG)
+                .eq("slug", businessSlug)
                 .single();
 
-            // If no business exists, create one with initial data
-            if (!businessData) {
-                const { data: newBusiness, error: createError } = await supabase
-                    .from("businesses")
-                    .insert({
-                        name: initialBusiness.name,
-                        slug: DEFAULT_BUSINESS_SLUG,
-                        slogan: initialBusiness.slogan,
-                        logo: initialBusiness.logo,
-                        cover_image: initialBusiness.coverImage,
-                        cuisine_types: initialBusiness.cuisineTypes,
-                        rating: initialBusiness.rating,
-                        review_count: initialBusiness.reviewCount,
-                        address: initialBusiness.address,
-                        phone: initialBusiness.phone,
-                        email: initialBusiness.email,
-                        website: initialBusiness.website,
-                        description: initialBusiness.description,
-                        social_media: initialBusiness.socialMedia,
-                        working_hours: initialBusiness.workingHours,
-                        slider_items: initialBusiness.sliderItems || [],
-                        gallery: initialBusiness.gallery,
-                        theme_settings: {},
-                    })
-                    .select()
-                    .single();
-
-                if (createError) throw createError;
-                businessData = newBusiness;
-
-                // Seed initial categories
-                for (let i = 0; i < initialCategories.length; i++) {
-                    const cat = initialCategories[i];
-                    await supabase.from("categories").insert({
-                        business_id: newBusiness.id,
-                        name: cat.name,
-                        icon: cat.icon,
-                        is_featured: cat.isFeatured || false,
-                        sort_order: i,
-                    });
-                }
-
-                // Seed initial products
-                const { data: newCats } = await supabase
-                    .from("categories")
-                    .select("id, name")
-                    .eq("business_id", newBusiness.id);
-
-                const catMap = new Map<string, string>();
-                initialCategories.forEach((oldCat, idx) => {
-                    if (newCats && newCats[idx]) {
-                        catMap.set(oldCat.id, newCats[idx].id);
-                    }
-                });
-
-                for (let i = 0; i < initialProducts.length; i++) {
-                    const prod = initialProducts[i];
-                    const newCatId = catMap.get(prod.categoryId);
-                    if (newCatId) {
-                        await supabase.from("products").insert({
-                            business_id: newBusiness.id,
-                            category_id: newCatId,
-                            name: prod.name,
-                            description: prod.description,
-                            price: prod.price,
-                            original_price: prod.originalPrice,
-                            image: prod.image,
-                            gallery: prod.gallery || [],
-                            is_featured: prod.isFeatured,
-                            is_new: prod.isNew,
-                            tags: prod.tags,
-                            variations: prod.variations || [],
-                            extras: prod.extras || [],
-                            allergens: prod.allergens || [],
-                            preparation_time: prod.preparationTime,
-                            calories: prod.calories,
-                            sort_order: i,
-                        });
-                    }
-                }
-
-                // Seed initial tags
-                const defaultTags = ["Yeni", "İndirimli", "Vegan", "Acılı", "Şefin Spesiyali", "Glutensiz", "Popüler"];
-                for (const tag of defaultTags) {
-                    await supabase.from("tags").insert({
-                        business_id: newBusiness.id,
-                        name: tag,
-                    });
-                }
+            if (businessError || !businessData) {
+                console.log("Business not found for slug:", businessSlug);
+                setBusinessNotFound(true);
+                setIsLoading(false);
+                return;
             }
 
             setBusinessId(businessData.id);
@@ -303,22 +250,11 @@ export function DataStoreProvider({ children }: { children: ReactNode }) {
 
         } catch (error) {
             console.error("Supabase fetch error:", error);
-            // Fallback to localStorage if Supabase fails
-            const storedProducts = localStorage.getItem("qrmenu_products");
-            const storedCategories = localStorage.getItem("qrmenu_categories");
-            const storedBusiness = localStorage.getItem("qrmenu_business");
-
-            if (storedProducts) setProducts(JSON.parse(storedProducts));
-            else setProducts(initialProducts);
-
-            if (storedCategories) setCategories(JSON.parse(storedCategories));
-            else setCategories(initialCategories);
-
-            if (storedBusiness) setBusiness(JSON.parse(storedBusiness));
-            else setBusiness(initialBusiness);
+            setBusinessNotFound(true);
         }
+
         setIsLoading(false);
-    }, []);
+    }, [businessSlug]);
 
     useEffect(() => {
         fetchData();
@@ -385,7 +321,6 @@ export function DataStoreProvider({ children }: { children: ReactNode }) {
     }, [products]);
 
     const reorderProducts = useCallback(async (categoryId: string, productIds: string[]) => {
-        // Update sort_order in database
         for (let i = 0; i < productIds.length; i++) {
             await supabase
                 .from("products")
@@ -547,10 +482,11 @@ export function DataStoreProvider({ children }: { children: ReactNode }) {
         <DataStoreContext.Provider value={{
             products, addProduct, updateProduct, deleteProduct, getProduct, reorderProducts,
             categories, addCategory, updateCategory, deleteCategory, getCategory, reorderCategories,
-            business, updateBusiness, getStats, isLoading, businessId,
+            business, updateBusiness, getStats, isLoading, businessId, businessNotFound,
             tags, addTag, removeTag,
             clearAllMenuData,
             refreshData: fetchData,
+            setBusinessSlug: setBusinessSlug,
         }}>
             {children}
         </DataStoreContext.Provider>

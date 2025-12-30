@@ -2,25 +2,21 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useDataStore } from "@/context/DataStoreContext";
 
 export default function HomePage() {
   const router = useRouter();
-  const { business } = useDataStore();
 
   useEffect(() => {
-    // Redirect to the business menu page
-    if (business?.slug) {
-      router.replace(`/${business.slug}`);
-    } else {
-      // Default redirect if no slug is set
-      router.replace("/resital-lounge");
-    }
-  }, [business, router]);
+    // Ana sayfa açıldığında login sayfasına yönlendir
+    router.replace("/login");
+  }, [router]);
 
   return (
-    <main className="min-h-screen bg-neutral-950 flex items-center justify-center">
-      <div className="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-    </main>
+    <div className="min-h-screen flex items-center justify-center bg-black">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white mx-auto mb-4"></div>
+        <p className="text-white/60">Yönlendiriliyor...</p>
+      </div>
+    </div>
   );
 }

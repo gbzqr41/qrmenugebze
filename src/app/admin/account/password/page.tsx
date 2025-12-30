@@ -3,24 +3,10 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Lock, Eye, EyeOff, Check } from "lucide-react";
-
-interface AdminInfo {
-    name: string;
-    email: string;
-    password: string;
-    package: "starter" | "professional" | "enterprise";
-    createdAt: string;
-}
+import { supabase } from "@/lib/supabase";
 
 export default function PasswordPage() {
-    const [adminInfo, setAdminInfo] = useState<AdminInfo>({
-        name: "Admin",
-        email: "admin@antigravity.com",
-        password: "demo123",
-        package: "professional",
-        createdAt: "2024-01-15",
-    });
-
+    const [currentPassword, setCurrentPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const [formData, setFormData] = useState({
         currentPassword: "",
@@ -29,16 +15,9 @@ export default function PasswordPage() {
     });
     const [saveSuccess, setSaveSuccess] = useState(false);
     const [error, setError] = useState("");
+    const [isLoading, setIsLoading] = useState(false);
 
-    // Load admin info from localStorage
-    useEffect(() => {
-        const savedInfo = localStorage.getItem("adminInfo");
-        if (savedInfo) {
-            setAdminInfo(JSON.parse(savedInfo));
-        }
-    }, []);
-
-    const handleSave = () => {
+    const handleSave = async () => {
         setError("");
 
         // Validate
@@ -52,32 +31,83 @@ export default function PasswordPage() {
             return;
         }
 
-        if (formData.currentPassword !== adminInfo.password) {
-            setError("Mevcut şifre yanlış!");
-            return;
-        }
-
         if (formData.newPassword.length < 6) {
             setError("Yeni şifre en az 6 karakter olmalı!");
             return;
         }
 
-        const updatedInfo = {
-            ...adminInfo,
-            password: formData.newPassword,
-        };
+        setIsLoading(true);
 
-        setAdminInfo(updatedInfo);
-        localStorage.setItem("adminInfo", JSON.stringify(updatedInfo));
-        setSaveSuccess(true);
-        setTimeout(() => setSaveSuccess(false), 3000);
+        try {
+            const businessId = localStorage.getItem("currentBusinessId");
+            const isSuperAdmin = localStorage.getItem("isSuperAdmin") === "true";
+            const adminPhone = localStorage.getItem("adminPhone");
 
-        // Reset form
-        setFormData({
-            currentPassword: "",
-            newPassword: "",
-            confirmPassword: "",
-        });
+            if (isSuperAdmin && adminPhone) {
+                // Verify current password for super admin
+                const { data: adminData } = await supabase
+                    .from("admins")
+                    .select("id")
+                    .eq("phone", adminPhone)
+                    .eq("password", formData.currentPassword)
+                    .single();
+
+                if (!adminData) {
+                    setError("Mevcut şifre yanlış!");
+                    setIsLoading(false);
+                    return;
+                }
+
+                // Update super admin password
+                const { error: updateError } = await supabase
+                    .from("admins")
+                    .update({ password: formData.newPassword })
+                    .eq("phone", adminPhone);
+
+                if (updateError) throw updateError;
+            } else if (businessId) {
+                // Verify current password for business
+                const { data: businessData } = await supabase
+                    .from("businesses")
+                    .select("id")
+                    .eq("id", businessId)
+                    .eq("password", formData.currentPassword)
+                    .single();
+
+                if (!businessData) {
+                    setError("Mevcut şifre yanlış!");
+                    setIsLoading(false);
+                    return;
+                }
+
+                // Update business password
+                const { error: updateError } = await supabase
+                    .from("businesses")
+                    .update({ password: formData.newPassword })
+                    .eq("id", businessId);
+
+                if (updateError) throw updateError;
+            } else {
+                setError("Oturum bilgisi bulunamadı");
+                setIsLoading(false);
+                return;
+            }
+
+            setSaveSuccess(true);
+            setTimeout(() => setSaveSuccess(false), 3000);
+
+            // Reset form
+            setFormData({
+                currentPassword: "",
+                newPassword: "",
+                confirmPassword: "",
+            });
+        } catch (err) {
+            console.error("Password update error:", err);
+            setError("Şifre güncellenirken bir hata oluştu");
+        }
+
+        setIsLoading(false);
     };
 
     return (
@@ -162,9 +192,14 @@ export default function PasswordPage() {
                     <motion.button
                         whileTap={{ scale: 0.98 }}
                         onClick={handleSave}
-                        className="w-full py-3 bg-white text-black rounded-xl font-semibold hover:bg-neutral-100 transition-colors"
+                        disabled={isLoading}
+                        className="w-full py-3 bg-white text-black rounded-xl font-semibold hover:bg-neutral-100 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
                     >
-                        Şifreyi Değiştir
+                        {isLoading ? (
+                            <div className="w-5 h-5 border-2 border-black/20 border-t-black rounded-full animate-spin" />
+                        ) : (
+                            "Şifreyi Değiştir"
+                        )}
                     </motion.button>
                 </div>
             </div>
