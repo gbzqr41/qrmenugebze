@@ -2,58 +2,61 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { User, Mail, Check } from "lucide-react";
-
-interface AdminInfo {
-    name: string;
-    email: string;
-    password: string;
-    package: "starter" | "professional" | "enterprise";
-    createdAt: string;
-}
+import { User, Mail, Check, Phone, Store } from "lucide-react";
+import { useDataStore } from "@/context/DataStoreContext";
 
 export default function ProfilePage() {
-    const [adminInfo, setAdminInfo] = useState<AdminInfo>({
-        name: "Admin",
-        email: "admin@antigravity.com",
-        password: "demo123",
-        package: "professional",
-        createdAt: "2024-01-15",
-    });
-
+    const { business, updateBusiness, isLoading } = useDataStore();
     const [isEditing, setIsEditing] = useState(false);
     const [formData, setFormData] = useState({
-        name: adminInfo.name,
-        email: adminInfo.email,
+        name: "",
+        email: "",
+        phone: "",
     });
     const [saveSuccess, setSaveSuccess] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
 
-    // Load admin info from localStorage
+    // Load business info
     useEffect(() => {
-        const savedInfo = localStorage.getItem("adminInfo");
-        if (savedInfo) {
-            const parsed = JSON.parse(savedInfo);
-            setAdminInfo(parsed);
+        if (business) {
             setFormData({
-                name: parsed.name,
-                email: parsed.email,
+                name: business.name || "",
+                email: business.email || "",
+                phone: business.phone || "",
             });
         }
-    }, []);
+    }, [business]);
 
-    const handleSave = () => {
-        const updatedInfo = {
-            ...adminInfo,
-            name: formData.name,
-            email: formData.email,
-        };
-
-        setAdminInfo(updatedInfo);
-        localStorage.setItem("adminInfo", JSON.stringify(updatedInfo));
-        setIsEditing(false);
-        setSaveSuccess(true);
-        setTimeout(() => setSaveSuccess(false), 3000);
+    const handleSave = async () => {
+        setIsSaving(true);
+        try {
+            await updateBusiness({
+                name: formData.name,
+                email: formData.email,
+                phone: formData.phone,
+            });
+            setIsEditing(false);
+            setSaveSuccess(true);
+            setTimeout(() => setSaveSuccess(false), 3000);
+        } catch (err) {
+            console.error("Error saving profile:", err);
+        }
+        setIsSaving(false);
     };
+
+    if (isLoading) {
+        return (
+            <div className="max-w-xl">
+                <div className="bg-neutral-900 rounded-2xl border border-white/5 p-6">
+                    <div className="animate-pulse space-y-4">
+                        <div className="h-6 bg-neutral-800 rounded w-1/3" />
+                        <div className="h-12 bg-neutral-800 rounded" />
+                        <div className="h-12 bg-neutral-800 rounded" />
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="max-w-xl">
@@ -72,7 +75,10 @@ export default function ProfilePage() {
             <div className="bg-neutral-900 rounded-2xl border border-white/5 overflow-hidden">
                 <div className="p-6 border-b border-white/5">
                     <div className="flex items-center justify-between">
-                        <h2 className="text-lg font-bold text-white">Profil Bilgileri</h2>
+                        <div className="flex items-center gap-2">
+                            <Store className="w-5 h-5 text-white" />
+                            <h2 className="text-lg font-bold text-white">İşletme Bilgileri</h2>
+                        </div>
                         <button
                             onClick={() => setIsEditing(!isEditing)}
                             className="text-sm text-white/60 hover:text-white transition-colors"
@@ -83,12 +89,11 @@ export default function ProfilePage() {
                 </div>
 
                 <div className="p-6 space-y-5">
-
-                    {/* Name */}
+                    {/* Business Name */}
                     <div>
                         <label className="flex items-center gap-2 text-sm text-white/60 mb-2">
                             <User className="w-4 h-4" />
-                            Ad Soyad
+                            İşletme Adı
                         </label>
                         {isEditing ? (
                             <input
@@ -99,7 +104,7 @@ export default function ProfilePage() {
                             />
                         ) : (
                             <p className="text-white font-medium px-4 py-3 bg-neutral-800/50 rounded-xl">
-                                {adminInfo.name}
+                                {business?.name || "-"}
                             </p>
                         )}
                     </div>
@@ -119,9 +124,39 @@ export default function ProfilePage() {
                             />
                         ) : (
                             <p className="text-white font-medium px-4 py-3 bg-neutral-800/50 rounded-xl">
-                                {adminInfo.email}
+                                {business?.email || "-"}
                             </p>
                         )}
+                    </div>
+
+                    {/* Phone */}
+                    <div>
+                        <label className="flex items-center gap-2 text-sm text-white/60 mb-2">
+                            <Phone className="w-4 h-4" />
+                            Telefon
+                        </label>
+                        {isEditing ? (
+                            <input
+                                type="tel"
+                                value={formData.phone}
+                                onChange={(e) => setFormData({ ...formData, phone: e.target.value.replace(/\D/g, "") })}
+                                className="w-full px-4 py-3 bg-neutral-800 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-white/20"
+                            />
+                        ) : (
+                            <p className="text-white font-medium px-4 py-3 bg-neutral-800/50 rounded-xl">
+                                {business?.phone || "-"}
+                            </p>
+                        )}
+                    </div>
+
+                    {/* Slug - Read only */}
+                    <div>
+                        <label className="text-sm text-white/60 mb-2 block">
+                            Menü URL
+                        </label>
+                        <p className="text-white/40 font-medium px-4 py-3 bg-neutral-800/30 rounded-xl text-sm">
+                            gbzqr.com/{business?.slug || "..."}
+                        </p>
                     </div>
 
                     {isEditing && (
@@ -130,9 +165,14 @@ export default function ProfilePage() {
                             animate={{ opacity: 1 }}
                             whileTap={{ scale: 0.98 }}
                             onClick={handleSave}
-                            className="w-full py-3 bg-white text-black rounded-xl font-semibold hover:bg-neutral-100 transition-colors"
+                            disabled={isSaving}
+                            className="w-full py-3 bg-white text-black rounded-xl font-semibold hover:bg-neutral-100 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
                         >
-                            Değişiklikleri Kaydet
+                            {isSaving ? (
+                                <div className="w-5 h-5 border-2 border-black/20 border-t-black rounded-full animate-spin" />
+                            ) : (
+                                "Değişiklikleri Kaydet"
+                            )}
                         </motion.button>
                     )}
                 </div>
