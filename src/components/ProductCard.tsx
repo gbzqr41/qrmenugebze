@@ -55,7 +55,7 @@ export default function ProductCard({ product, onClick, hideDescription, isFeatu
     return (
         <div
             onClick={onClick}
-            className="w-full flex cursor-pointer overflow-hidden"
+            className={`w-full flex cursor-pointer overflow-hidden ${isFeaturedSection ? "flex-col-reverse" : "flex-row"}`}
             style={{
                 backgroundColor: cardBg,
                 fontFamily: theme.fontFamily,
@@ -154,10 +154,11 @@ export default function ProductCard({ product, onClick, hideDescription, isFeatu
             <div
                 className="relative shrink-0 overflow-hidden"
                 style={{
-                    width: "90px",
-                    height: "calc(100% - 10px)",
+                    width: isFeaturedSection ? "calc(100% - 10px)" : "90px",
+                    height: isFeaturedSection ? "140px" : "calc(100% - 10px)",
                     margin: "5px",
-                    marginLeft: "0",
+                    marginLeft: isFeaturedSection ? "5px" : "0",
+                    marginBottom: isFeaturedSection ? "0" : "5px",
                     borderRadius: `${imageRadius}px`,
 
                     boxShadow: theme.imageShadowEnabled
