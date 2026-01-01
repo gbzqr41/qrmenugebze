@@ -437,6 +437,8 @@ export function DataStoreProvider({ children, initialSlug }: { children: ReactNo
                 localStorage.setItem("currentBusinessSlug", updates.slug);
                 setBusinessSlug(updates.slug);
             }
+            // Notify admin layout to update menu link
+            window.dispatchEvent(new CustomEvent("businessUpdated"));
         }
 
         setBusiness(prev => ({ ...prev, ...updates }));

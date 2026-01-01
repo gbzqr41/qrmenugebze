@@ -70,18 +70,26 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
         setIsAuthenticated(true);
         setIsSuperAdmin(superAdmin);
 
-        // Get current business from localStorage (set during login)
-        const businessSlug = localStorage.getItem("currentBusinessSlug");
-        const businessId = localStorage.getItem("currentBusinessId");
-        const businessName = localStorage.getItem("currentBusinessName");
+        const loadBusiness = () => {
+            const businessSlug = localStorage.getItem("currentBusinessSlug");
+            const businessId = localStorage.getItem("currentBusinessId");
+            const businessName = localStorage.getItem("currentBusinessName");
 
-        if (businessSlug && businessId && businessName) {
-            setCurrentBusiness({
-                id: businessId,
-                slug: businessSlug,
-                name: businessName,
-            });
-        }
+            if (businessSlug && businessId && businessName) {
+                setCurrentBusiness({
+                    id: businessId,
+                    slug: businessSlug,
+                    name: businessName,
+                });
+            }
+        };
+
+        loadBusiness();
+
+        // Listen for business updates from settings page
+        const handleBusinessUpdate = () => loadBusiness();
+        window.addEventListener("businessUpdated", handleBusinessUpdate);
+        return () => window.removeEventListener("businessUpdated", handleBusinessUpdate);
     }, [router]);
 
     // Handle logout
