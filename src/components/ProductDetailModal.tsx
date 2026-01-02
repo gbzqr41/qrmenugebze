@@ -72,7 +72,7 @@ export default function ProductDetailModal({
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={onClose}
-                        className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50"
+                        className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[70]"
                     />
 
                     {/* Modal - Full width edge to edge, no side margins */}
@@ -81,7 +81,7 @@ export default function ProductDetailModal({
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.2 }}
-                        className="fixed inset-0 z-50 overflow-y-auto"
+                        className="fixed inset-0 z-[70] overflow-y-auto"
                     >
                         {/* Product Image/Video - Full width, edge to edge */}
                         <div className="relative w-full h-[400px] overflow-hidden bg-neutral-900">
