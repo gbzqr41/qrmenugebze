@@ -355,6 +355,19 @@ export default function SuperAdminPage() {
                                 )}
 
                                 <div className="flex gap-2">
+                                    <button
+                                        onClick={() => {
+                                            // Set localStorage for admin panel
+                                            localStorage.setItem("currentBusinessSlug", business.slug);
+                                            localStorage.setItem("currentBusinessId", business.id);
+                                            localStorage.setItem("currentBusinessName", business.name);
+                                            router.push("/admin/menu");
+                                        }}
+                                        className="flex-1 flex items-center justify-center gap-2 py-2 bg-white/10 hover:bg-white/20 rounded-xl text-sm font-medium transition-colors"
+                                    >
+                                        <Edit className="w-4 h-4" />
+                                        Yönetim Paneli
+                                    </button>
                                     <a
                                         href={`/${business.slug}`}
                                         target="_blank"
