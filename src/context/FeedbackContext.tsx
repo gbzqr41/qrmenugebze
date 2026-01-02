@@ -31,34 +31,41 @@ const STORAGE_KEY = "qrmenu_feedbacks";
 
 const FeedbackContext = createContext<FeedbackContextType | undefined>(undefined);
 
-export function FeedbackProvider({ children }: { children: ReactNode }) {
+export function FeedbackProvider({ children, slug }: { children: ReactNode; slug: string }) {
     const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
     const [isLoaded, setIsLoaded] = useState(false);
     const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
 
-    // Load from localStorage
+    // Dynamic storage key based on slug
+    const storageKey = `qrmenu_feedbacks_${slug}`;
+
+    // Load from localStorage when slug changes
     useEffect(() => {
+        setIsLoaded(false);
         try {
-            const stored = localStorage.getItem(STORAGE_KEY);
+            const stored = localStorage.getItem(storageKey);
             if (stored) {
                 setFeedbacks(JSON.parse(stored));
+            } else {
+                setFeedbacks([]);
             }
         } catch (e) {
             console.error("Failed to load feedbacks", e);
+            setFeedbacks([]);
         }
         setIsLoaded(true);
-    }, []);
+    }, [slug, storageKey]);
 
     // Save to localStorage
     useEffect(() => {
         if (isLoaded) {
             try {
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(feedbacks));
+                localStorage.setItem(storageKey, JSON.stringify(feedbacks));
             } catch (e) {
                 console.error("Failed to save feedbacks", e);
             }
         }
-    }, [feedbacks, isLoaded]);
+    }, [feedbacks, isLoaded, storageKey]);
 
     const addFeedback = useCallback((data: Omit<Feedback, "id" | "createdAt" | "isRead">) => {
         console.log("[FeedbackContext] addFeedback called with data:", data);

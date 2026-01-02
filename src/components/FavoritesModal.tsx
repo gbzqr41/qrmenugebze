@@ -12,29 +12,40 @@ interface FavoritesModalProps {
     onProductClick: (product: Product) => void;
 }
 
-const FAVORITES_KEY = "qrmenu_favorites";
+const getFavoritesKey = (slug: string) => `qrmenu_favorites_${slug}`;
+
+interface FavoritesModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    onProductClick: (product: Product) => void;
+    slug: string;
+}
 
 export default function FavoritesModal({
     isOpen,
     onClose,
     onProductClick,
+    slug,
 }: FavoritesModalProps) {
     const { theme } = useTheme();
     const [favorites, setFavorites] = useState<Product[]>([]);
 
     // Load favorites from localStorage
     useEffect(() => {
-        if (isOpen) {
+        if (isOpen && slug) {
             try {
-                const stored = localStorage.getItem(FAVORITES_KEY);
+                const stored = localStorage.getItem(getFavoritesKey(slug));
                 if (stored) {
                     setFavorites(JSON.parse(stored));
+                } else {
+                    setFavorites([]);
                 }
             } catch (e) {
                 console.error("Failed to load favorites", e);
+                setFavorites([]);
             }
         }
-    }, [isOpen]);
+    }, [isOpen, slug]);
 
     // Prevent body scroll when modal is open
     useEffect(() => {
@@ -51,7 +62,7 @@ export default function FavoritesModal({
     const removeFavorite = (productId: string) => {
         const updated = favorites.filter(f => f.id !== productId);
         setFavorites(updated);
-        localStorage.setItem(FAVORITES_KEY, JSON.stringify(updated));
+        localStorage.setItem(getFavoritesKey(slug), JSON.stringify(updated));
     };
 
     const handleProductClick = (product: Product) => {
@@ -201,15 +212,17 @@ export default function FavoritesModal({
 }
 
 // Helper function to add product to favorites (export for use in ProductDetailModal)
-export function addToFavorites(product: Product) {
+export function addToFavorites(product: Product, slug: string) {
+    if (!slug) return false;
     try {
-        const stored = localStorage.getItem(FAVORITES_KEY);
+        const key = getFavoritesKey(slug);
+        const stored = localStorage.getItem(key);
         const favorites: Product[] = stored ? JSON.parse(stored) : [];
 
         // Check if already exists
         if (!favorites.find(f => f.id === product.id)) {
             favorites.push(product);
-            localStorage.setItem(FAVORITES_KEY, JSON.stringify(favorites));
+            localStorage.setItem(key, JSON.stringify(favorites));
             return true;
         }
         return false;
@@ -219,12 +232,14 @@ export function addToFavorites(product: Product) {
     }
 }
 
-export function removeFromFavorites(productId: string) {
+export function removeFromFavorites(productId: string, slug: string) {
+    if (!slug) return false;
     try {
-        const stored = localStorage.getItem(FAVORITES_KEY);
+        const key = getFavoritesKey(slug);
+        const stored = localStorage.getItem(key);
         const favorites: Product[] = stored ? JSON.parse(stored) : [];
         const updated = favorites.filter(f => f.id !== productId);
-        localStorage.setItem(FAVORITES_KEY, JSON.stringify(updated));
+        localStorage.setItem(key, JSON.stringify(updated));
         return true;
     } catch (e) {
         console.error("Failed to remove favorite", e);
@@ -232,9 +247,11 @@ export function removeFromFavorites(productId: string) {
     }
 }
 
-export function isFavorite(productId: string): boolean {
+export function isFavorite(productId: string, slug: string): boolean {
+    if (!slug) return false;
     try {
-        const stored = localStorage.getItem(FAVORITES_KEY);
+        const key = getFavoritesKey(slug);
+        const stored = localStorage.getItem(key);
         const favorites: Product[] = stored ? JSON.parse(stored) : [];
         return favorites.some(f => f.id === productId);
     } catch (e) {

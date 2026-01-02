@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Clock, Flame, AlertTriangle, Heart } from "lucide-react";
+import { useParams } from "next/navigation";
 import type { Product } from "@/data/mockData";
 import { useTheme } from "@/context/ThemeContext";
 import { addToFavorites, removeFromFavorites, isFavorite } from "./FavoritesModal";
@@ -18,6 +19,8 @@ export default function ProductDetailModal({
     isOpen,
     onClose,
 }: ProductDetailModalProps) {
+    const params = useParams();
+    const slug = params.slug as string;
     const { theme } = useTheme();
     const [activeImageIndex, setActiveImageIndex] = useState(0);
     const [isFav, setIsFav] = useState(false);
@@ -25,19 +28,19 @@ export default function ProductDetailModal({
 
     // Reset state when product changes
     useEffect(() => {
-        if (product) {
+        if (product && slug) {
             setActiveImageIndex(0);
-            setIsFav(isFavorite(product.id));
+            setIsFav(isFavorite(product.id, slug));
         }
-    }, [product]);
+    }, [product, slug]);
 
     const toggleFavorite = () => {
-        if (!product) return;
+        if (!product || !slug) return;
         if (isFav) {
-            removeFromFavorites(product.id);
+            removeFromFavorites(product.id, slug);
             setIsFav(false);
         } else {
-            addToFavorites(product);
+            addToFavorites(product, slug);
             setIsFav(true);
         }
     };

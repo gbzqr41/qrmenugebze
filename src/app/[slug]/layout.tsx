@@ -34,7 +34,7 @@ export default function SlugLayout({
         <ThemeProvider>
             <DataStoreProvider initialSlug={slug}>
                 <ThemeSync>
-                    <FeedbackProvider>
+                    <FeedbackProvider slug={slug}>
                         {children}
                         <GlobalUI />
                     </FeedbackProvider>

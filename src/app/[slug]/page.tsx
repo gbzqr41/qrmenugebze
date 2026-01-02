@@ -320,6 +320,7 @@ export default function BusinessMenuPage() {
                         setSelectedProduct(product);
                         setIsModalOpen(true);
                     }}
+                    slug={slug}
                 />
             </main>
         </>

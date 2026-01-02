@@ -317,7 +317,7 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
                 <div className="max-w-[1100px] mx-auto">
                     <ThemeProvider>
                         <DataStoreProvider initialSlug={currentBusiness.slug}>
-                            <FeedbackProvider>
+                            <FeedbackProvider slug={currentBusiness.slug}>
                                 {children}
                                 <GlobalUI />
                             </FeedbackProvider>
