@@ -16,7 +16,7 @@ import {
     X,
     Trash2,
 } from "lucide-react";
-import { useTheme, type ThemeSettings } from "@/context/ThemeContext";
+import { useTheme, type ThemeSettings, applyThemeToDom } from "@/context/ThemeContext";
 
 // Tab definitions
 const tabs = [
@@ -108,10 +108,11 @@ export default function DesignPage() {
         setLocalTheme(theme);
     }, [theme]);
 
-    // Track changes
+    // Track changes and update DOM for preview
     useEffect(() => {
         const changed = JSON.stringify(localTheme) !== JSON.stringify(theme);
         setHasChanges(changed);
+        applyThemeToDom(localTheme);
     }, [localTheme, theme]);
 
     const updateLocal = (updates: Partial<ThemeSettings>) => {

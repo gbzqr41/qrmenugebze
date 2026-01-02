@@ -349,7 +349,7 @@ function loadGoogleFont(fontFamily: string) {
 }
 
 // Apply theme to DOM
-function applyThemeToDom(theme: ThemeSettings) {
+export function applyThemeToDom(theme: ThemeSettings) {
     const root = document.documentElement;
     const isAdminPage = window.location.pathname.startsWith("/admin");
 
