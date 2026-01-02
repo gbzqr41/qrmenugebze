@@ -21,6 +21,7 @@ export default function ProductDetailModal({
     const { theme } = useTheme();
     const [activeImageIndex, setActiveImageIndex] = useState(0);
     const [isFav, setIsFav] = useState(false);
+    const [isLightboxOpen, setIsLightboxOpen] = useState(false);
 
     // Reset state when product changes
     useEffect(() => {
@@ -80,7 +81,7 @@ export default function ProductDetailModal({
                         className="fixed inset-0 z-50 overflow-y-auto"
                     >
                         {/* Product Image/Video - Full width, edge to edge */}
-                        <div className="relative w-full h-72 overflow-hidden bg-neutral-900">
+                        <div className="relative w-full h-[400px] overflow-hidden bg-neutral-900">
                             {isVideo ? (
                                 <video
                                     key={activeImageIndex}
@@ -92,10 +93,12 @@ export default function ProductDetailModal({
                                     autoPlay
                                 />
                             ) : (
-                                <div
+                                <img
                                     key={activeImageIndex}
-                                    className="absolute inset-0 bg-cover bg-center"
-                                    style={{ backgroundImage: `url(${currentMedia})` }}
+                                    src={currentMedia}
+                                    alt={product.name}
+                                    className="absolute inset-0 w-full h-full object-cover object-center cursor-zoom-in"
+                                    onClick={() => setIsLightboxOpen(true)}
                                 />
                             )}
                             {/* Close Button */}
@@ -223,6 +226,36 @@ export default function ProductDetailModal({
                     </motion.div>
                 </>
             )}
+            {/* Lightbox Modal */}
+            <AnimatePresence>
+                {isLightboxOpen && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={() => setIsLightboxOpen(false)}
+                        className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4 backdrop-blur-sm"
+                    >
+                        {/* Close Button */}
+                        <button
+                            onClick={() => setIsLightboxOpen(false)}
+                            className="absolute top-6 right-6 p-2 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors z-[101]"
+                        >
+                            <X className="w-8 h-8" />
+                        </button>
+
+                        <motion.img
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            src={currentMedia}
+                            alt={product?.name}
+                            className="max-w-full max-h-full object-contain rounded-lg shadow-2xl pointer-events-none select-none"
+                            onClick={(e) => e.stopPropagation()}
+                        />
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </AnimatePresence>
     );
 }

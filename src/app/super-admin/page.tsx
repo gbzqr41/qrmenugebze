@@ -27,6 +27,13 @@ export default function SuperAdminPage() {
     const [isSaving, setIsSaving] = useState(false);
     const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
 
+    // Account settings states
+    const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
+    const [accountData, setAccountData] = useState({ phone: "", currentPassword: "", newPassword: "" });
+    const [isAccountSaving, setIsAccountSaving] = useState(false);
+    const [accountError, setAccountError] = useState("");
+    const [accountSuccess, setAccountSuccess] = useState(false);
+
     // Check if super admin
     useEffect(() => {
         const isSuperAdmin = localStorage.getItem("isSuperAdmin") === "true";
