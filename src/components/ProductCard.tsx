@@ -48,7 +48,7 @@ export default function ProductCard({ product, onClick, hideDescription, isFeatu
     // Dynamic styles based on section
     const cardBg = isFeaturedSection ? (theme.featuredCardBgColor || theme.cardColor) : (theme.menuBgColor || theme.cardColor);
     const titleColor = isFeaturedSection ? (theme.featuredNameColor || theme.menuTitleColor || theme.textColor) : (theme.menuTitleColor || theme.textColor);
-    const priceColor = isFeaturedSection ? (theme.featuredPriceColor || theme.accentColor) : (theme.accentColor);
+    const priceColor = isFeaturedSection ? (theme.featuredPriceColor || theme.accentColor) : (theme.menuPriceColor || theme.accentColor);
     const cardRadius = isFeaturedSection ? (theme.featuredCardRadius || theme.cardRadius) : (theme.menuCardRadius || 12);
     const imageRadius = isFeaturedSection ? (theme.featuredImageRadius || 8) : (theme.menuImageRadius || 8);
 

@@ -152,6 +152,46 @@ export default function DesignPage() {
         setHasChanges(false);
     };
 
+    // Varsayılan (Fabrika Ayarları) Tasarım
+    const handleResetToDefault = () => {
+        const confirmed = window.confirm("Varsayılan tasarıma dönmek istiyor musunuz? Tüm tasarım ayarlarınız fabrika ayarlarına sıfırlanacak.");
+        if (confirmed) {
+            const defaultDesign: Partial<ThemeSettings> = {
+                // GENEL - Ana Arka Plan
+                primaryColor: "#f3f3f3",
+
+                // Kategoriler
+                categoryBgColor: "#000000",
+                categoryActiveColor: "#ffffff",
+                categoryInactiveColor: "#171717",
+                categoryActiveTextColor: "#000000",
+
+                // Alt Menü
+                bottomNavBgColor: "#ffffff",
+                bottomNavActiveColor: "#000000",
+                bottomNavInactiveColor: "#6a6a6a",
+
+                // Yazı Tipi
+                fontFamily: "Quicksand",
+
+                // MENÜ - Menü Kart
+                menuBgColor: "#ffffff",
+                menuTitleColor: "#000000",
+                menuPriceColor: "#000000",
+                menuDescriptionColor: "#000000",
+                cardShadowColor: "#e4e4e4",
+
+                // Menü Detay
+                productCardBgColor: "#ffffff",
+                productTitleColor: "#000000",
+                productDescriptionColor: "#000000",
+                productPriceColor: "#000000",
+            };
+
+            setLocalTheme(prev => ({ ...prev, ...defaultDesign }));
+            showToast("✓ Varsayılan tasarım uygulandı!", "info");
+        }
+    };
 
     // Switch / Toggle Component
     const Toggle = ({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) => (
@@ -262,6 +302,18 @@ export default function DesignPage() {
                         </button>
                     );
                 })}
+
+                {/* Spacer */}
+                <div className="flex-1" />
+
+                {/* Varsayılan Tasarım Butonu */}
+                <button
+                    onClick={handleResetToDefault}
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm whitespace-nowrap transition-all bg-gradient-to-r from-orange-500 to-amber-500 text-white hover:from-orange-600 hover:to-amber-600 shadow-lg"
+                >
+                    <RotateCcw className="w-4 h-4" />
+                    Varsayılan Tasarım
+                </button>
             </div>
 
             {/* Tab Content */}
@@ -533,6 +585,11 @@ export default function DesignPage() {
                                     label="Açıklama Rengi"
                                     value={localTheme.menuDescriptionColor || "rgba(255,255,255,0.5)"}
                                     onChange={(v) => updateLocal({ menuDescriptionColor: v } as any)}
+                                />
+                                <ColorInput
+                                    label="Fiyat Rengi"
+                                    value={localTheme.menuPriceColor || "#ffffff"}
+                                    onChange={(v) => updateLocal({ menuPriceColor: v } as any)}
                                 />
                                 <NumberInput
                                     label="Kart Köşe Yuvarlaklığı"

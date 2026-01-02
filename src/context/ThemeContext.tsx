@@ -96,6 +96,7 @@ export interface ThemeSettings {
     menuBgColor?: string;
     menuTitleColor?: string;
     menuDescriptionColor?: string;
+    menuPriceColor?: string;
     menuImageRadius?: number;
     menuCardRadius?: number;
 
@@ -228,6 +229,7 @@ const defaultTheme: ThemeSettings = {
     menuBgColor: "#171717",
     menuTitleColor: "#ffffff",
     menuDescriptionColor: "rgba(255,255,255,0.5)",
+    menuPriceColor: "#ffffff",
     menuImageRadius: 8,
     // Featured defaults
     featuredCardShadowEnabled: true,
