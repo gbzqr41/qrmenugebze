@@ -183,10 +183,10 @@ export default function BusinessMenuPage() {
 
     return (
         <>
-            <main className="min-h-screen pb-[20px]" style={{ backgroundColor: theme.primaryColor }}>
+            <main className="min-h-screen pb-[20px] w-full max-w-[100vw] overflow-x-hidden" style={{ backgroundColor: theme.primaryColor }}>
                 {/* Header */}
                 <div
-                    className="h-[60px] flex items-center justify-between px-4 sticky top-0 z-40"
+                    className="w-full h-[60px] flex items-center justify-between px-4 sticky top-0 z-40"
                     style={{ backgroundColor: theme.headerBgColor || "rgba(0,0,0,0.95)" }}
                 >
                     <span

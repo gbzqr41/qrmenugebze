@@ -38,11 +38,11 @@ export default function Slider() {
                 className="w-full bg-neutral-900 flex items-center justify-center"
                 style={{
                     height: `${height}px`,
-                    marginTop: paddingTop,
-                    marginBottom: paddingBottom,
-                    marginLeft: paddingLeft,
-                    marginRight: paddingRight,
-                    borderRadius: `${radius}px`,
+                    marginTop: 0,
+                    marginBottom: 0,
+                    marginLeft: 0,
+                    marginRight: 0,
+                    borderRadius: 0,
                 }}
             >
                 <p className="text-white/40">Slider henüz eklenmedi</p>
@@ -57,11 +57,11 @@ export default function Slider() {
             className="relative w-full overflow-hidden bg-neutral-900"
             style={{
                 height: `${height}px`,
-                marginTop: paddingTop,
-                marginBottom: paddingBottom,
-                marginLeft: paddingLeft,
-                marginRight: paddingRight,
-                borderRadius: `${radius}px`,
+                marginTop: 0,
+                marginBottom: 0,
+                marginLeft: 0,
+                marginRight: 0,
+                borderRadius: 0,
             }}
         >
             {/* Animated Background Image */}

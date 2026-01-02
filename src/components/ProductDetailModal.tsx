@@ -239,9 +239,9 @@ export default function ProductDetailModal({
                         {/* Close Button */}
                         <button
                             onClick={() => setIsLightboxOpen(false)}
-                            className="absolute top-6 right-6 p-2 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors z-[101]"
+                            className="absolute top-4 left-4 z-[101] w-10 h-10 rounded-full flex items-center justify-center bg-white/10 text-white hover:bg-white/20 transition-colors backdrop-blur-md"
                         >
-                            <X className="w-8 h-8" />
+                            <X className="w-6 h-6" />
                         </button>
 
                         <motion.img
