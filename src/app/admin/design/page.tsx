@@ -705,14 +705,9 @@ export default function DesignPage() {
                             <h2 className="text-lg font-bold text-white mb-4">Menü Detay</h2>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                 <ColorInput
-                                    label="Sol İkon Arka Plan (Kapat)"
+                                    label="İkon Arka Plan (Kapat)"
                                     value={localTheme.productCloseButtonBgColor || "rgba(0,0,0,0.5)"}
                                     onChange={(v) => updateLocal({ productCloseButtonBgColor: v } as any)}
-                                />
-                                <ColorInput
-                                    label="Sağ İkon Arka Plan (Favori)"
-                                    value={localTheme.productFavButtonBgColor || "rgba(0,0,0,0.5)"}
-                                    onChange={(v) => updateLocal({ productFavButtonBgColor: v } as any)}
                                 />
                                 <ColorInput
                                     label="Arka Plan Rengi"

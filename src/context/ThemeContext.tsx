@@ -129,7 +129,6 @@ export interface ThemeSettings {
     productTextColor?: string;
     productCloseButtonBgColor?: string;
     productCloseIconColor?: string;
-    productFavButtonBgColor?: string; // Favorite button bg (right)
     productTitleColor?: string;
     productDescriptionColor?: string;
     productPriceColor?: string;

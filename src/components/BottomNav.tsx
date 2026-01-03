@@ -2,25 +2,24 @@
 
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { Home, Search, Filter, Heart, Info } from "lucide-react";
+import { Home, Search, Filter, Info } from "lucide-react";
 import { useTheme } from "@/context/ThemeContext";
 
 interface NavItem {
     icon: typeof Home;
     label: string;
     href?: string;
-    action?: "search" | "filter" | "feedback" | "favorites" | "business";
+    action?: "search" | "filter" | "feedback" | "business";
 }
 
 interface BottomNavProps {
     onSearchClick?: () => void;
     onFilterClick?: () => void;
     onFeedbackClick?: () => void;
-    onFavoritesClick?: () => void;
     onBusinessClick?: () => void;
 }
 
-export default function BottomNav({ onSearchClick, onFilterClick, onFeedbackClick, onFavoritesClick, onBusinessClick }: BottomNavProps) {
+export default function BottomNav({ onSearchClick, onFilterClick, onFeedbackClick, onBusinessClick }: BottomNavProps) {
     const pathname = usePathname();
     const { theme } = useTheme();
 
@@ -33,7 +32,6 @@ export default function BottomNav({ onSearchClick, onFilterClick, onFeedbackClic
         { icon: Home, label: "Anasayfa", href: baseHref },
         { icon: Search, label: "Ara", action: "search" },
         { icon: Filter, label: "Filtre", action: "filter" },
-        { icon: Heart, label: "Favori", action: "favorites" },
         { icon: Info, label: "Profil", action: "business" },
     ];
 
@@ -53,8 +51,6 @@ export default function BottomNav({ onSearchClick, onFilterClick, onFeedbackClic
             onFilterClick();
         } else if (item.action === "feedback" && onFeedbackClick) {
             onFeedbackClick();
-        } else if (item.action === "favorites" && onFavoritesClick) {
-            onFavoritesClick();
         } else if (item.action === "business" && onBusinessClick) {
             onBusinessClick();
         }

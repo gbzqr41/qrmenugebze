@@ -2,11 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Clock, Flame, AlertTriangle, Heart } from "lucide-react";
+import { X, Clock, Flame, AlertTriangle } from "lucide-react";
 import { useParams } from "next/navigation";
 import type { Product } from "@/data/mockData";
 import { useTheme } from "@/context/ThemeContext";
-import { addToFavorites, removeFromFavorites, isFavorite } from "./FavoritesModal";
 
 interface ProductDetailModalProps {
     product: Product | null;
@@ -23,27 +22,14 @@ export default function ProductDetailModal({
     const slug = params.slug as string;
     const { theme } = useTheme();
     const [activeImageIndex, setActiveImageIndex] = useState(0);
-    const [isFav, setIsFav] = useState(false);
     const [isLightboxOpen, setIsLightboxOpen] = useState(false);
 
     // Reset state when product changes
     useEffect(() => {
         if (product && slug) {
             setActiveImageIndex(0);
-            setIsFav(isFavorite(product.id, slug));
         }
     }, [product, slug]);
-
-    const toggleFavorite = () => {
-        if (!product || !slug) return;
-        if (isFav) {
-            removeFromFavorites(product.id, slug);
-            setIsFav(false);
-        } else {
-            addToFavorites(product, slug);
-            setIsFav(true);
-        }
-    };
 
     // Prevent body scroll when modal is open
     useEffect(() => {
@@ -68,6 +54,7 @@ export default function ProductDetailModal({
                 <>
                     {/* Backdrop */}
                     <motion.div
+                        key="backdrop"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
@@ -77,6 +64,7 @@ export default function ProductDetailModal({
 
                     {/* Modal - Full width edge to edge, no side margins */}
                     <motion.div
+                        key="modal"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
@@ -111,19 +99,6 @@ export default function ProductDetailModal({
                                 style={{ backgroundColor: theme.productCloseButtonBgColor || 'rgba(0,0,0,0.5)' }}
                             >
                                 <X className="w-6 h-6" style={{ color: theme.productCloseIconColor || '#ffffff' }} />
-                            </button>
-
-                            {/* Favorite Button */}
-                            <button
-                                onClick={toggleFavorite}
-                                className="absolute top-4 right-4 z-60 w-10 h-10 rounded-full flex items-center justify-center backdrop-blur-md transition-colors"
-                                style={{ backgroundColor: theme.productFavButtonBgColor || theme.productCloseButtonBgColor || 'rgba(0,0,0,0.5)' }}
-                            >
-                                <Heart
-                                    className="w-6 h-6"
-                                    style={{ color: isFav ? '#ef4444' : (theme.productCloseIconColor || '#ffffff') }}
-                                    fill={isFav ? '#ef4444' : 'none'}
-                                />
                             </button>
 
                             {/* Gallery Thumbnails */}

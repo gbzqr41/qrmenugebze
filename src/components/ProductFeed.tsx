@@ -22,6 +22,7 @@ interface ProductFeedProps {
     categoryRefs: React.MutableRefObject<Record<string, HTMLDivElement | null>>;
     onProductClick: (product: Product) => void;
     filteredProducts?: Product[];
+    viewMode?: "list" | "grid";
 }
 
 // İkon mapping
@@ -36,7 +37,7 @@ const iconMap: Record<string, LucideIcon> = {
 };
 
 const ProductFeed = forwardRef<HTMLDivElement, ProductFeedProps>(
-    ({ categoryRefs, onProductClick, filteredProducts }, ref) => {
+    ({ categoryRefs, onProductClick, filteredProducts, viewMode = "list" }, ref) => {
         const { products, categories } = useDataStore();
         const { theme } = useTheme();
         const cardGap = theme.cardGap || 16;
@@ -153,7 +154,7 @@ const ProductFeed = forwardRef<HTMLDivElement, ProductFeedProps>(
 
                                     {/* Product Grid */}
                                     <div
-                                        className="grid grid-cols-1"
+                                        className={`grid ${viewMode === "grid" ? "grid-cols-2" : "grid-cols-1"}`}
                                         style={{ gap: `${cardGap}px` }}
                                     >
                                         {categoryProducts.map((product, index) => (
@@ -162,6 +163,7 @@ const ProductFeed = forwardRef<HTMLDivElement, ProductFeedProps>(
                                                 product={product}
                                                 index={index}
                                                 onClick={() => onProductClick(product)}
+                                                isGridView={viewMode === "grid"}
                                             />
                                         ))}
                                     </div>

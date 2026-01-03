@@ -10,6 +10,7 @@ interface ProductCardProps {
     onClick: () => void;
     hideDescription?: boolean;
     isFeaturedSection?: boolean;
+    isGridView?: boolean;
 }
 
 // Helper to detect if URL is video
@@ -36,7 +37,7 @@ function isVideoUrl(url: string): boolean {
  * - Kartlar arası boşluk: ProductFeed'de cardGap (16px)
  */
 
-export default function ProductCard({ product, onClick, hideDescription, isFeaturedSection }: ProductCardProps) {
+export default function ProductCard({ product, onClick, hideDescription, isFeaturedSection, isGridView }: ProductCardProps) {
     const { theme } = useTheme();
     const hasDiscount = product.originalPrice && product.originalPrice > product.price;
     const discountPercentage = hasDiscount
@@ -52,10 +53,13 @@ export default function ProductCard({ product, onClick, hideDescription, isFeatu
     const cardRadius = isFeaturedSection ? (theme.featuredCardRadius || theme.cardRadius) : (theme.menuCardRadius || 12);
     const imageRadius = isFeaturedSection ? (theme.featuredImageRadius || 8) : (theme.menuImageRadius || 8);
 
+    // Determine flex direction
+    const flexDirection = isFeaturedSection || isGridView ? "flex-col-reverse" : "flex-row";
+
     return (
         <div
             onClick={onClick}
-            className={`w-full flex cursor-pointer overflow-hidden ${isFeaturedSection ? "flex-col-reverse" : "flex-row"}`}
+            className={`w-full flex cursor-pointer overflow-hidden ${flexDirection}`}
             style={{
                 backgroundColor: cardBg,
                 fontFamily: theme.fontFamily,
@@ -154,11 +158,11 @@ export default function ProductCard({ product, onClick, hideDescription, isFeatu
             <div
                 className="relative shrink-0 overflow-hidden"
                 style={{
-                    width: isFeaturedSection ? "calc(100% - 10px)" : "90px",
-                    height: isFeaturedSection ? "140px" : "calc(100% - 10px)",
+                    width: (isFeaturedSection || isGridView) ? "calc(100% - 10px)" : "90px",
+                    height: (isFeaturedSection || isGridView) ? "140px" : "calc(100% - 10px)",
                     margin: "5px",
-                    marginLeft: isFeaturedSection ? "5px" : "0",
-                    marginBottom: isFeaturedSection ? "0" : "5px",
+                    marginLeft: (isFeaturedSection || isGridView) ? "5px" : "0",
+                    marginBottom: (isFeaturedSection || isGridView) ? "0" : "5px",
                     borderRadius: `${imageRadius}px`,
 
                     boxShadow: theme.imageShadowEnabled

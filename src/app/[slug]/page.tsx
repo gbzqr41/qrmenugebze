@@ -11,7 +11,6 @@ import BottomNav from "@/components/BottomNav";
 import SearchModal from "@/components/SearchModal";
 import FilterModal, { type FilterState } from "@/components/FilterModal";
 import BusinessInfoModal from "@/components/BusinessInfoModal";
-import FavoritesModal from "@/components/FavoritesModal";
 
 import { type Product } from "@/data/mockData";
 import { useDataStore } from "@/context/DataStoreContext";
@@ -32,7 +31,7 @@ export default function BusinessMenuPage() {
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [isBusinessInfoOpen, setIsBusinessInfoOpen] = useState(false);
-    const [isFavoritesOpen, setIsFavoritesOpen] = useState(false);
+    const [viewMode, setViewMode] = useState<"list" | "grid">("list");
 
     const [filters, setFilters] = useState<FilterState>({
         categories: [],
@@ -45,6 +44,14 @@ export default function BusinessMenuPage() {
     const isScrollingRef = useRef(false);
 
     // ALL HOOKS MUST BE BEFORE ANY CONDITIONAL RETURNS
+
+    // Load view mode from localStorage
+    useEffect(() => {
+        const savedViewMode = localStorage.getItem("menuViewMode");
+        if (savedViewMode === "list" || savedViewMode === "grid") {
+            setViewMode(savedViewMode);
+        }
+    }, []);
 
     // Update active category when categories load
     useEffect(() => {
@@ -107,6 +114,12 @@ export default function BusinessMenuPage() {
     // Filter apply
     const handleFilterApply = useCallback((newFilters: FilterState) => {
         setFilters(newFilters);
+    }, []);
+
+    // View mode change
+    const handleViewModeChange = useCallback((mode: "list" | "grid") => {
+        setViewMode(mode);
+        localStorage.setItem("menuViewMode", mode);
     }, []);
 
     // Kategori tıklama - ilgili bölüme scroll
@@ -220,6 +233,8 @@ export default function BusinessMenuPage() {
                 <CategoryBar
                     activeCategory={activeCategory}
                     onCategoryClick={handleCategoryClick}
+                    viewMode={viewMode}
+                    onViewModeChange={handleViewModeChange}
                 />
 
                 {/* Active Filters Indicator */}
@@ -251,10 +266,11 @@ export default function BusinessMenuPage() {
                     categoryRefs={categoryRefs}
                     onProductClick={handleProductClick}
                     filteredProducts={hasActiveFilters ? filteredProducts : undefined}
+                    viewMode={viewMode}
                 />
 
                 {/* Bottom Navigation */}
-                {!isFilterOpen && !isSearchOpen && !isBusinessInfoOpen && !isFeedbackModalOpen && !isFavoritesOpen && (
+                {!isFilterOpen && !isSearchOpen && !isBusinessInfoOpen && !isFeedbackModalOpen && (
                     <BottomNav
                         onSearchClick={() => {
                             setIsSearchOpen(true);
@@ -268,12 +284,6 @@ export default function BusinessMenuPage() {
                         }}
                         onFeedbackClick={() => {
                             openFeedbackModal();
-                            setIsBusinessInfoOpen(false);
-                        }}
-                        onFavoritesClick={() => {
-                            setIsFavoritesOpen(true);
-                            setIsSearchOpen(false);
-                            setIsFilterOpen(false);
                             setIsBusinessInfoOpen(false);
                         }}
                         onBusinessClick={() => {
@@ -310,17 +320,6 @@ export default function BusinessMenuPage() {
                 <BusinessInfoModal
                     isOpen={isBusinessInfoOpen}
                     onClose={() => setIsBusinessInfoOpen(false)}
-                />
-
-                {/* Favorites Modal */}
-                <FavoritesModal
-                    isOpen={isFavoritesOpen}
-                    onClose={() => setIsFavoritesOpen(false)}
-                    onProductClick={(product) => {
-                        setSelectedProduct(product);
-                        setIsModalOpen(true);
-                    }}
-                    slug={slug}
                 />
             </main>
         </>

@@ -9,6 +9,8 @@ import {
     Soup,
     Cake,
     Coffee,
+    LayoutGrid,
+    List,
     type LucideIcon,
 } from "lucide-react";
 import { useDataStore } from "@/context/DataStoreContext";
@@ -28,9 +30,11 @@ const iconMap: Record<string, LucideIcon> = {
 interface CategoryBarProps {
     activeCategory: string;
     onCategoryClick: (categoryId: string) => void;
+    viewMode: "list" | "grid";
+    onViewModeChange: (mode: "list" | "grid") => void;
 }
 
-export default function CategoryBar({ activeCategory, onCategoryClick }: CategoryBarProps) {
+export default function CategoryBar({ activeCategory, onCategoryClick, viewMode, onViewModeChange }: CategoryBarProps) {
     const { categories } = useDataStore();
     const { theme } = useTheme();
     const containerRef = useRef<HTMLDivElement>(null);
@@ -115,6 +119,33 @@ export default function CategoryBar({ activeCategory, onCategoryClick }: Categor
                             </button>
                         );
                     })}
+
+                {/* Spacer for right alignment */}
+                <div className="flex-1" />
+
+                {/* View Mode Toggle */}
+                <div className="flex items-center gap-2 sticky right-5">
+                    <button
+                        onClick={() => onViewModeChange("list")}
+                        className="flex items-center justify-center w-10 h-10 rounded-lg transition-all"
+                        style={{
+                            backgroundColor: viewMode === "list" ? activeColor : inactiveColor,
+                            opacity: viewMode === "list" ? 1 : 0.5,
+                        }}
+                    >
+                        <List className="w-5 h-5" style={{ color: viewMode === "list" ? activeTextColor : inactiveTextColor }} />
+                    </button>
+                    <button
+                        onClick={() => onViewModeChange("grid")}
+                        className="flex items-center justify-center w-10 h-10 rounded-lg transition-all"
+                        style={{
+                            backgroundColor: viewMode === "grid" ? activeColor : inactiveColor,
+                            opacity: viewMode === "grid" ? 1 : 0.5,
+                        }}
+                    >
+                        <LayoutGrid className="w-5 h-5" style={{ color: viewMode === "grid" ? activeTextColor : inactiveTextColor }} />
+                    </button>
+                </div>
             </div>
         </div>
     );
